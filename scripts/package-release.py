@@ -13,7 +13,7 @@ manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
 assert len(manifest["description"]) <= 132, "Manifest description exceeds 132 characters"
 assert manifest["permissions"] == ["storage"]
 assert manifest["host_permissions"] == ["https://www.youtube.com/*"]
-files = [root / name for name in ("manifest.json", "LICENSE", "README.md", "INSTALL-EN.md", "INSTALL-VI.md", "default-settings.json", "THIRD-PARTY-NOTICES.md", "CONTRIBUTING.md", "docs/PRIVACY-EN.md", "docs/PRIVACY-VI.md")]
+files = [root / name for name in ("manifest.json", "LICENSE", "README.md", "README-VI.md", "INSTALL-EN.md", "INSTALL-VI.md", "default-settings.json", "THIRD-PARTY-NOTICES.md", "CONTRIBUTING.md", "docs/PRIVACY-EN.md", "docs/PRIVACY-VI.md")]
 for folder in ("assets", "src", "vendor"):
     files.extend(p for p in (root / folder).rglob("*") if p.is_file())
 names = {p.relative_to(root).as_posix() for p in files}

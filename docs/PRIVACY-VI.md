@@ -1,18 +1,18 @@
 # Better visual Youtube — Chính sách quyền riêng tư
 
-Nhà phát triển: QuanNguyen. Cập nhật: 4 tháng 11 năm 2026.
+Nhà phát triển: QuanNguyen. Cập nhật: 5 tháng 11 năm 2026.
 
-Better visual Youtube thay đổi giao diện YouTube trên máy tính và cung cấp ánh sáng tùy chọn theo video. Extension không yêu cầu tài khoản riêng.
+Better visual Youtube bổ sung hiệu ứng kính, chuyển động và Ambient Light cho YouTube trên máy tính. Bạn không cần tạo tài khoản để sử dụng.
 
 ## Dữ liệu xử lý trên thiết bị
 
-Extension đọc cấu trúc và cách trình bày của trang YouTube để áp dụng giao diện. Khi bật tính năng tương ứng, màu từ video/ảnh thu nhỏ được xử lý trên thiết bị để tạo màu kính và Ambient Light. Cài đặt và tùy chọn hoạt động lưu cục bộ theo hồ sơ trình duyệt qua API lưu trữ extension.
+Tiện ích đọc cấu trúc trang YouTube để áp dụng giao diện. Khi bật các hiệu ứng theo màu, màu từ video và ảnh thu nhỏ được xử lý ngay trên thiết bị. Cài đặt và tùy chọn hoạt động được lưu cục bộ trong hồ sơ trình duyệt.
 
 Extension không gửi lịch sử duyệt web, thông tin đăng nhập, khung hình video hay cài đặt đến máy chủ do nhà phát triển vận hành. Không tích hợp phân tích quảng cáo hoặc tải báo cáo lỗi lên máy chủ. Lỗi chẩn đoán có thể xuất hiện trong console cục bộ của trình duyệt.
 
 ## Kết nối mạng và bên thứ ba
 
-YouTube vẫn thực hiện các kết nối thông thường và áp dụng chính sách riêng của họ. Thành phần Ambient có thể yêu cầu ảnh storyboard do YouTube cung cấp để hỗ trợ xử lý màu video. Đây là yêu cầu tới dịch vụ nội dung, không phải dịch vụ phân tích của QuanNguyen. Liên kết hỗ trợ, tài liệu và trang bên ngoài chỉ mở khi được chọn và chịu chính sách của trang đó.
+YouTube vẫn thực hiện các kết nối thông thường theo chính sách của họ. Ambient Light có thể yêu cầu ảnh storyboard từ YouTube để xử lý màu video. Các liên kết bên ngoài, như trang hỗ trợ và tài liệu, chỉ mở khi bạn chọn và áp dụng chính sách của từng website.
 
 ## Quyền truy cập
 
@@ -27,4 +27,4 @@ Bạn có thể tắt từng hiệu ứng hoặc tắt extension. Reset to Defau
 
 ## Liên hệ và cập nhật
 
-Liên hệ QuanNguyen qua quannguyenproducer2505@gmail.com. Nếu thay đổi cách xử lý dữ liệu, chính sách và bản phát hành sẽ được cập nhật. Cần cung cấp URL công khai cho chính sách này trước khi gửi lên kho.
+Nếu có câu hỏi về quyền riêng tư, bạn có thể liên hệ QuanNguyen qua quannguyenproducer2505@gmail.com. Chính sách này sẽ được cập nhật khi cách xử lý dữ liệu thay đổi.

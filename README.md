@@ -1,54 +1,55 @@
+![Better visual Youtube — Liquid Glass and Ambient Light](https://raw.githubusercontent.com/Soul-blade-2505/better-visual-youtube/main/docs/media/liquid-glass-banner.png)
+
 # Better visual Youtube
 
-An open-source desktop YouTube extension for Microsoft Edge and Google Chrome, with Liquid Glass surfaces, optical effects, Ambient Light and interface animations.
+A fresh look for YouTube, with transparent glass surfaces, colour that follows your video, and animations throughout the interface.
 
-**Beta — version 1.4.53.** Hovering, seeking and volume adjustment can still stutter. Performance work is ongoing; this version is not a confirmed stable store release. Automated checks do not measure displayed FPS or physical input latency.
+**[Download v0.4.53](https://github.com/Soul-blade-2505/better-visual-youtube/releases/tag/v0.4.53)** · [Tiếng Việt](README-VI.md) · [Report an issue](https://github.com/Soul-blade-2505/better-visual-youtube/issues)
 
-Tiện ích mã nguồn mở cho YouTube trên máy tính, với giao diện Liquid Glass, hiệu ứng quang học, Ambient Light và chuyển động giao diện. **Bản beta 1.4.53:** vẫn có thể giật khi hover, tua hoặc chỉnh âm lượng; chưa xác nhận đủ ổn định để phát hành trên kho.
+Made for desktop Microsoft Edge and Google Chrome. This first public release is a beta, with more refinements to come.
 
-## Install / Cài đặt
+## A little more depth
 
-1. Download this repository using **Code → Download ZIP**, then extract it, or clone it with Git.
-2. Open `edge://extensions` or `chrome://extensions` and enable **Developer mode**.
-3. Choose **Load unpacked** and select the extracted folder containing `manifest.json`.
-4. Reload YouTube and open the extension popup to adjust effects.
+Liquid Glass brings transparent surfaces and light-catching edges to the header, search box, player controls and content panels. Adjust the tint, blur, opacity and reflections to suit your screen.
 
-Tải repo bằng **Code → Download ZIP**, giải nén, mở trang quản lý tiện ích, bật **Chế độ nhà phát triển**, chọn **Tải tiện ích đã giải nén** rồi trỏ tới thư mục có `manifest.json`. Tải lại YouTube.
+## Light that follows the video
 
-- [English installation and troubleshooting](INSTALL-EN.md)
-- [Hướng dẫn cài đặt và xử lý lỗi tiếng Việt](INSTALL-VI.md)
+Ambient Light extends colours beyond the player. Choose how far the light spreads and how bright it feels, with quality controls in the same settings panel.
 
-No build step or dependencies are required to load the extension. The target is desktop Edge/Chrome on `www.youtube.com`; optical rendering depends on browser support and hardware. The manifest's minimum version is not a claim of testing every browser release.
+![Better visual Youtube — Ambient Light promotional artwork](https://raw.githubusercontent.com/Soul-blade-2505/better-visual-youtube/main/docs/media/ambient-light-banner.png)
 
-## Features and settings
+## Make it yours
 
-- Glass surfaces for the header, search box, chips, player controls and content panels.
-- Adjustable tint, opacity, blur, radius, highlight, refraction and magnification.
-- Bundled Ambient Light with quality, intensity, spread and frame-rate controls.
-- Optional hover, popup, sidebar and player layout animations.
-- Local settings. Fresh installs and Reset use the author's captured defaults in [default-settings.json](default-settings.json); existing preferences are preserved.
+Choose a light or dark theme, tune the glass effects, and turn interface animations on or off. Your preferences are saved in your browser.
 
-To compare rendering costs, test the same video with **Optical depth** off, then separately with **Ambient Light** off. There is no 60fps guarantee. Include your browser version, GPU, display refresh rate and affected interaction in a performance report.
+## Get started
 
-## Development
+1. Download **Better-visual-Youtube-0.4.53.zip** from [Releases](https://github.com/Soul-blade-2505/better-visual-youtube/releases/tag/v0.4.53) and extract it.
+2. Open `edge://extensions` or `chrome://extensions` and turn on **Developer mode**.
+3. Select **Load unpacked**, then choose the folder containing `manifest.json`.
+4. Reload YouTube and open the extension to explore the settings.
 
-Requirements for checks and packaging: Node.js 22+ and Python 3.12+; no third-party packages.
+[English installation guide](INSTALL-EN.md) · [Hướng dẫn cài đặt tiếng Việt](INSTALL-VI.md)
+
+Found a bug or have an idea? [Open an issue](https://github.com/Soul-blade-2505/better-visual-youtube/issues).
+
+## Build with us
+
+The source is open under the [MIT license](LICENSE). You can load this repository directly as an unpacked extension; no build step is needed.
+
+To run the source checks and create a ZIP, use Node.js 22+ and Python 3.12+:
 
 ```sh
 python scripts/check.py
 python scripts/package-release.py --output-dir dist
 ```
 
-The checks run all standalone regression suites. Packaging validates the manifest, runtime dependencies, third-party license and ZIP contents. Output is a ZIP plus SHA-256 checksum in `dist/`. Local browser traces, screenshots, saved profiles and release binaries are excluded from source control.
+See [Contributing](CONTRIBUTING.md) for the source layout and development notes.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the source layout and browser testing expectations. Report bugs through [GitHub Issues](https://github.com/Soul-blade-2505/better-visual-youtube/issues). Never include cookies, credentials or an unreviewed browser trace.
+## Credits
 
-## Privacy, support and license
+Created by **QuanNguyen**. Ambient Light includes modified code from [youtube-ambilight](https://github.com/WesselKroos/youtube-ambilight) by Wessel Kroos, used under MIT. The glass effects draw on [this CSS/SVG refraction article](https://kube.io/blog/liquid-glass-css-svg/). See [Third-party notices](THIRD-PARTY-NOTICES.md) for details.
 
-- [Privacy policy (English)](docs/PRIVACY-EN.md) · [Chính sách quyền riêng tư](docs/PRIVACY-VI.md)
-- Maintainer: **QuanNguyen** · [quannguyenproducer2505@gmail.com](mailto:quannguyenproducer2505@gmail.com)
-- [MIT license](LICENSE). Previously named YouTube Liquid Glass; internal `YLG` identifiers remain for compatibility.
-- Bundled, locally modified Ambient Light code: [youtube-ambilight by Wessel Kroos](https://github.com/WesselKroos/youtube-ambilight), MIT. See [third-party notices](THIRD-PARTY-NOTICES.md) and [its retained license](vendor/ambient/LICENSE).
-- Refraction technique reference: [Liquid Glass in CSS/SVG](https://kube.io/blog/liquid-glass-css-svg/).
+[Privacy policy](docs/PRIVACY-EN.md) · [Chính sách quyền riêng tư](docs/PRIVACY-VI.md) · [Contact](mailto:quannguyenproducer2505@gmail.com)
 
-Independent project; not affiliated with or endorsed by YouTube, Google, Apple or Microsoft.
+An independent project, unaffiliated with YouTube, Google, Apple or Microsoft.

@@ -1,32 +1,41 @@
 # Contributing
 
-Bug reports and focused pull requests are welcome. This is a beta; hover and player-control performance remain known issues.
+Thanks for helping improve Better visual Youtube. Bug reports, ideas and pull requests are welcome.
 
-## Working locally
+## Get started
 
-Load the repository folder as an unpacked extension. Reload the extension and YouTube after source changes. Use Node.js 22+ and Python 3.12+ to run `python scripts/check.py`. Package with `python scripts/package-release.py --output-dir dist`.
+Load this repository as an unpacked extension. After making changes, reload the extension and YouTube.
 
-Source layout:
+With Node.js 22+ and Python 3.12+ installed, run:
 
-- `src/shared`: settings schema, defaults and migration.
-- `src/glass`: glass material and optical maps.
-- `src/styles`: additive YouTube interface refinements.
-- `src/content`: DOM integration, navigation and motion.
-- `src/ambient`: Ambient lifecycle and integration.
-- `src/popup`: extension settings interface.
-- `vendor/ambient`: modified upstream bundles; preserve their MIT license and notices.
-- `tests`: standalone Node.js regression suites with local mocks.
+```sh
+python scripts/check.py
+python scripts/package-release.py --output-dir dist
+```
 
-Eight original glass CSS files are pinned by `tests/visual-restore-regressions.js`. Add appearance refinements in additive styles unless deliberately proposing a reviewed visual baseline change. Keep existing settings keys compatible and avoid adding competing animation loops.
+The ZIP and its SHA-256 checksum are written to `dist/`.
 
-## Validation
+## Find your way around
 
-Explain what changed and how you verified it. Source tests do not establish live YouTube compatibility, smoothness or input latency. For UI changes, manually test relevant states in current Edge and Chrome: light/dark themes, fresh and saved settings, normal/theater/fullscreen player, navigation between videos, and the affected interaction.
+- `src/shared`: settings and migrations.
+- `src/glass`: glass materials and optical effects.
+- `src/styles`: YouTube interface styles.
+- `src/content`: page integration, navigation and animations.
+- `src/ambient`: Ambient Light integration.
+- `src/popup`: settings panel.
+- `vendor/ambient`: modified upstream Ambient Light code.
+- `tests`: source regression checks.
 
-For performance work, compare the same video, viewport, browser, display refresh rate and settings against a baseline. Report sample counts and frame timing distributions where available. Distinguish JavaScript scheduling measurements from rendered FPS and physical input-to-photon latency. Do not promise a speedup without measurement.
+Eight glass stylesheets are checked against a saved visual baseline in `tests/visual-restore-regressions.js`. Put refinements in the additive styles, or explain any intended baseline change in your pull request. Preserve existing settings keys and third-party notices.
 
-## Reports and privacy
+## Send a change
 
-Include steps to reproduce, browser version, hardware, settings and expected/actual behavior. Review and redact any attached screenshot or trace; never post credentials, cookies, account identifiers or browsing history. Keep local diagnostics out of commits.
+Keep each pull request focused and describe the resulting behaviour. Run the source checks, then test affected interactions on YouTube in Edge and Chrome. For appearance changes, include screenshots of the relevant states.
 
-For private security reports, contact quannguyenproducer2505@gmail.com instead of opening a public issue. Contributions are provided under the project's MIT license; preserve third-party attribution.
+For performance changes, compare the same video and settings before and after, and describe how you measured the result. The automated tests cover source behaviour; they do not measure rendering performance.
+
+## Share feedback
+
+[Open an issue](https://github.com/Soul-blade-2505/better-visual-youtube/issues) with what happened and how to reproduce it. Browser version and a screenshot can help. Remove private information before attaching files.
+
+For security issues, contact [QuanNguyen](mailto:quannguyenproducer2505@gmail.com) privately. Contributions use the project's MIT license.

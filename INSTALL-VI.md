@@ -1,28 +1,23 @@
-# Better visual Youtube — Hướng dẫn tiếng Việt
+# Cài đặt Better visual Youtube
 
-## Cài trên Microsoft Edge / Google Chrome
+Dành cho Microsoft Edge và Google Chrome trên máy tính.
 
-1. Giải nén toàn bộ gói ZIP vào một thư mục cố định. Không xóa hoặc di chuyển thư mục sau khi cài.
-2. Mở `edge://extensions` trên Edge hoặc `chrome://extensions` trên Chrome.
-3. Bật **Developer mode / Chế độ nhà phát triển**.
-4. Chọn **Load unpacked / Tải tiện ích đã giải nén** và chọn thư mục chứa `manifest.json`.
-5. Mở hoặc tải lại trang YouTube. Ghim **Better visual Youtube** từ menu tiện ích để mở bảng điều khiển dễ hơn.
+## Cài lần đầu
 
-## Mặc định và cập nhật
+1. Tải **Better-visual-Youtube-0.4.53.zip** từ [trang phát hành](https://github.com/Soul-blade-2505/better-visual-youtube/releases/tag/v0.4.53).
+2. Giải nén vào một thư mục cố định trên máy.
+3. Mở `edge://extensions` trên Edge hoặc `chrome://extensions` trên Chrome.
+4. Bật **Developer mode / Chế độ nhà phát triển**, chọn **Load unpacked / Tải tiện ích đã giải nén**, rồi chọn thư mục chứa `manifest.json`.
+5. Tải lại YouTube. Mở **Better visual Youtube** từ menu tiện ích của trình duyệt để điều chỉnh giao diện.
 
-- Bản 1.4.53 dùng bộ cài đặt đã lưu của tác giả: Light, màu Thumbnail, blur 1px, radius 14px, highlight 62%, hover 112%, Ambient spread 162%, 16fps. Độ trong suốt hiển thị trên bảng là 1%; giá trị nội bộ chính xác được giữ trong `default-settings.json`.
-- Cài mới tự dùng bộ này. Cài đè giữ lựa chọn đang lưu; bấm **Reset to Defaults** để áp dụng toàn bộ mặc định mới.
-- Để cập nhật cùng bản đang cài, thay nội dung trong thư mục cũ bằng nội dung gói mới, bấm **Reload / Tải lại** ở trang tiện ích rồi tải lại YouTube. Không xóa tiện ích nếu muốn giữ cài đặt.
-- Nếu nạp từ thư mục mới, trình duyệt có thể xem đó là tiện ích khác. Tắt bản cũ để tránh hai bản cùng chạy.
+Giữ nguyên thư mục đã giải nén trong thời gian sử dụng. Bạn có thể ghim tiện ích để mở cài đặt nhanh hơn.
 
-## Nếu máy bị giật khi tua hoặc chỉnh âm lượng
+## Cập nhật và cài đặt đã lưu
 
-- Thử tắt **Optical depth** rồi thao tác lại trên cùng video; tiếp theo thử tắt **Ambient Light** để phân biệt tải do kính hay ánh sáng.
-- Có thể giảm **Hover lift**, **Dispersion**, Ambient **Spread** hoặc chọn chất lượng **Eco**. Đây là tùy chọn, không được áp dụng sẵn vào bộ mặc định.
-- Báo lại trình duyệt, cấu hình máy và thao tác gây giật. Chưa có phép đo FPS trên máy tester nên không bảo đảm 60fps trên mọi máy.
+Thay các tệp trong thư mục đang dùng bằng bản mới, bấm **Reload / Tải lại** trên trang tiện ích rồi tải lại YouTube. Các lựa chọn đã lưu sẽ được giữ lại.
 
-## Lưu ý
+Cài đặt được lưu trong trình duyệt. **Reset to Defaults** khôi phục cấu hình mặc định đi kèm; cài đặt không tự chuyển sang máy khác.
 
-Gói này là tiện ích đã giải nén dành cho desktop Edge/Chrome, không phải file cài Chrome Web Store. Cài đặt lưu cục bộ theo hồ sơ trình duyệt, không tự đồng bộ sang máy khác. Gói không bao gồm tài khoản, cookie hay lịch sử duyệt web.
+## Góp ý
 
-Mã nguồn và giấy phép bên thứ ba nằm trong gói; giữ các tệp LICENSE khi phân phối lại.
+[Báo lỗi hoặc đề xuất tính năng trên GitHub](https://github.com/Soul-blade-2505/better-visual-youtube/issues).
