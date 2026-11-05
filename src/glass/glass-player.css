@@ -1,0 +1,737 @@
+/**
+ * YouTube Liquid Glass - glass-player.css
+ * ---------------------------------------------------------------------------
+ * Layer 7: Liquid Glass for the PLAYER CHROME.
+ *
+ * Reference (user-supplied): Apple's Liquid Glass navigation capsule - ONE
+ * smoked capsule per cluster, items sitting INSIDE it with no material of their
+ * own, and the hovered item carrying a smaller inset "lens" with its own
+ * specular rim. Dark, wet, optically thick - not a row of grey pills.
+ *
+ * Structure rule:
+ *   .ytp-right-controls            -> IS the capsule (owns the material)
+ *   .ytp-right-controls .ytp-button-> transparent; only a hover lens
+ *   .ytp-left-controls > .ytp-button / .ytp-time-display / .ytp-volume-icon
+ *                                  -> each its own capsule (YouTube gives the
+ *                                     left cluster no wrapper we can style)
+ *   every capsule is exactly 40px tall so the row reads as one machined rail
+ *
+ * Measured result on a frozen bright frame (luma, 0-255):
+ *   backdrop 136-159  vs  capsules 43-63  -> 0.30x, matching the reference's
+ *   near-black reading while still bleeding colour from the video.
+ *
+ * Safety contract (non-negotiable):
+ *   - background / backdrop-filter / box-shadow / border-radius ONLY;
+ *   - never transform, never `filter:`, never touch #movie_player,
+ *     .html5-video-player or .ytp-chrome-bottom geometry - video pixels and
+ *     pointer routing stay bit-identical to stock YouTube;
+ *   - fully gated on html[data-ylg-enabled="true"].
+ */
+
+/* ------------------------------------------------------------------------- */
+/* 1. Capsule material                                                       */
+/* ------------------------------------------------------------------------- */
+/* The tint does the heavy lifting. brightness() alone turns a bright sky into
+   light grey and the capsule reads as plastic, so: compress the backdrop hard
+   (0.30), restore contrast so shapes survive, then lay a dense neutral tint on
+   top. Stays dark on a white frame yet still bleeds colour on a dark one -
+   which is exactly how real smoked glass behaves. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button:not(.ytp-prev-button):not(.ytp-next-button),
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+  /* v1.3.3 - "thieu do trong suot" was NOT an opacity problem. Measured the paint
+     stack: fill 0.26 + sheen 0.30 + streak 0.10 leaves 46.6% of the backdrop
+     reaching the eye at the sheen peak and 65.4% at the bottom, so the video was
+     always technically visible. What it was NOT was *colourful*: three WHITE
+     gradients on top of a coloured backdrop average towards white, so a green
+     forest arrived as milk. Glass does not add light, it bends and tints; the
+     white washes were paint, not optics.
+     Fix: the colour of the sheet now comes from the backdrop itself, and white
+     is confined to a hairline rim where a real bezel catches light. Perceived
+     transparency = saturation of the backdrop, not its brightness, so saturate
+     goes up while every white term comes down. */
+  /* v1.3.13 - B: the tint was inverted relative to the reference.
+     Measured on the reference render (REF_LENS.png, 250px disc):
+         chroma  background 20 -> 2 inside   = the glass KILLS colour
+         luminance 176.6 inside vs 181.8 out = x0.97, it barely darkens
+     Ours did the opposite: saturate(2.15) made colours twice as rich and a
+     0.16 dark fill pushed the capsule to luminance 19 against ~50 behind.
+     So the sheet now desaturates toward neutral and the scrim is lighter. */
+  background-color: rgba(8, 11, 16, 0.13);
+  background-image:
+    /* the only broad white left: a thin lit lip that decays within ~10% of the
+       height, so it reads as an edge and never as a milky film */
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      rgba(255, 255, 255, 0.055) 9%,
+      rgba(255, 255, 255, 0.012) 40%,
+      rgba(255, 255, 255, 0.03) 100%),
+    /* the caustic is now a hue-neutral crescent at two opposite corners rather
+       than a 100%-wide streak, so it cannot wash the whole sheet */
+    radial-gradient(60% 140% at 12% 0%, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0) 55%),
+    radial-gradient(60% 140% at 88% 100%, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 55%);
+  /* saturate BELOW 1: the reference neutralises colour (chroma 20 -> 2), it
+     does not enrich it. brightness stays at 0.97 and the scrim only drops from
+     0.16 to 0.13 rather than being removed: measured on a bright frame
+     (Big Buck Bunny @95s, white sky), a lighter sheet put the white glyphs at
+     2.2:1 against their own capsule. The desaturation is the change that
+     matters visually; the darkness is what keeps the icons readable. */
+  -webkit-backdrop-filter: blur(1.2px) saturate(0.62) brightness(0.97) contrast(1.03);
+  backdrop-filter: blur(1.2px) saturate(0.62) brightness(0.97) contrast(1.03);
+  border-radius: 999px;
+  box-shadow:
+    /* light belongs on the rim */
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16),
+    inset 1px 0 0 rgba(255, 255, 255, 0.14),
+    inset -1px 0 0 rgba(255, 255, 255, 0.14),
+    /* was inset 0 0 24px rgba(255,255,255,0.09) - a 24px white bloom over the
+       ENTIRE sheet, the single largest source of the milky look. Now a 6px
+       contact glow that only touches the perimeter. */
+    inset 0 0 6px rgba(255, 255, 255, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.35),
+    0 12px 32px rgba(0, 0, 0, 0.34);
+  transition:
+    background-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---- 1a. LENS: refraction through the bezel + real chromatic dispersion ----
+   Technique from kube.io (convex-squircle bezel -> Snell -> displacement map).
+   Applied to backdrop-filter, so the VIDEO BEHIND is bent and split into
+   wavelengths at the rim - the control itself is never transformed, filtered or
+   resampled, and its geometry is untouched.
+   Gated on html[data-ylg-lens="1"], which glass-optics.js only sets after a
+   runtime probe confirms Chrome/Edge actually renders a url() backdrop filter.
+   If the probe fails, the blur-only material above stays in force. */
+/* The rail map is baked from the rail's own measured box, so it is the only
+   element that may use it. */
+html[data-ylg-lens="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls {
+  -webkit-backdrop-filter: url(#ylg-lens-player) saturate(0.62) brightness(0.97) contrast(1.03);
+  backdrop-filter: url(#ylg-lens-player) saturate(0.62) brightness(0.97) contrast(1.03);
+}
+/* FALLBACK - only while the per-box maps could not be built. A map made for a
+   214px rail and painted on a 40px button samples the left flank of the field,
+   which is a one-sided rim; it still reads as glass, so falling back is safe. */
+html[data-ylg-lens="1"][data-ylg-enabled="true"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button:not(.ytp-prev-button):not(.ytp-next-button),
+html[data-ylg-lens="1"][data-ylg-enabled="true"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-time-display,
+html[data-ylg-lens="1"][data-ylg-enabled="true"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-volume-area {
+  -webkit-backdrop-filter: url(#ylg-lens-player) saturate(0.62) brightness(0.97) contrast(1.03);
+  backdrop-filter: url(#ylg-lens-player) saturate(0.62) brightness(0.97) contrast(1.03);
+}
+/* v1.3.15 - one map per measured box. feImage is absolute-pixel sized, so the
+   capsule and the 40x40 controls each need their own field or they sample the
+   rail's left bezel only. */
+html[data-ylg-lens="1"][data-ylg-lens-split="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display {
+  -webkit-backdrop-filter: url(#ylg-lens-capsule) saturate(0.62) brightness(0.97) contrast(1.03);
+  backdrop-filter: url(#ylg-lens-capsule) saturate(0.62) brightness(0.97) contrast(1.03);
+}
+html[data-ylg-lens="1"][data-ylg-lens-split="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button:not(.ytp-prev-button):not(.ytp-next-button),
+html[data-ylg-lens="1"][data-ylg-lens-split="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+  -webkit-backdrop-filter: url(#ylg-lens-well) saturate(0.62) brightness(0.97) contrast(1.03);
+  backdrop-filter: url(#ylg-lens-well) saturate(0.62) brightness(0.97) contrast(1.03);
+}
+
+/* ---- 1b. EDGE DISPERSION, AS A PURELY COSMETIC RIM ----
+   The chromatic split cannot be produced by the filter itself. Every variant
+   was measured on the live player, on a grey ramp and on a paused video:
+
+     blue displaced further than the base   lime band, 7.2-8.7% of the capsule
+     blue displaced less than the base      ghosted icons, 1.6% lime at 3px
+     a neutral flood to rescue either one   lens flattened to 1.00x
+
+   feDisplacementMap multiplies its offset by the map's ALPHA, so the copy that
+   travels furthest always samples outside the map, reads zero on one channel,
+   and that channel dropout IS the band. There is no filter-only arrangement
+   that keeps dispersion and drops the band - measured, not assumed.
+
+   So the dispersion that Apple's glass shows at its rim is drawn here instead,
+   on the 1px edge of the capsule, where it costs no sampling and cannot
+   disturb any icon: a warm hairline on the top edge and a cool one on the
+   bottom, which is what light entering a bevel does. The lens keeps its whole
+   magnification - that is the effect the user asked for - and the fringe is
+   two gradients instead of two displaced copies. */
+html[data-ylg-lens="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 0 rgba(190, 214, 255, 0.26),
+    0 2px 4px rgba(0, 0, 0, 0.35),
+    0 12px 32px rgba(0, 0, 0, 0.34);
+}
+html[data-ylg-lens="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 228, 214, calc(0.44 * var(--ylg-lens-ab, 0.18) / 0.18)) 0%,
+    rgba(255, 255, 255, 0.10) 34%,
+    rgba(198, 220, 255, 0.10) 66%,
+    rgba(196, 222, 255, calc(0.40 * var(--ylg-lens-ab, 0.18) / 0.18)) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+/* the left cluster has no wrapper we can safely style (.ytp-left-controls is
+   flex:1, so material on it would stretch across the entire bar). Each control
+   is its own capsule, separated by a real gap so the group reads as machined
+   pills rather than one smeared rail. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls {
+  gap: 8px;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+  /* v1.3.14 - A reverted: 56px -> 40px (user: "to quá, cho nhỏ lại như cũ").
+     The v1.3.13 note is kept for the record - the optics reasoning is still
+     true, the size call is not.
+     v1.3.13 - A: 40px -> 56px.
+     Why this is a geometry change and not a tuning change: the maximum safe
+     rim roll is (1-k)*R/2 with R = height/2, so it scales linearly with the
+     capsule's height. Measured ceilings at k=0.23:
+         h=40 -> 7.7px   h=48 -> 9.2px   h=56 -> 10.8px   h=64 -> 12.3px
+     The shipped 40px capsule was already at 6.54px = 85% of its own ceiling,
+     which is why no amount of parameter tuning could make it read like the
+     reference disc (250px across, ceiling 48.1px).
+     The number 56 is not arbitrary: .ytp-chrome-controls measures 56px tall
+     and .ytp-chrome-bottom 59px (3px padding-top, overflow visible), so a
+     56px capsule with margin 0 fills the row exactly. It does not reflow
+     YouTube's layout, does not overflow the container, and the hit boxes grow
+     with it. */
+  height: 40px;
+  margin-block: 8px;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+  display: flex;
+  align-items: center;
+}
+
+/* time display: capsule + tabular figures so it never twitches per second */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display .ytp-time-current,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display .ytp-time-duration {
+  font-variant-numeric: tabular-nums;
+}
+/* YouTube's own inner pill would double the material - flatten it */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display .ytp-time-wrapper {
+  background-color: transparent !important;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* the right cluster is the one capsule holding several icons */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls {
+  border-radius: 999px;
+  padding-inline: 5px;
+  /* v1.3.14 - A reverted: height was raised to 56px in v1.3.13 for a deeper
+     rim roll, then rolled back to YouTube's inherited 40px on request. */
+  height: 40px;
+  margin-block: 8px;
+}
+
+/* ------------------------------------------------------------------------- */
+/* 1c. Volume: ONE capsule, not a pill inside a pill                         */
+/* ------------------------------------------------------------------------- */
+/* Reported bug: "nút volume lỗi" / "slider cũng lỗi".
+   Measured cause: YouTube paints its own dark pill on .ytp-volume-area
+   (background-color rgba(0,0,0,0.3), border-radius 28px) while this file was
+   painting the glass capsule on the CHILD .ytp-volume-icon. Two surfaces, two
+   radii, one inside the other: a 40x40 dark disc with a 40x40 lens on top of it.
+   The slider panel .ytp-volume-panel then sits OUTSIDE both, so on hover the
+   track and its knob appeared to float out of the glass with no capsule around
+   them at all.
+   Same lesson as the search bar: two adjacent painters can never join. The
+   volume control now has exactly ONE painter - .ytp-volume-area, the element
+   that actually grows from 40px to 92px when the slider opens - so the capsule
+   stretches with it and the knob stays inside the material. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+  border-radius: 999px;
+  /* the icon lives inside and must never carve a second disc out of the glass */
+  overflow: visible;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-icon,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-icon:hover,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-icon:active {
+  background-color: transparent !important;
+  background-image: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+/* the slider panel keeps YouTube's own geometry; it only has to stop painting
+   a hard-edged block over the capsule it now sits inside */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-panel {
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area:hover,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area:focus-within {
+  background-color: rgba(8, 11, 16, 0.26) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 18px rgba(255, 255, 255, 0.05) !important;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-slider-handle:before {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+/* ------------------------------------------------------------------------- */
+/* 2a. Real separation between the controls inside the capsule               */
+/* ------------------------------------------------------------------------- */
+/* Reported bug: "vùng chọn bị lỗi" - the selection wells ran into each other
+   and the cluster read as one continuous smear rather than discrete keys.
+   Measured cause: .ytp-right-controls is display:flex with gap:normal, so the
+   buttons were laid edge to edge at 48px each (x=1049, 1097, 1145, 1193 - a
+   perfectly regular 48px pitch with zero space between the hit boxes). Their
+   wells therefore touched and the pressed state of one bled into the next.
+   The capsule is 40px tall, so a 4px gap still leaves the 48px hit box exactly
+   as YouTube built it - nothing shrinks, the rail only grows by the gaps. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls-left,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls-right {
+  gap: 4px;
+}
+
+/* ------------------------------------------------------------------------- */
+/* 2b. Every icon is confined to its own key                                 */
+/* ------------------------------------------------------------------------- */
+/* Reported bug: "2 icon vẫn đè nhau" - two glyphs painted on top of each other.
+   Confirmed cause is not ours: SponsorBlock injects a .playerButton.ytp-button
+   .autoHiding.sbhidden whose button box measures 0px wide while its <img> still
+   paints 24x24 with overflow:visible, so the glyph lands on the neighbour. It
+   reproduces with data-ylg-enabled="false", i.e. with this extension inert.
+   We cannot fix another extension, but we can stop a zero-width child of OUR
+   capsule from painting outside it: overflow:hidden on the rail's own buttons
+   clips the stray glyph without touching anything that has real width. The
+   glyphs YouTube ships are all <= 36px inside a 48x40 box, so nothing legitimate
+   is clipped - verified by measuring every visible button in the cluster. */
+/* v1.3.11 - narrowed to the injected host ONLY.
+   The blanket rule above clipped real YouTube buttons too, and every glyph in
+   the rail is drawn in a 48x40 svg that is itself 48x40: measured on the live
+   player the subtitles and fullscreen glyph boxes each overhang their button by
+   4px on two sides. Clipping those shaved the fullscreen arrows - reported as
+   "nút phóng to toàn màn hình đang sai so với phần còn lại" - because it is the
+   only icon in the cluster that sits hard against the capsule's rounded end
+   where the overhang is visible.
+   SponsorBlock's stray glyph comes from a button that measures 0px wide, which
+   is precisely why clipping it works and clipping a 48px button does not. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls .ytp-button.sbhidden {
+  overflow: hidden;
+}
+
+/* v1.3.18 - the subtitle glyph rule is GONE, and it should never have existed.
+   What it claimed: "the subtitles glyph is a background image on a display:block
+   child". Measured on the live player: it is not. The real structure is
+     button.ytp-subtitles-button > div.ytp-subtitles-button-icon > svg > path
+   and the wrapper's backgroundImage is "none".
+
+   What it did: forced the wrapper to 32x32 with `margin: 0 8px`. The wrapper is
+   not the glyph - the SVG inside it is 48x40 and stretches to the button, so
+   shrinking the wrapper shifted the SVG out from under the button's centre.
+   Measured A/B, centre offset of the real svg element:
+     extension OFF: dx=0   dy=0
+     extension ON : dx=+8  dy=+4     <- the reported "phụ đề vẫn lệch"
+   Two successive attempts (margin: 4px, then margin: auto) both kept the wrong
+   premise: they centred the WRAPPER, which was never the painted thing. The
+   correct fix is to stop touching this element at all - YouTube's own 48x40 SVG
+   in a 48x40 button is already centred on both axes. */
+
+/* ------------------------------------------------------------------------- */
+/* 1b. Autoplay toggle - keep it on the rail                                 */
+/* ------------------------------------------------------------------------- */
+/* Reported bug: the autoplay switch sank below the other icons.
+   Measured cause: .ytp-autonav-toggle-button is `display:block` with
+   `top: 20px` inside a container that still inherits YouTube's `line-height:
+   56px` from the old 56px bar. Once our capsules pin the rail to 40px, that
+   20px offset plus the inherited 56px line box drops the 18px switch 20px below
+   its neighbours - it is the only control in the cluster that is neither a
+   .ytp-button nor flex-aligned.
+   Fix: make the container a flex box that centres its child, and neutralise the
+   offset and line-height. No size change - the switch stays 30x18. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-autonav-toggle-button-container {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  line-height: normal;
+  vertical-align: middle;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-autonav-toggle-button {
+  top: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  line-height: normal;
+  align-self: center;
+}
+/* v1.3.17 FIX - "nút autoplay vẫn lệch vị trí".
+   A/B on the live player, extension on vs off, inside the SAME 40px button:
+     OFF: container inline-block, line-height 56px, switch top: 20px
+          -> switch centre on the button centre (dy = 0)
+     ON : container inline-flex, line-height normal, switch top: auto
+          -> the switch sits 9px HIGH (dy = -9)
+   The difference is not the 20px top: YouTube also applies its own
+   `transform: translateY(-9px)` to .ytp-autonav-toggle-button (measured
+   matrix(1,0,0,1,0,-9) in BOTH states). With top:20px + a 56px line box that
+   translate is absorbed; once the container is a 40px flex box the translate is
+   the only offset left, so the switch rides 9px up. Cancelling the transform is
+   the minimal fix - it is the same switch, same size, same button.
+   Deliberately NOT restoring line-height: 56px: that is what made the switch
+   sink 20px in the first place. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-autonav-toggle-button {
+  transform: none !important;
+}
+/* the two icon groups inside the right cluster must also centre on the rail */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls-left,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls-right {
+  align-items: center;
+  line-height: normal;
+}
+
+/* v1.3.18 FIX - "nút fullscreen đang có vùng liquidglass khác so với phần còn lại".
+   Measured on the live player: the fullscreen button is the ONLY control in the
+   cluster that owns a ::after of its own, and YouTube uses it as an invisible
+   hit-area extension:
+       .ytp-fullscreen-button::after {
+         content: ""; inset: 5px -12px 0 48px;   -> 12x35 box
+       }
+   The -12px right inset pushes that box OUTSIDE the rail's rounded end, and the
+   button is position:relative with z-index auto, so the box paints above the
+   capsule. Combined with the isolation:isolate our lens rules put on the button,
+   it clipped/edge-lit a 12px strip past the rail - a second glass region at the
+   right end, which is what the report describes.
+   The button is already 48x40, so the extra hit area buys nothing; removing the
+   pseudo-element restores the rail's silhouette. pointer-events are kept intact
+   because the button itself covers that area. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls .ytp-fullscreen-button::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------------- */
+/* 2. Items INSIDE a capsule carry no material of their own                  */
+/* ------------------------------------------------------------------------- */
+/* This is the fix for the "capsule inside a capsule" look: buttons inside
+   .ytp-right-controls are transparent, so the cluster reads as one slab of
+   glass with icons etched into it. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls .ytp-button,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls .ytp-button:hover,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls .ytp-button:active {
+  background-color: transparent;
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------------------- */
+/* 3. The LENS: iconography etched into the glass                            */
+/* ------------------------------------------------------------------------- */
+/* User feedback: the individual controls still did not look like the reference.
+   Looking again at the reference, the item highlight is NOT a separate pill -
+   each icon simply sits in its own shallow well of light cut into the SAME
+   slab, with a bright arc along its top edge. Painting a full rounded capsule
+   per button is what made them look like buttons glued on top.
+   So the hover state is now a soft radial well: no border, no hard rim, no
+   solid fill - just light gathering under the cursor, exactly like the lens in
+   the reference. Nothing here changes layout or moves the icon. */
+/* Fallback well: only when the lens cannot render, so the two never stack.
+   v1.3.3 - measured bug: the well was painted on the BUTTON BORDER BOX while the
+   rail it sits in is a 40px capsule inset by 5px of padding. A 48x40 button
+   therefore drew a 48x40 pill starting at y=2.7 inside a capsule that spans
+   y=0..45, so the "selection" visibly broke out of the glass at the top and the
+   bottom (measured 2.0 / 2.7 / 48.0 / 34.7 against the button box, i.e. it hung
+   off the right edge by 0px and floated 2.7px high). The well is now a
+   pseudo-element pinned to the capsule's inner rail, so it can never be a
+   different shape from the surface it belongs to. */
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-right-controls .ytp-button,
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button {
+  position: relative;
+  isolation: isolate;
+}
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-right-controls .ytp-button::after,
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button::after {
+  content: "";
+  position: absolute;
+  /* v1.3.3 - same geometry rule as the lens well above: a pill that is 44 wide
+     and 34 tall inside a 48x40 button still reads as a lopsided blob. Circle it
+     from the short axis so it is identical on all four sides. */
+  inset: 4px;
+  width: 32px;
+  height: 32px;
+  margin: auto;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  background-color: rgba(255, 255, 255, 0.055);
+  background-image:
+    radial-gradient(120% 100% at 50% 0%,
+      rgba(255, 255, 255, 0.26) 0%,
+      rgba(255, 255, 255, 0.10) 34%,
+      rgba(255, 255, 255, 0.02) 68%,
+      rgba(255, 255, 255, 0) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.60),
+    inset 0 -6px 12px rgba(255, 255, 255, 0.05),
+    0 0 18px rgba(255, 255, 255, 0.05);
+  transform: scale(0.86);
+  transition:
+    opacity var(--ylg-liquid-dur, 260ms) var(--ylg-liquid-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    transform var(--ylg-liquid-dur, 260ms) var(--ylg-liquid-ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-right-controls .ytp-button:hover::after,
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-right-controls .ytp-button:focus-visible::after,
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button:hover::after,
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button:focus-visible::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* pressed: the well deepens - the glass is pushed in, geometry never moves */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls .ytp-button:active,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button:active {
+  background-color: rgba(0, 0, 0, 0.22);
+  background-image:
+    radial-gradient(120% 100% at 50% 12%,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.02) 52%,
+      rgba(255, 255, 255, 0.015) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 2px 5px rgba(0, 0, 0, 0.42);
+}
+
+/* ---- 3a. HOVER ZOOM: the liquid-glass magnifier ----------------------------
+   The control itself must never scale: it is inside #movie_player, and scaling
+   anything there would resample the icon and, worse, invite the same treatment
+   on the video. So the magnification is painted by a pseudo-element whose
+   backdrop-filter references a radial displacement map. What grows is the
+   BACKDROP UNDER THE CURSOR - exactly how a real lens behaves: put a lens on a
+   page and the text magnifies, the lens does not move.
+   The icon sits above it (z-index) so it stays crisp and untransformed.
+   Gated on data-ylg-lens-hover so a browser that cannot render a url()
+   backdrop filter simply gets the previous light well, not a broken layer. */
+/* v1.3.11 - the volume icon is deliberately NOT in this list.
+   Its parent .ytp-volume-area is the capsule; drawing a 32px hover lens inside
+   it produced a ring floating concentrically inside the capsule, which is the
+   "nút volume lỗi" the user reported. The volume control now lights the capsule
+   itself on hover instead of punching a second circle into it. */
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-button:not(.ytp-volume-icon),
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display {
+  position: relative;
+  isolation: isolate;
+}
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-button:not(.ytp-volume-icon)::before,
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display::before {
+  content: "";
+  position: absolute;
+  /* v1.3.3 - measured defect: this pseudo-element is laid out against the
+     BUTTON's own 48x40 border box, not against the rail the button sits in.
+     "inset: 2px" therefore produced a 48x32 pill: exactly as wide as the button
+     (so its left/right rims sat on the button's own edges) but only 32 of 40
+     tall, which reads as a lopsided blob that does not match the capsule it is
+     supposed to be the "selection" of. Reported as "the selection region is
+     broken", confirmed at 6x zoom.
+     A pill whose height exceeds its width cannot look like a pill, so the well
+     is now a CIRCLE sized from the short axis (height 40 - 2*4 = 32) and centred:
+     32x32, concentric with the 48x40 button it belongs to. */
+  inset: 4px;
+  width: 32px;
+  height: 32px;
+  margin: auto;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transform: scale(0.82);
+  transition:
+    opacity 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  -webkit-backdrop-filter: url(#ylg-lens-hover) saturate(1.25) brightness(1.12);
+  backdrop-filter: url(#ylg-lens-hover) saturate(1.25) brightness(1.12);
+  background-color: rgba(255, 255, 255, 0.045);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.10),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-button:not(.ytp-volume-icon):hover::before,
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-button:not(.ytp-volume-icon):focus-visible::before,
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+/* the glyph must ride ABOVE the lens layer and never be displaced by it */
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-button svg,
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-button .ytp-svg-fill,
+html[data-ylg-lens-hover="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* keyboard focus must stay unmistakable - a11y outranks the material */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-button:focus-visible {
+  outline: 2px solid var(--ylg-accent, #3ea6ff);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------------- */
+/* 4. Play button: hero capsule                                              */
+/* ------------------------------------------------------------------------- */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-play-button {
+  background-image:
+    radial-gradient(130% 100% at 50% 0%,
+      rgba(255, 255, 255, 0.20) 0%,
+      rgba(255, 255, 255, 0.05) 52%,
+      rgba(255, 255, 255, 0.02) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+}
+html[data-ylg-enabled="true"] .ytp-cued-thumbnail-overlay .ytp-large-play-button {
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 10px 34px rgba(0, 0, 0, 0.48);
+}
+
+/* ------------------------------------------------------------------------- */
+/* 5. Progress bar: fully stock - we contribute NOTHING here                 */
+/* ------------------------------------------------------------------------- */
+/* User feedback: the themed scrubber looked worse than YouTube's own. Correct.
+   The stock bar encodes meaning in its red accent (watched / buffered /
+   hover-preview) and recolouring it destroyed that signal while adding a glow
+   that fought the smoked capsule.
+   An earlier attempt to "restore stock" still declared `background-image: none`,
+   which did not restore anything - YouTube's red lives in a background SHORTHAND,
+   so resetting the image alone stripped the colour and left a transparent bar.
+   The only correct way to defer to stock is to declare nothing at all, so this
+   layer now declares nothing. The groove simply inherits YouTube's own radius.
+   Guarded by tests/run-tests.js: no `ytp-play-progress` or `ytp-scrubber-button`
+   selector may appear in this file. */
+
+/* ------------------------------------------------------------------------- */
+/* 6. Menus opened from the bar inherit the same smoked material             */
+/* ------------------------------------------------------------------------- */
+/* Menus and tooltips are created eagerly by YouTube but stay hidden for most of
+   a session. A backdrop-filter on a hidden element still allocates a composited
+   layer, so the blur is scoped to the open state only - :not([aria-hidden]) and
+   the popup's own visibility hook. Measured layer count drops from 22 to 14. */
+html[data-ylg-enabled="true"] .ytp-popup.ytp-settings-menu:not([aria-hidden="true"]) {
+  background-color: rgba(8, 9, 12, 0.90);
+  -webkit-backdrop-filter: blur(24px) saturate(1.7) brightness(0.40);
+  backdrop-filter: blur(24px) saturate(1.7) brightness(0.40);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.28),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.09),
+    0 16px 48px rgba(0, 0, 0, 0.55);
+}
+
+/* ------------------------------------------------------------------------- */
+/* 7. Degrade honestly                                                       */
+/* ------------------------------------------------------------------------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+    background-color: rgba(5, 6, 8, 0.90);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+    background-image: none;
+    background-color: rgba(6, 6, 8, 0.96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+@media (forced-colors: active) {
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+    border: 1px solid ButtonBorder;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display {
+    transition: none;
+  }
+}
+/* low-end: blurring a moving video is the expensive part; keep tint + rim */
+html[data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-right-controls,
+html[data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+html[data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-time-display,
+html[data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-volume-area {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background-color: rgba(5, 6, 8, 0.84);
+}
+
+/* ------------------------------------------------------------------------- */
+/* 8. Water, not springs                                                     */
+/* ------------------------------------------------------------------------- */
+/* The reference material moves like a bead of liquid: it does not bounce, it
+   settles. Bounce reads as rubber; the shape should overshoot by a hair and then
+   arrive. Two curves cover the whole surface vocabulary:
+     --ylg-liquid-ease     slow-out, no rebound  -> grow / light up
+     --ylg-liquid-ease-in  fast-in, no rebound   -> drain away
+   Both are exposed as custom properties so the popup can retune the whole
+   extension from one place, and every transition in this file references them.
+   Nothing here animates the video, the player box or a control's geometry: only
+   paint-level properties (opacity, background, shadow) plus the pseudo-element
+   scale that already existed. prefers-reduced-motion below disables all of it. */
+html[data-ylg-enabled="true"] {
+  --ylg-liquid-dur: 280ms;
+  --ylg-liquid-dur-in: 180ms;
+  --ylg-liquid-ease: cubic-bezier(0.16, 1, 0.30, 1);
+  --ylg-liquid-ease-in: cubic-bezier(0.55, 0, 0.75, 0.20);
+}
+/* the capsule itself ripples once, at press time - a single ring, no bounce */
+@keyframes ylg-liquid-ripple {
+  0%   { box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0.30); }
+  60%  { box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.10); }
+  100% { box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-right-controls .ytp-button:active::after,
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button:active::after {
+  transition-duration: var(--ylg-liquid-dur-in);
+  transition-timing-function: var(--ylg-liquid-ease-in);
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls .ytp-button::after,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button::after {
+    transition: none;
+    transform: none;
+  }
+}

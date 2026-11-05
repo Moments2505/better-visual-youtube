@@ -1,0 +1,50 @@
+/* ============================================================================
+   YouTube Liquid Glass - glass-motion.css
+   COMPOSITOR-ONLY motion: transform / opacity / box-shadow transitions.
+   NEVER animate filter or backdrop-filter (crbug 359102842; perf policy).
+   No infinite loops anywhere. Duration ceiling 250ms.
+   ============================================================================ */
+
+html[data-ylg-enabled="true"] .ylg-glass,
+html[data-ylg-enabled="true"] .ylg-card,
+html[data-ylg-enabled="true"] .ylg-chip {
+  transition:
+    transform var(--ylg-dur-base) var(--ylg-ease-glass),
+    opacity var(--ylg-dur-base) var(--ylg-ease-glass),
+    box-shadow var(--ylg-dur-base) var(--ylg-ease-glass),
+    background-color var(--ylg-dur-base) var(--ylg-ease-glass);
+  will-change: auto; /* never pre-promote; hover states promote transiently */
+}
+
+/* Settle-in for floating surfaces (popovers/menus/toasts) - one-shot, 180ms */
+@keyframes ylg-settle {
+  from { opacity: 0; transform: scale(0.985) translateY(-2px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="floating"] {
+  animation: ylg-settle var(--ylg-dur-base) var(--ylg-ease-glass) both;
+}
+
+/* Motion kill switches ------------------------------------------------------ */
+
+/* User setting: motion off */
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-glass,
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-card,
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-chip,
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-glass::before,
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-glass::after {
+  transition-duration: 1ms !important;
+  animation: none !important;
+}
+
+/* OS reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] .ylg-glass,
+  html[data-ylg-enabled="true"] .ylg-card,
+  html[data-ylg-enabled="true"] .ylg-chip,
+  html[data-ylg-enabled="true"] .ylg-glass::before,
+  html[data-ylg-enabled="true"] .ylg-glass::after {
+    transition-duration: 1ms !important;
+    animation: none !important;
+  }
+}

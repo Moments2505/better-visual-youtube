@@ -1,0 +1,39 @@
+{
+  "accent": "#3ea6ff",
+  "ambientLight": {
+    "blur": 75,
+    "brightness": 1,
+    "enabled": true,
+    "fpsLimit": 16,
+    "intensity": 1,
+    "modes": {
+      "fullscreen": true,
+      "normal": true,
+      "shorts": false,
+      "theater": true
+    },
+    "quality": "auto",
+    "saturation": 1.1,
+    "spread": 162
+  },
+  "blur": 1,
+  "enabled": true,
+  "highlight": 0.62,
+  "motion": true,
+  "opacity": 0.001347159213591947,
+  "optics": {
+    "aberration": true,
+    "aberrationPx": 4,
+    "enabled": true,
+    "hoverScale": 1.12,
+    "lensAberration": 0.17,
+    "lensPx": 92,
+    "magnify": true,
+    "magnifyScale": 22
+  },
+  "radius": 14,
+  "refraction": 1,
+  "theme": "light",
+  "tint": "media",
+  "schemaVersion": 8
+}

@@ -1,0 +1,804 @@
+/* ============================================================================
+   YouTube Liquid Glass - youtube.css (A3 scope, Lead-executed)
+   PHILOSOPHY: "glass the container, never the content."
+   Every rule is gated on html[data-ylg-enabled="true"] - removing the
+   attribute (or the classes) restores stock YouTube pixel-for-pixel.
+   Typography, icon colors and text remain native inside glass surfaces;
+   only the SURFACE (background, rim, shadow, radius) is restyled.
+
+   Selector strategy: hooks added by dom-adapter (.ylg-glass[data-ylg-level],
+   .ylg-card, .ylg-chip) + a few stable structural selectors (verified
+   defensively in selector-registry.js). Unverified candidates are tagged
+   UNVERIFIED and degrade to no-ops when absent.
+   ============================================================================ */
+
+/* ------------------------------------------------------------------ */
+/* MASTHEAD (header) - floating translucent bar                        */
+/* ------------------------------------------------------------------ */
+/* P0 readability: data-ylg-theme is the RESOLVED light/dark theme; the
+   user's auto preference lives separately. Chrome scrims have a stable floor
+   independent of material opacity so bright feed images cannot erase labels.
+   These variables are consumed only by masthead/search, not page materials. */
+html[data-ylg-enabled="true"][data-ylg-theme="dark"] {
+  --ylg-chrome-scrim: rgba(22, 28, 38, 0.82);
+  --ylg-search-scrim: rgba(22, 28, 38, 0.72);
+  --ylg-chrome-text: #f1f3f5;
+  --ylg-chrome-muted: #c4cad2;
+}
+html[data-ylg-enabled="true"][data-ylg-theme="light"] {
+  --ylg-chrome-scrim: rgba(248, 250, 252, 0.86);
+  --ylg-search-scrim: rgba(248, 250, 252, 0.76);
+  --ylg-chrome-text: #18212b;
+  --ylg-chrome-muted: #485463;
+}
+html[data-ylg-enabled="true"] ytd-masthead.ylg-glass,
+html[data-ylg-enabled="true"] #masthead.ylg-glass {
+  background-color: transparent;
+  /* v1.3.28 - the masthead's CLOSED rim is gone: "phần 4 góc thừa ở dưới vẫn thấy".
+     Measured: box-shadow on ytd-masthead contained
+         inset 0 0 0 1px rgba(255,255,255,0.16)
+     - a full-perimeter 1px ring around a 1900x56 bar. The bar is flush to the
+     top, left and right edges of the viewport, so three of those four sides are
+     not edges at all; the ring draws a rectangle where the page has none. The
+     two BOTTOM corners are the visible artifact: the ring turns 90 degrees at
+     x=0 and x=1900 and meets the guide rail at x=240, which is the "4 extra
+     corners" in the report.
+     Same failure as the chip rim: a closed ring has no light direction. Replaced
+     by directional edges - top highlight (a real edge, the browser chrome) plus
+     a bottom hairline - and no vertical lines.
+     The 40px ambient shadow is also dropped: on a full-width bar it bled a soft
+     dark band over the chip row and read as a second surface. */
+  /* v1.3.30 - "1/4 dưới của headbar trong suốt hẳn so với 3/4 phía trên".
+     The generic tint is a 165deg gradient (`.55` at 0%, `.247` at 45%, `.37` at
+     100%). On a 56px bar that runs almost entirely VERTICALLY, so the fill is
+     strongest at the top and weakest around 45% height - the lower band gets
+     less paint than the upper one and reads as "more transparent".
+     Measured on the user's crop, column left of the button:
+       y=0 74 -> y=18 95 -> y=35 84 -> y=46 81   (a slow vertical fall-off,
+       with the last quarter clearly darker/emptier than the middle)
+     and on a flat grey backdrop the header itself measured 93.5 -> 92.1, only
+     1.4/255 - so the header is even; what changes is how much CONTENT is behind
+     each band. A bar has no vertical span worth shading, so the diagonal
+     gradient is the wrong tool here: it invents a top-to-bottom fall-off.
+     The masthead gets a FLAT fill of the same average alpha instead, which
+     keeps the glass reading identical in the middle while removing the band. */
+  background-image: linear-gradient(var(--ylg-chrome-scrim), var(--ylg-chrome-scrim));
+  color: var(--ylg-chrome-text);
+  --yt-spec-text-primary: var(--ylg-chrome-text);
+  --yt-spec-text-secondary: var(--ylg-chrome-muted);
+  --yt-spec-icon-active-other: var(--ylg-chrome-text);
+  --yt-spec-icon-inactive: var(--ylg-chrome-muted);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.55)),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+    0 1px 2px var(--ylg-shadow-contact);
+  /* v1.3.16: no bottom curve here. The chrome block continues 56px lower (the
+     filter-chip row) and #frosted-glass carries the single bottom curve, so the
+     header and the chip strip read as one surface instead of two stacked
+     rounded boxes. */
+  border-radius: 0;
+  /* keep YouTube's sticky positioning; visuals only */
+}
+/* the inner chrome must not paint its own fill - background-COLOR only, for
+   the same reason as above (a shorthand here would wipe a tagged child's
+   tint layer if ytd-masthead ever carries the glass class itself). */
+html[data-ylg-enabled="true"] ytd-masthead.ylg-glass > div:not(#search-container):not(ytd-searchbox) {
+  background-color: transparent;
+}
+html[data-ylg-enabled="true"] #masthead-container {
+  background: transparent !important; /* let the tagged masthead carry the glass */
+  box-shadow: none !important;
+}
+/* UNVERIFIED: ytd-masthead-holder wrapper (candidate list handles absence) */
+html[data-ylg-enabled="true"] ytd-masthead-holder { background: transparent; }
+
+/* ------------------------------------------------------------------ */
+/* PANEL SYMMETRY - the inset must read the same on all four sides     */
+/* ------------------------------------------------------------------ */
+/* Why this exists: our panels are the first thing in the chain to give
+   YouTube's block a padding, and a padding box BLOCKS margin collapsing. Any
+   margin-top YouTube relies on to escape its container is then trapped inside,
+   on top of our own padding, and the panel reads top-heavy.
+
+   Measured on ytd-comments, before and after (viewport 1699x828, DPR 1.5):
+     gap from panel top edge to the header   34px
+     gap from panel left edge to the header   9px   <- symmetric value
+   The 25px difference was exactly <ytd-comments-header-renderer>'s 24px
+   margin-top, plus rounding. Zeroing it restores 9/9.
+
+   The recommendations column is the mirror case. Stock YouTube puts #secondary
+   24px below #primary, but ytd-watch-metadata already carries 12px, so the two
+   glass card edges only line up at 12px. Measured card tops: metadata 127,
+   secondary 139 -> aligned at 127 after the change. */
+html[data-ylg-enabled="true"] ytd-comments.ylg-glass ytd-comments-header-renderer {
+  margin-top: 0;
+}
+/* Deliberately not gated on :not([theater]). Theater mode sets the [theater]
+   attribute on ytd-watch-flexy and YouTube hides #secondary there anyway, so the
+   margin is inert; gating it only made the default-mode fix silently miss when a
+   page happened to be flagged theater. */
+/* !important is required, not lazy. YouTube's own
+   "ytd-watch-flexy[full-bleed-player] #secondary.ytd-watch-flexy { margin-top:
+   var(--ytd-margin-6x) }" scores (1 id, 1 class, 2 attrs) - exactly the same as
+   "html[data-ylg-enabled=\"true\"] #secondary.ylg-glass" - so the winner came
+   down to sheet order and YouTube's later sheet kept the 24px. Verified with
+   CDP getMatchedStylesForNode: computed stayed 24px until the specificity
+   deadlock was broken. */
+html[data-ylg-enabled="true"] #secondary.ylg-glass {
+  margin-top: 12px !important;
+}
+/* the same trap exists inside the metadata card for any renderer YouTube marks
+   with a top margin; keep the first row flush with our padding instead */
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #above-the-fold,
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #title {
+  margin-top: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* SEARCH - rounded glass pill with accent focus glow                  */
+/* ------------------------------------------------------------------ */
+html[data-ylg-enabled="true"] ytd-searchbox.ylg-glass,
+html[data-ylg-enabled="true"] #search-container.ylg-glass,
+html[data-ylg-enabled="true"] form#search-form.ylg-glass {
+  border-radius: calc(var(--ylg-radius-l) * 1.1);
+  background-color: transparent;
+  background-image: linear-gradient(var(--ylg-search-scrim), var(--ylg-search-scrim));
+}
+/* Foreground only: do not give the input, button or outer modern component
+   another glass layer. The existing input box remains its single painter. */
+html[data-ylg-enabled="true"] :is(ytd-searchbox, yt-searchbox, #search-container, form#search-form) {
+  color: var(--ylg-chrome-text);
+  --yt-spec-text-primary: var(--ylg-chrome-text);
+  --yt-spec-text-secondary: var(--ylg-chrome-muted);
+  --yt-spec-icon-active-other: var(--ylg-chrome-text);
+  --yt-spec-icon-inactive: var(--ylg-chrome-muted);
+}
+html[data-ylg-enabled="true"] :is(ytd-searchbox, yt-searchbox, #search-container, form#search-form) input {
+  background: transparent;
+  color: var(--ylg-chrome-text) !important; /* beat native #search input colors */
+  caret-color: var(--ylg-chrome-text);
+}
+html[data-ylg-enabled="true"] :is(ytd-searchbox, yt-searchbox, #search-container, form#search-form) input::placeholder {
+  color: var(--ylg-chrome-muted) !important;
+  opacity: 1;
+}
+html[data-ylg-enabled="true"] :is(ytd-searchbox, yt-searchbox, #search-container, form#search-form) :is(button, yt-icon, yt-icon-shape) {
+  color: var(--ylg-chrome-text) !important;
+  fill: currentColor;
+}
+/* A content-area sheen can wash out glyphs even over a sufficient scrim.
+   Leave the existing edge shadows/focus rings, not a light pool over text. */
+html[data-ylg-enabled="true"] :is(ytd-masthead, #masthead, ytd-searchbox, #search-container, form#search-form).ylg-glass[data-ylg-level]::before,
+html[data-ylg-enabled="true"] :is(ytd-masthead, #masthead, ytd-searchbox, #search-container, form#search-form).ylg-glass[data-ylg-level]::after {
+  display: none;
+}
+html[data-ylg-enabled="true"] ytd-searchbox.ylg-glass:focus-within,
+html[data-ylg-enabled="true"] #search-container.ylg-glass:focus-within,
+html[data-ylg-enabled="true"] form#search-form.ylg-glass:focus-within {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ylg-accent) 30%, transparent),
+    0 2px 4px var(--ylg-shadow-contact),
+    0 10px 28px var(--ylg-shadow-ambient),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9));
+}
+/* legacy hook from adapter focusin/focusout */
+html[data-ylg-enabled="true"] [data-ylg-search-focus="1"].ylg-glass {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ylg-accent) 30%, transparent),
+    0 2px 4px var(--ylg-shadow-contact),
+    0 10px 28px var(--ylg-shadow-ambient);
+}
+
+/* ------------------------------------------------------------------ */
+/* CHROME BAND - one surface across header + filter chips              */
+/* ------------------------------------------------------------------ */
+/* Measured defect: with Opacity above 0 the header reads as TWO stacked
+   surfaces - 56px of glass on top, 56px of clear page underneath, separated by
+   a hard horizontal line. That is not a tint mismatch this time; it is a
+   COVERAGE problem:
+     ytd-masthead       0,0,1440x56   .ylg-glass material (tint + blur)
+     #frosted-glass     0,0,1440x112  paint removed by this extension
+     #chips-wrapper     240,56,1180x56  transparent
+   So the band above y=56 has a backdrop blur and the band below it does not.
+   In a clean browser without the extension both halves are the same YouTube
+   layer, which is why the seam only exists in a profile running it.
+
+   The fix is coverage parity, not a new effect: the whole 112px band has to be
+   filtered by ONE painter with ONE tint. Doing that by setting the tint and the
+   backdrop-filter on #frosted-glass itself is fragile: YouTube owns that
+   element's background/backdrop with its own !important rules that vary by
+   account (Premium), by load state (with-chipbar / loading-with-chipbar) and by
+   scroll (:not(.at-top)), so the property can be won back on some combination
+   and the band then shows blur WITHOUT the scrim - high-contrast thumbnail
+   colours smearing across the chrome. That is the failure the user reported.
+
+   So the painter is a pseudo-element instead. A ::before on #frosted-glass is
+   not matched by any YouTube rule (they target the element), it inherits
+   nothing that can be overridden, and it is one box covering the whole band.
+   The element itself is forced transparent with no filter, so there is exactly
+   one glass surface and nothing to fall out of sync.
+   At Opacity 0 (data-ylg-fill="none") the pseudo is disabled too: clear mode
+   stays clear top to bottom. */
+html[data-ylg-enabled="true"] #frosted-glass {
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  /* documented hazard: this layer sits over the chip row, so it must never
+     take the pointer or every chip click is swallowed */
+  pointer-events: none !important;
+}
+/* The common sheet's painter is owned by chrome-surface.css (loaded last).
+   Do not add another filter or tint here or on its masthead/search children. */
+
+/* v1.3.16 FIX - "lỗi headbar vẫn còn dải đen".
+   YouTube owns a fixed backdrop layer for its chrome:
+     div#frosted-glass  box 0,0,1120x112  position:fixed  z-index:2018
+                        background rgba(15,15,15,0.8)  backdrop-filter blur(48px)
+   It spans the masthead (56px) AND the filter-chip row (56px). With a 56px
+   glass masthead on top, the lower half of that 112px sheet is an 80% opaque
+   near-black band directly under the glass - which is exactly the reported
+   black strip. It is YouTube's layer, not ours, so the fix is to make it carry
+   the same tint as the glass instead of a near-solid black.
+   The blur is kept (it is what stops the feed from running into the chips), and
+   the bottom curve moves here so the chrome block is one shape. */
+/* Specificity matters here and cost one build to learn: YouTube's own rules are
+   `#frosted-glass.with-chipbar.ytd-app` = (1,2,0) and
+   `#frosted-glass.loading-with-chipbar.ytd-app`, and they set the `background`
+   SHORTHAND. A plain `html[attr] #frosted-glass` = (1,1,1) loses on the b
+   column, which is why a first attempt changed the border-radius (nothing
+   competed for it) while the 80% black background stayed. (1,3,1) with the same
+   class pair wins without `!important`. */
+html[data-ylg-enabled="true"] #frosted-glass.with-chipbar.ytd-app,
+html[data-ylg-enabled="true"] #frosted-glass.loading-with-chipbar.ytd-app,
+html[data-ylg-enabled="true"] #frosted-glass {
+  /* v1.3.17 - "không xoá hẳn dải bên dưới headbar được sao?".
+     Retinting it was not enough: ANY fill or blur on this 112px sheet paints a
+     second, differently-toned surface under the 56px glass header, because it
+     spans the filter-chip row too and does not inherit the material's tint
+     stack. Measured after the previous build: the sheet was
+     rgba(8,11,16,0.13) + blur(18px) while the masthead above it is the full
+     .ylg-glass material, so the two never matched and the seam was still
+     readable as a band.
+     The honest fix is to remove the layer's own paint entirely: no fill, no
+     blur, no curve. The header then owns the ONLY glass surface and the chip
+     row sits on the page background exactly as it does in YouTube's own
+     no-frosted-glass mode. Nothing is lost: the chips keep their own hit areas
+     and scrolling behaviour. */
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  /* v1.3.20 CRITICAL - "toàn bộ tag này không dùng được nút nào cả".
+     #frosted-glass is position:fixed, 112px tall, z-index:2018 and sits over
+     the filter-chip row. YouTube relies on it being a PAINTED layer; once this
+     rule made it fully transparent it became an invisible click shield:
+       computed pointer-events: auto
+       elementFromPoint at a chip centre -> div#frosted-glass  (not the chip)
+     so every chip click was swallowed while the page still looked correct.
+     Measured A/B on the live page: with pointer-events:auto a chip click did
+     nothing; with none the same click activated it immediately.
+     Nothing in this layer is meant to be interactive - it exists only to paint
+     a blur behind the header - so it must never receive the pointer.
+     This is the failure mode to remember: removing a layer's PAINT does not
+     remove its HIT AREA. */
+  pointer-events: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* CHIP BAR - the dark band under the header                           */
+/* ------------------------------------------------------------------ */
+/* v1.3.31 FIX - "phần trên có hiệu ứng kính, nhưng phía dưới còn một dải
+   tối chạy ngang, khiến header trông như bị chia thành hai tầng".
+   Measured layer stack at y=60 (just below the 56px masthead):
+     div#chips-wrapper      y=56..112   background: rgb(15, 15, 15)   z-index: 2000
+     div#chips-content      y=56..112   transparent
+     div#scroll-container   y=56..112   transparent
+     iron-selector#chips    y=56..112   transparent
+   So the band is not a shadow and not our material: it is YouTube's own chip
+   bar background, an OPAQUE #0f0f0f strip exactly 56px tall across the full
+   width, sitting directly under the glass header at z-index 2000.
+   The header is 56px of glass; this is 56px of solid paint below it. Two
+   different materials stacked edge to edge is precisely a "two-tier header".
+   Earlier passes cleared #frosted-glass, which was the layer ABOVE this one;
+   the opaque fill lives one level down.
+   Making it transparent lets the page show through the chip row, which is how
+   the header reads as a single surface. The chips keep their own fills, so
+   they stay legible. */
+html[data-ylg-enabled="true"] #chips-wrapper,
+html[data-ylg-enabled="true"] #chips-wrapper.ytd-feed-filter-chip-bar-renderer {
+  background-color: transparent;
+  background-image: none;
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* SIDEBAR (guide) - floating glass rail with accent active pill       */
+/* ------------------------------------------------------------------ */
+/* v1.3.25 - THE "lồng" WAS THE SCATTER, not a border.
+   .ylg-glass::after is a light pool pinned to the bottom of the box at
+   height: 38% (glass-material.css). On a 944px-tall rail that is a 359px band
+   starting at y=641, so the column reads as TWO stacked surfaces: the upper
+   part is plain glass and the lower part is glass plus a bright wash, with a
+   soft horizontal boundary between them.
+   Measured, panel scanned y=700..990 (x 20..220 mean):
+       700 -> 27    800 -> 34    825 -> 79    850 -> 89    875 -> 52
+   The 27-vs-14 step at the foot is the same layer, not the page showing through.
+   38% of a capsule is a rim glow; 38% of a full-height column is a second
+   panel. The pool is suppressed here and the column keeps ONE uniform tone. */
+html[data-ylg-enabled="true"] #guide-inner-content.ylg-glass::after,
+html[data-ylg-enabled="true"] #guide.ylg-glass::after {
+  display: none;
+}
+/* v1.3.29 FIX - "2 nửa trên dưới theo chiều dọc" in the header.
+   This is the same scatter layer as on the guide, and it was still running
+   here. Measured on the 1513px masthead:
+     ::after { display: block; top: 35.73px; height: 21.27px }
+   35.73 / 56 = 63.8%, i.e. the pool starts two thirds of the way down a 56px
+   bar and covers the rest. Everything above y=35 is plain glass, everything
+   below carries an extra white wash, so the bar reads as two horizontal bands
+   with a soft boundary - exactly the "top half / bottom half" report.
+   height:38% was designed for a capsule where the bottom pool is a rim glow.
+   In a 56px bar it is 21px of a 56px surface: 38% of the height, but visually
+   it is the lower half.
+   The header already has a 1px specular top edge and a 1px dark bottom edge,
+   which describe its thickness honestly. The pool adds nothing except the
+   band. Suppressed. */
+html[data-ylg-enabled="true"] ytd-masthead.ylg-glass::after,
+html[data-ylg-enabled="true"] #masthead.ylg-glass::after {
+  display: none;
+}
+
+html[data-ylg-enabled="true"] #guide-inner-content.ylg-glass,
+html[data-ylg-enabled="true"] #guide.ylg-glass {
+  /* v1.3.16 FIX - "sidebar vẫn lỗi lồng giao diện".
+     Measured on the live guide (dark, 1120x900):
+       #guide-inner-content  box 0,56,240,844
+                             border-radius 18px  (ALL FOUR corners)
+                             box-shadow includes
+                               inset 0 0 0 1px rgba(255,255,255,0.16)
+     The rail sits directly under a masthead that is itself rounded 18px on its
+     two bottom corners. Two rounded rectangles stacked with a bright 1px inset
+     ring around the lower one is exactly a "UI nested inside a UI" read: the
+     ring draws a full frame that nothing in YouTube's own design has, and the
+     two rounded corners meet at the same seam with page-black wedges between
+     them.
+     The rail is flush with the viewport's left/top edges, so the honest shape
+     is: square where it meets the header and the screen edge, rounded only on
+     the outside edge. And no full-perimeter ring on a 844px-tall panel - a rim
+     belongs on a floating capsule, not on a full-height column. */
+  /* v1.3.17 - radius on the top-right corner removed as well.
+     Measured on the scrolled rail at 237px: the pixel column at x=228..236 ran
+     19 -> 24 -> 30 -> 33 -> 42 down the diagonal, i.e. the border still traced
+     the 18px arc even with the top inset highlight gone, because the arc IS the
+     corner of the element. The rail touches the header at the top, so that
+     corner is not a free edge - only the two lower corners are. */
+  /* v1.3.23 - NO radius at all on this panel.
+     With the rail scrolled to its end the bottom-right corner is visible in the
+     zoomed capture: an 18px arc at y=1000 that makes the column look like it
+     stops mid-page, with the footer links continuing underneath it on bare
+     page background. The rail is flush to the left edge, flush to the header
+     and flush to the bottom of the viewport, so it is not a floating card and
+     has no corner to round. Square is the honest shape, and it removes the
+     last thing that could read as a frame. */
+  border-radius: 0;
+  /* v1.3.17 - the TOP inset highlight is gone, and it was the last piece of the
+     "lồng giao diện" frame. Measured on the rail:
+       inset 0 1px 0 rgba(255,255,255,0.27)
+     is a 240px-wide 1px line along the top edge; with border-radius
+     0 18px 18px 0 it follows the 18px curve at the top-right corner, so it drew
+     a bright arc hanging inside the column right under the header - the
+     "cố định ở giữa cột" artifact. The rail is flush against the header, so it
+     has no free top edge to highlight; only the outer (right) edge is exposed. */
+  /* v1.3.19 - NO inset rim at all on this panel.
+     Measured on the live rail: column x=239 read 57/255 along the FULL height
+     while the panel itself was 14 and the page beside it 15. That single 1px
+     line was 4x brighter than either neighbour, so it read as a drawn frame -
+     and where it met the 18px bottom corner it closed into a rectangle inside
+     the column. That is the "lồng" that survived every earlier pass: the ring,
+     the scrollbar and the top arc were removed, and this edge was still
+     drawing an outline.
+     A full-height column flush to the window edge has no outer contour to
+     describe; the glass material itself is the separation. Only the drop
+     shadows stay (they are soft and outside the box). */
+  /* v1.3.22 - the ambient drop shadow is gone from this panel, and THAT is what
+     was still drawing a frame.
+     Measured with the rail scrolled to its end, row y=700:
+       x=232..236 -> 27   (panel fill)
+       x=237..239 -> 29, 33, 38   (brightening)
+       x=240..     -> 15   (page)
+     A 0 14px 40px black shadow cannot brighten anything, so the brightening is
+     the shadow BLURRING THE PAGE BACKGROUND out from under the panel edge - it
+     pulled a 15-level page up to 38 across a 3px band, which reads as a drawn
+     outline running the panel's full height.
+     A full-height column that is flush to the window edge does not float, so it
+     has no business casting an ambient shadow. The contact shadow stays (it is
+     a 3px offset below the box, not a halo around it). */
+  box-shadow: 0 2px 3px var(--ylg-shadow-contact);
+  /* v1.3.21 - THE ACTUAL "lồng" CAUSE, measured at last.
+     YouTube sizes #guide-inner-content to `calc(100vh - 56px)`, and the guide
+     content is TALLER than that:
+        panel   y=56  height 944  ends at 1000  (the viewport bottom)
+        content        height 1067               -> 123px overflow
+        #footer y=905  height 219  ends at 1124  -> 124px BELOW the panel
+     Everything past y=1000 therefore renders with NO glass behind it: the
+     last sections and the whole footer block paint straight onto the page
+     background. In a screenshot that reads as the panel stopping mid-column
+     with a rounded bottom edge and dark content continuing under it - which is
+     exactly what was reported, three times, and what every previous pass
+     failed to fix because I kept editing the panel's BORDER instead of asking
+     where its box actually ends.
+     The panel must cover the full scrollable content, not just the viewport.
+     height:auto + max-height lets it grow to the content and still never
+     exceed the screen, so the last row of text always sits on glass. */
+  height: auto;
+  min-height: 100%;
+  max-height: calc(100vh - 56px);
+  box-sizing: border-box;
+}
+html[data-ylg-enabled="true"] #guide-inner-content.ylg-glass {
+  overflow-x: hidden;
+  /* v1.3.17 - "lồng giao diện vẫn bị cố định ở giữa cột headbar khi cuộn".
+     Measured on the scrolled guide at 237x362: a 1px line at y=16 measured
+     78/255 across the FULL width (x=0..230 all 78), while the rail around it is
+     17-20. That is the masthead's bottom rim, not guide content - it is drawn by
+     the header's inset highlight and stays put while the rail scrolls under it,
+     so it reads as a fixed bar cutting the column.
+     Two consequences to fix: the rail must not start flush against that rim
+     (its first row would sit on the line), and the header's bottom highlight
+     must not be drawn where the rail is behind it. A small top inset plus a
+     top mask on the rail solves both without touching the header's own look on
+     pages where there is no rail. */
+  padding-top: 2px;
+}
+/* Fade the rail's top edge so the header's rim never lands on a hard content
+   edge, and nothing appears to be pinned mid-column. */
+html[data-ylg-enabled="true"] #guide-inner-content.ylg-glass {
+  /* v1.3.24 - mask-size was `auto` with mask-repeat:repeat, so the gradient was
+     NOT guaranteed to cover the box. Measured: the footer block at the very
+     bottom (y 781..1000, "Terms / Privacy / Policy & Safety / How YouTube
+     works") rendered DARKER than the rest of the panel even though it was
+     geometrically inside it - the rail's own glass was being faded out by the
+     mask. Pin the gradient to the whole box and forbid tiling. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 6px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, black 6px, black 100%);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+html[data-ylg-enabled="true"] ytd-masthead.ylg-glass {
+  /* the rim is a highlight of the material, not a border between two panels:
+     keep the top highlight, drop the bottom one where the rail continues
+     underneath */
+  box-shadow:
+    0 2px 3px var(--ylg-shadow-contact),
+    0 14px 40px var(--ylg-shadow-ambient),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9));
+}
+/* v1.3.16 FIX - the last piece of "lồng giao diện".
+   #guide-inner-content is overflow-y:auto, and YouTube's scrollbar inside it
+   paints as a tall bright column against the glass, right at the rounded outer
+   edge. Measured in the user's own screenshot at 242px wide: columns x=226..231
+   averaged 72.9/255 against a 31.8 rail median, i.e. a 40-level brighter stripe
+   running the full height. That stripe reads as a second frame drawn inside the
+   panel. The rail must stay scrollable, so the scrollbar is hidden rather than
+   disabled - `scrollbar-width: none` + the webkit pseudo keep wheel and keyboard
+   scrolling intact. */
+html[data-ylg-enabled="true"] #guide-inner-content.ylg-glass,
+html[data-ylg-enabled="true"] ytd-guide-renderer {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html[data-ylg-enabled="true"] #guide-inner-content.ylg-glass::-webkit-scrollbar,
+html[data-ylg-enabled="true"] ytd-guide-renderer::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+/* Section dividers are 1px lines that cut the glass into stacked boxes - the
+   "UI inside a UI" read again, one level down.
+   Measured on the live guide: YouTube draws them on the BOTTOM edge, not the top
+   - `ytd-guide-section-renderer { border-bottom: 1px solid rgba(255,255,255,0.2) }`
+   on all four sections. A first attempt styled border-top and changed nothing,
+   which is why the line survived that build.
+   0.2 alpha over a dark rail is ~51/255, i.e. brighter than the glass itself and
+   a hard full-width rule. Replaced by a short inset highlight that starts after
+   the icon column, so it reads as a fold in the material instead of a border
+   between two stacked panels. */
+/* !important is required, and this was measured rather than assumed: our
+   selector matches (verified with querySelector), yet the computed border stayed
+   rgba(255,255,255,0.2). A probe stylesheet proved the cascade position - a
+   plain declaration lost, an `!important` one won (rgb(255,0,0) took effect).
+   So YouTube ships this border with `!important` from a sheet or adopted sheet
+   that CSSOM cannot enumerate here. Same collision we already handle for the
+   TINT: neutralise with the longhand, keep the intent. */
+html[data-ylg-enabled="true"] #guide-inner-content.ylg-glass ytd-guide-section-renderer {
+  border-bottom-color: rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.18)) !important;
+}
+/* v1.3.14 FIX - "sidebar vẫn bị lỗi lồng UI trắng".
+   YouTube paints the CURRENT page's row with an opaque-ish white token:
+     ytd-guide-entry-renderer[active] { background-color:
+       var(--t7f4f2c6d54836ce0) }   -> rgba(255,255,255,0.1)
+   Measured on the live guide: the active row ("Trang chủ") computed
+   rgba(255,255,255,0.1) while the 14 inactive rows computed rgba(0,0,0,0).
+   A 10% white rectangle sitting inside the glass rail is exactly the nested
+   white UI box the user reported. Neutralise it and let the accent pill below
+   carry the "you are here" signal instead. */
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] {
+  background-color: transparent;
+}
+/* Deliberately NOT neutralising [active] .yt-simple-endpoint: the measured
+   white fill sits on the row element itself, and a rule on the inner endpoint
+   would fight the accent pill below (same property, lower specificity wins by
+   accident of source order). Narrow scope = one offender, one override. */
+/* active navigation pill - painted ONCE, on the anchor only.
+   Measured DOM: ytd-guide-entry-renderer > a#endpoint.yt-simple-endpoint >
+   tp-yt-paper-item ...  The paper-item is a DESCENDANT of the anchor, so
+   matching both painted the 13% accent twice (effective ~24.6%) plus a double
+   inset rim. Dropping the paper-item selectors fixes the doubling.
+   v1.3.14: the selector list now also matches .yt-simple-endpoint and the bare
+   anchor, not just a#endpoint. Reason: the row's white fill is neutralised just
+   above, so if this pill failed to match we would delete the ONLY remaining
+   "current page" indicator - an accessibility regression, and a silent one.
+   Matching by class + attribute + id keeps the indicator alive across YouTube's
+   DOM revisions (the id has changed shape before). */
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] a,
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] .yt-simple-endpoint,
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] a,
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] .yt-simple-endpoint {
+  background-color: color-mix(in srgb, var(--ylg-accent) 13%, transparent);
+  border-radius: var(--ylg-radius-s);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-accent) 30%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.5));
+  transition: background-color var(--ylg-dur-fast) var(--ylg-ease-glass);
+}
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer a:hover,
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer .yt-simple-endpoint:hover {
+  background-color: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.5));
+  border-radius: var(--ylg-radius-s);
+}
+
+/* ------------------------------------------------------------------ */
+/* FILTER CHIPS - pills                                                */
+/* ------------------------------------------------------------------ */
+html[data-ylg-enabled="true"] yt-chip-cloud-chip-renderer.ylg-glass,
+html[data-ylg-enabled="true"] ytd-chip-renderer.ylg-glass {
+  border-radius: var(--ylg-radius-l);
+}
+html[data-ylg-enabled="true"] yt-chip-cloud-chip-renderer[aria-selected="true"],
+html[data-ylg-enabled="true"] ytd-chip-renderer[aria-selected="true"] {
+  background-color: color-mix(in srgb, var(--ylg-accent) 15%, transparent);
+}
+
+/* ------------------------------------------------------------------ */
+/* VIDEO CARDS - rounded thumbnails + hover elevation (NO glass)       */
+/* ------------------------------------------------------------------ */
+html[data-ylg-enabled="true"] .ylg-card ytd-thumbnail a#thumbnail,
+html[data-ylg-enabled="true"] .ylg-card ytd-thumbnail,
+html[data-ylg-enabled="true"] .ylg-card #dismissible ytd-thumbnail {
+  border-radius: var(--ylg-radius-s);
+  overflow: hidden;
+}
+html[data-ylg-enabled="true"] .ylg-card ytd-rich-grid-media-renderer,
+html[data-ylg-enabled="true"] .ylg-card ytd-video-renderer {
+  border-radius: var(--ylg-radius-s);
+}
+/* never distort or glass the thumbnail image itself */
+html[data-ylg-enabled="true"] .ylg-card img.yt-core-image,
+html[data-ylg-enabled="true"] .ylg-card img {
+  filter: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* WATCH PAGE - glass on surrounding info only; player untouched      */
+/* ------------------------------------------------------------------ */
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass,
+html[data-ylg-enabled="true"] #secondary.ylg-glass,
+html[data-ylg-enabled="true"] ytd-playlist-panel-renderer.ylg-glass,
+html[data-ylg-enabled="true"] ytd-comments.ylg-glass {
+  border-radius: var(--ylg-radius);
+  padding: var(--ylg-radius-s); /* breathing room inside the glass panel */
+  /* Bounded expensive blur. These four are the largest glass surfaces on the
+     page - the comments shell alone measured 1174x3555px. A backdrop-filter on
+     a layer that tall is re-blurred for every scroll frame, so it is capped
+     here: panels keep the tint, rim and shadow (the look) but never carry a
+     full-height blur (the cost). Anything genuinely floating stays filtered. */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Exercise the same guard for panels that arrive without our class */
+html[data-ylg-enabled="true"] ytd-comments,
+html[data-ylg-enabled="true"] ytd-watch-metadata {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* comments: glass shell, native rows (no per-comment filters) */
+html[data-ylg-enabled="true"] ytd-comments.ylg-glass ytd-comment-thread-renderer {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+/* hard safety: the player SURFACE and its overlay containers are never
+   filtered/blurred, and never clipped away from the exact video rectangle.
+   Individual leaf controls are styled in glass-player.css - they are small
+   pills, not containers, so they cannot affect video geometry or pointer
+   routing. Containers must stay pristine. */
+html[data-ylg-enabled="true"] #movie_player,
+html[data-ylg-enabled="true"] .html5-video-player,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom,
+html[data-ylg-enabled="true"] .ytp-chrome-top,
+html[data-ylg-enabled="true"] .ytp-chrome-controls,
+html[data-ylg-enabled="true"] .ytp-caption-segment,
+html[data-ylg-enabled="true"] .ytp-player-content {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+/* only the player surface itself must stay an exact rectangle */
+html[data-ylg-enabled="true"] #movie_player,
+html[data-ylg-enabled="true"] .html5-video-player,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom,
+html[data-ylg-enabled="true"] .ytp-chrome-top {
+  border-radius: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* POPOVERS / MENUS / TOASTS - floating glass                          */
+/* ------------------------------------------------------------------ */
+html[data-ylg-enabled="true"] tp-yt-iron-dropdown.ylg-glass,
+html[data-ylg-enabled="true"] .ytd-popup-container .ylg-glass {
+  border-radius: var(--ylg-radius-s);
+}
+
+/* ------------------------------------------------------------------ */
+/* CONTRAST GUARDS - keep text readable over glass in both themes      */
+/* ------------------------------------------------------------------ */
+html[data-ylg-enabled="true"][data-ylg-theme="dark"] .ylg-glass,
+html[data-ylg-enabled="true"][data-ylg-theme="auto"] .ylg-glass {
+  text-shadow: none;
+}
+html[data-ylg-enabled="true"] .ylg-glass a,
+html[data-ylg-enabled="true"] .ylg-glass yt-formatted-string {
+  /* inherit YouTube color logic; only ensure inherited alpha doesn't stack
+     over translucent fills in ways that reduce contrast */
+  opacity: 1;
+}
+
+/* Keyboard focus belongs to the actual control, not a whole reading panel.
+   Solid resolved-theme foreground provides a ring without relying on glow.
+   Outlines do not add borders/padding or change the native control hitbox. */
+html[data-ylg-enabled="true"] .ylg-card:focus-within {
+  outline: 2px solid var(--ylg-control-focus, var(--ylg-chrome-text, CanvasText));
+  outline-offset: 2px;
+  border-radius: var(--ylg-radius-s);
+}
+html[data-ylg-enabled="true"] .ylg-chip:focus-visible,
+html[data-ylg-enabled="true"] .ylg-chip :focus-visible,
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer a:focus-visible,
+html[data-ylg-enabled="true"] .ylg-glass:is([data-ylg-level="panel"], [data-ylg-level="floating"]) :is(a[href], button, input, textarea, [role="button"], [role="menuitem"], [tabindex]):focus-visible {
+  outline: 2px solid var(--ylg-control-focus, var(--ylg-chrome-text, CanvasText));
+  outline-offset: -2px; /* inside the hitbox, safe at scroll/menu clip edges */
+}
+@media (forced-colors: active) {
+  html[data-ylg-enabled="true"] {
+    --ylg-control-focus: CanvasText;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* SEARCH BOX - the 2024/2025 DOM (ytSearchboxComponent*)              */
+/* ------------------------------------------------------------------ */
+/* YouTube migrated the search field from ytd-searchbox (old) to
+   yt-searchbox / ytSearchboxComponent* custom elements. The adapter could not
+   tag them, so the field had NO glass at all and the page showed through as a
+   flat gradient band across the masthead (live-verified defect, screenshot 3).
+   These rules give the new DOM the same treatment as the old one, driven by the
+   real container elements rather than a class we hope gets applied. */
+html[data-ylg-enabled="true"] .ytSearchboxComponentInputBox,
+html[data-ylg-enabled="true"] yt-searchbox .ytSearchboxComponentInputBox {
+  background-color: var(--ylg-search-scrim);
+  -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(var(--ylg-saturate, 1.5));
+  backdrop-filter: blur(var(--ylg-blur)) saturate(var(--ylg-saturate, 1.5));
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.55)),
+    inset 0 0 0 1px rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.16)),
+    0 1px 2px var(--ylg-shadow-contact);
+  transition:
+    background-color var(--ylg-dur-fast) var(--ylg-ease-glass),
+    box-shadow var(--ylg-dur-fast) var(--ylg-ease-glass);
+}
+html[data-ylg-enabled="true"] .ytSearchboxComponentInputBox:focus-within {
+  /* Focus changes the ring only; keep the reading surface stable. */
+  background-color: var(--ylg-search-scrim);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.8)),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-accent) 45%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--ylg-accent) 22%, transparent),
+    0 2px 6px var(--ylg-shadow-contact),
+    0 10px 28px var(--ylg-shadow-ambient);
+}
+/* the search button sits inside the pill; let it share the surface */
+html[data-ylg-enabled="true"] .ytSearchboxComponentSearchButton {
+  background-color: transparent;
+  border-radius: 0 999px 999px 0;
+}
+html[data-ylg-enabled="true"] .ytSearchboxComponentSearchButton:hover {
+  background-color: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.3));
+}
+/* kill YouTube's own opaque fills that would sandwich our glass */
+html[data-ylg-enabled="true"] .ytSearchboxComponentInputBox,
+html[data-ylg-enabled="true"] yt-searchbox,
+html[data-ylg-enabled="true"] #center.ytd-masthead { border: 0; }
+
+/* P0 cascade guards: the ambient compatibility rules in glass-optics.css
+   restore material fills with !important. Match their existing surface anchors
+   (not geometry) so resolved-theme scrims also win with Ambient Light enabled.
+   The input box is still the only search painter; its overlay button is untouched. */
+html[data-ylg-enabled="true"][data-ylg-theme] #masthead-container#masthead-container ytd-masthead.ylg-glass {
+  background-color: transparent !important;
+  background-image: linear-gradient(var(--ylg-chrome-scrim), var(--ylg-chrome-scrim)) !important;
+}
+html[data-ylg-enabled="true"][data-ylg-theme] #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox {
+  background-color: var(--ylg-search-scrim) !important;
+  background-image: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* DESCRIPTION PANEL - must not paint a second, squarer surface        */
+/* ------------------------------------------------------------------ */
+/* ytd-watch-metadata carries our 18px glass. Its inner #description paints
+   YouTube's own rgba(255,255,255,0.1) at 12px radius, which reads as a hard
+   rectangle floating inside the rounded card, and the chip row overlaps its top
+   edge (live-verified defect, screenshot 2). Flatten the inner surface and give
+   the chips their own separation. */
+/* --- v1.2.1: the description box YouTube paints INSIDE the glass card ------
+   Reproduced at a 1126px viewport with the description expanded. The hard-
+   edged rectangle was not #description itself (which we already made
+   transparent) but DIV#description.item, one level deeper:
+     DIV#description.item  bg rgba(255,255,255,0.10)  radius 12px  1174x345
+   sitting inside ytd-watch-metadata's 17px card. Two different corner radii,
+   one of them visibly square against the card - that is the artifact.
+   Neutralised on the element, and the radius reset so it cannot disagree with
+   the parent even if YouTube re-introduces a tint. */
+html[data-ylg-enabled="true"] ytd-watch-metadata #description.item,
+html[data-ylg-enabled="true"] ytd-watch-metadata #description,
+html[data-ylg-enabled="true"] ytd-watch-metadata .item.style-scope.ytd-watch-metadata,
+html[data-ylg-enabled="true"] ytd-watch-metadata #bottom-row,
+html[data-ylg-enabled="true"] ytd-watch-metadata #above-the-fold {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* the social-link / licence rows live in their own sections - keep them bare */
+html[data-ylg-enabled="true"] ytd-watch-metadata ytd-video-description-infocards-section-renderer,
+html[data-ylg-enabled="true"] ytd-watch-metadata ytd-structured-description-content-renderer,
+html[data-ylg-enabled="true"] ytd-watch-metadata #structured-description,
+html[data-ylg-enabled="true"] ytd-watch-metadata #social-links {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #description,
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #description-inline-expander,
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass ytd-text-inline-expander {
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #description .fill,
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass yt-interaction .fill {
+  background-color: transparent;
+}
+/* the chip row is a sibling of #description; keep it clear of the text block */
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #top-row,
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #bottom-row {
+  border-radius: inherit;
+}

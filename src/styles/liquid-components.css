@@ -1,0 +1,141 @@
+/* One glass surface per chip/searchbox. Text and glyphs are never filtered. */
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"],
+html[data-ylg-enabled="true"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox {
+  background-color: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.65)) !important;
+  background-image: linear-gradient(155deg, rgba(255,255,255,calc(var(--ylg-highlight) * 0.10)), transparent 42%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,calc(var(--ylg-highlight) * 0.8)),
+    inset 0 -1px 0 rgba(15,23,42,calc(var(--ylg-highlight) * 0.25)),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-highlight) * 100%), transparent),
+    0 2px 5px rgba(0,0,0,.12) !important;
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1) !important;
+  backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1) !important;
+}
+html[data-ylg-enabled="true"][data-ylg-lens="1"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"],
+html[data-ylg-enabled="true"][data-ylg-lens="1"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox {
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) var(--ylg-interface-lens, saturate(1)) saturate(1.1) !important;
+  backdrop-filter: blur(var(--ylg-blur-s)) var(--ylg-interface-lens, saturate(1)) saturate(1.1) !important;
+}
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"]:is([selected], [aria-selected="true"]) {
+  background-color: var(--yt-sys-color-baseline--text-primary, CanvasText) !important;
+}
+/* The sidebar is attached navigation: no scaling, no large scatter pool or
+   mask-created horizontal stripe, and no independently painted nested panel. */
+html[data-ylg-enabled="true"] :is(#guide, #guide-inner-content).ylg-glass,
+html[data-ylg-enabled="true"] :is(#guide, #guide-inner-content).ylg-glass:is(:hover, :focus-within) {
+  transform: none !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+  border-radius: 0 !important;
+  background-image: linear-gradient(var(--ylg-chrome-scrim), var(--ylg-chrome-scrim)) !important;
+  box-shadow: inset -1px 0 0 var(--ylg-rim-light) !important;
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) !important;
+  backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) !important;
+}
+html[data-ylg-enabled="true"] :is(#guide, #guide-inner-content).ylg-glass::before,
+html[data-ylg-enabled="true"] :is(#guide, #guide-inner-content).ylg-glass::after {
+  content: none !important;
+  display: none !important;
+}
+html[data-ylg-enabled="true"] #guide.ylg-glass:has(#guide-inner-content.ylg-glass) {
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Small red marker plus a separate larger clear lens on progress hover.
+   Native thumb geometry, transforms and seeking handlers remain authoritative. */
+html[data-ylg-enabled="true"] .ytp-scrubber-button {
+  background: transparent !important;
+  box-shadow: none !important;
+  /* YouTube hides the marker with scale(0) outside track hover. Keep this
+     visual marker visible; the parent container still positions the seek time. */
+  transform: scale(1) !important;
+}
+html[data-ylg-enabled="true"] .ytp-scrubber-button::before {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  left: 50%; top: 50%;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: #ff2337;
+  z-index: 1;
+}
+html[data-ylg-enabled="true"] .ytp-scrubber-button::after {
+  content: "";
+  position: absolute;
+  width: 44px; height: 28px;
+  left: 50%; top: 50%;
+  margin: -14px 0 0 -22px;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(150deg, rgba(255,255,255,.08), transparent 45%), rgba(255,255,255,.035);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,calc(var(--ylg-highlight) * .7)), inset 0 0 0 1px rgba(220,225,245,.24), inset 1px 0 0 rgba(255,80,100,.22), inset 0 -1px 0 rgba(198,220,255,.16), 0 2px 6px rgba(0,0,0,.2);
+  -webkit-backdrop-filter: blur(0.3px);
+  backdrop-filter: blur(0.3px);
+  transition: opacity 180ms ease-out;
+}
+html[data-ylg-enabled="true"] .ytp-progress-bar-container:hover .ytp-scrubber-button::after,
+html[data-ylg-enabled="true"] .ytp-progress-bar:focus-visible .ytp-scrubber-button::after,
+html[data-ylg-enabled="true"] .ytp-scrubber-button:is(:hover, :active)::after {
+  opacity: 1;
+}
+html[data-ylg-enabled="true"] .ytp-progress-bar-container:hover .ytp-scrubber-button::before,
+html[data-ylg-enabled="true"] .ytp-progress-bar:focus-visible .ytp-scrubber-button::before,
+html[data-ylg-enabled="true"] .ytp-scrubber-button:is(:hover, :active)::before {
+  opacity: 0;
+}
+html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-scrubber-button::after {
+  -webkit-backdrop-filter: url(#ylg-lens-seek);
+  backdrop-filter: url(#ylg-lens-seek);
+}
+html[data-ylg-enabled="true"] .ytp-play-progress { background: #ff2337 !important; }
+/* Shared Specular Highlight also drives the player capsule rims. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,calc(var(--ylg-highlight) * .8)),
+    inset 0 -1px 0 rgba(198,220,255,calc(var(--ylg-highlight) * .33)),
+    inset 0 1px 0 rgba(255,228,214,calc(var(--ylg-lens-ab, 0) * var(--ylg-highlight) * .5)),
+    inset 0 -1px 0 rgba(196,222,255,calc(var(--ylg-lens-ab, 0) * var(--ylg-highlight) * .45)),
+    0 2px 4px rgba(0,0,0,.25) !important;
+}
+/* The right dock had an extra full-strength dispersion ring above the common
+   material. All capsules now use the same shared directional rim instead. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls::after {
+  content: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"],
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] :is(#guide, #guide-inner-content).ylg-glass {
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass[data-ylg-level="chip"],
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] :is(#guide, #guide-inner-content).ylg-glass,
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-scrubber-button::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+@media (forced-colors: active), (prefers-reduced-transparency: reduce) {
+  html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="chip"],
+  html[data-ylg-enabled="true"] :is(#guide, #guide-inner-content).ylg-glass,
+  html[data-ylg-enabled="true"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"] .ytp-scrubber-button::after {
+    background: Canvas !important;
+    color: CanvasText !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] .ytp-scrubber-button::after { transition: none; }
+}
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ytp-scrubber-button::after { transition: none; }

@@ -1,0 +1,57 @@
+/* ============================================================================
+   YouTube Liquid Glass - glass-fallback.css
+   Three degradation paths: no-backdrop-filter, weak device (lowfx), forced-colors.
+   Loaded LAST among engine CSS so overrides win at equal specificity.
+   ============================================================================ */
+
+/* ---- Path 1: engine without backdrop-filter support ----------------------- */
+/* Raise fill alpha (min() clamps the boost), drop blur entirely. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html[data-ylg-enabled="true"] .ylg-glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-image:
+      linear-gradient(165deg,
+        rgba(var(--ylg-surface-tint-light), min(1, calc(var(--ylg-opacity) * 1.9))) 0%,
+        rgba(var(--ylg-surface-tint-light), min(1, calc(var(--ylg-opacity) * 1.45))) 45%,
+        rgba(var(--ylg-surface-tint-light), min(1, calc(var(--ylg-opacity) * 1.7))) 100%);
+  }
+}
+
+/* ---- Path 2: weak device (html[data-ylg-lowfx="1"], set by bootstrap) ----- */
+html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass {
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.2);
+  backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.2);
+}
+html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass[data-ylg-level="hero"] {
+  -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(1.25);
+  backdrop-filter: blur(var(--ylg-blur)) saturate(1.25);
+}
+html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass::before,
+html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass::after {
+  display: none; /* skip sheens/scatter on weak devices */
+}
+html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass[data-ylg-level="floating"] {
+  animation: none; /* no settle animation */
+}
+/* lowfx also caps advanced refraction (engine never enables data-ylg-advanced-ok) */
+
+/* ---- Path 3: forced colors (Windows High Contrast) ------------------------ */
+@media (forced-colors: active) {
+  html[data-ylg-enabled="true"] .ylg-glass {
+    background: Canvas !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid CanvasText;
+    forced-color-adjust: auto;
+  }
+  html[data-ylg-enabled="true"] .ylg-glass::before,
+  html[data-ylg-enabled="true"] .ylg-glass::after {
+    display: none !important;
+  }
+  html[data-ylg-enabled="true"] .ylg-glass:focus-visible {
+    outline: 2px solid Highlight;
+    box-shadow: none !important;
+  }
+}

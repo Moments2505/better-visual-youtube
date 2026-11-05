@@ -1,0 +1,43 @@
+/* Stable anchors on entry AND exit prevent the legacy hover-only origin from
+   snapping back to centre while a tall panel is still shrinking. */
+html[data-ylg-enabled="true"][data-ylg-optics="on"] .ylg-glass[data-ylg-level="panel"] {
+  /* Rest-state timing governs pointer exit. Ease-in/out avoids the fast initial
+     collapse produced by reusing the entry's front-loaded ease-out curve. */
+  transition: transform 480ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 360ms ease-in-out, background-color 360ms ease-in-out;
+}
+html[data-ylg-enabled="true"][data-ylg-optics="on"] :is(ytd-watch-metadata, ytd-comments).ylg-glass {
+  transform-origin: left top;
+}
+html[data-ylg-enabled="true"][data-ylg-optics="on"] #secondary.ylg-glass {
+  transform-origin: right top;
+}
+html[data-ylg-enabled="true"][data-ylg-optics="on"] .ylg-glass[data-ylg-level="panel"]:is(:hover, :focus-within) {
+  transition: transform 360ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 280ms ease-out, background-color 280ms ease-out;
+  transform: scale(calc(1 + (var(--ylg-hover-scale, 1.028) - 1) * 0.4));
+}
+html[data-ylg-enabled="true"][data-ylg-optics-magnify="0"] .ylg-glass[data-ylg-level="panel"]:is(:hover, :focus-within) {
+  transform: none;
+}
+/* Ambient is controlled through the existing Liquid Glass popup section.
+   Preserve the renderer and stored upstream preferences; remove duplicate UI. */
+html[data-ylg-enabled="true"] .ytp-ambientlight-settings-button,
+html[data-ylg-enabled="true"] .ytpa-ambientlight-settings-menu {
+  display: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-glass[data-ylg-level="panel"] {
+  transition: none !important;
+  transform: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ytp-chrome-bottom .ytp-button::before,
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ytp-chrome-bottom .ytp-button::after,
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ytp-chrome-bottom .ytp-time-display::before {
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="panel"] {
+    transition: none !important;
+    transform: none !important;
+  }
+}

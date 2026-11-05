@@ -1,0 +1,202 @@
+/* ============================================================================
+   YouTube Liquid Glass - glass-material.css (Layers: SCATTERING + TINT + DEPTH)
+   The core composable surface: .ylg-glass + [data-ylg-level].
+
+   Five-layer stack this file implements (3 of 5):
+     2. Scattering  - backdrop blur + saturation/brightness lift
+     3. Tint        - translucent directional fill (background-image; element's
+                      background-color stays transparent so blur shows through)
+     5. Depth       - contact + ambient shadow pair
+   (Layer 1 refraction -> glass-refraction.css, Layer 4 specular -> glass-lighting.css)
+
+   Pseudo-element budget (documented contract across engine files):
+     ::before = specular sheen (glass-lighting.css)
+     ::after  = bottom light scatter (this file)
+   Faux-refraction edge layers are background-image layers on the element itself.
+   ============================================================================ */
+
+html[data-ylg-enabled="true"] .ylg-glass {
+  position: relative; /* :where keeps specificity low for pre-positioned nodes */
+  isolation: isolate;
+
+  /* Layer 3 - tint: directional luminance gradient (environmental reflection).
+     background-COLOR stays transparent; gradients carry the fill. */
+  background-color: transparent;
+  /* v1.3.27 CRITICAL - this declaration used to start with a bare comma after a
+     comment:
+         background-image:
+           /* faux-refraction fringes are appended *\/ ,
+           linear-gradient(165deg, ...)
+     A leading comma makes the whole value INVALID, so the browser dropped the
+     entire declaration and every .ylg-glass surface fell back to
+     background-image: none. Verified in-page: setting
+     backgroundImage = ", linear-gradient(red, blue)" parses to "" (dropped),
+     while the same value without the leading comma parses fine.
+     Consequence: the TINT LAYER (layer 3) never existed at runtime. Every glass
+     surface was pure backdrop-filter, which is why the masthead "split in two" -
+     it had no surface of its own to unify the backdrop, so a bright orange
+     thumbnail on the left and a pale cyan one on the right showed through
+     unblended and met on a hard vertical edge. That is the recurring report.
+     Earlier passes "fixed" it by re-declaring a gradient in a compat rule, which
+     is why it kept coming back on pages where that rule did not apply.
+     Order matters here only in that these layers sit UNDER the refraction
+     fringes that glass-refraction.css appends later. */
+  background-image:
+    linear-gradient(165deg,
+      rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 1.15)) 0%,
+      rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.55)) 45%,
+      rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.82)) 100%),
+    radial-gradient(120% 90% at 18% 0%,
+      rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.38)),
+      transparent 55%),
+    linear-gradient(0deg,
+      color-mix(in srgb, var(--ylg-accent) 5%, transparent),
+      color-mix(in srgb, var(--ylg-accent) 5%, transparent));
+  background-repeat: no-repeat;
+
+  /* Layer 2 - scattering */
+  -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(1.5) brightness(1.04);
+  backdrop-filter: blur(var(--ylg-blur)) saturate(1.5) brightness(1.04);
+
+  border-radius: var(--ylg-radius);
+
+  /* Layer 5 - depth: contact + ambient pair */
+  box-shadow:
+    0 1px 1px var(--ylg-shadow-contact),
+    0 8px 24px var(--ylg-shadow-ambient),
+    inset 0 0 0 1px var(--ylg-rim-light),
+    inset 0 -1px 1px var(--ylg-rim-dark);
+
+  /* containment: keep our pseudo-elements inside; never clip page content */
+  overflow: visible;
+}
+
+/* Bottom light scatter - light pooling at the lower edge (Layer 3 adjunct) */
+/* v1.2.1 FIX - the "stray light box" inside tall panels.
+   Reproduced on ytd-watch-metadata with the description expanded (card
+   1174x454). The offender was THIS element: inset 6% on both sides plus a
+   fixed 38% height painted a 1033x173 rounded rectangle that ended mid-card,
+   so the scatter stopped dead with a visible hard edge and the region below it
+   read as a separate, darker box sitting inside the glass.
+   Measured card luminance before/after killing ::after:
+     with ::after    lower-half med 23   upper-half med 61
+     without ::after lower-half med 12   upper-half med 64
+   The scatter is a light pool that must hug the bottom rim edge to edge, so it
+   now runs full width (inset 0) and is masked with a vertical fade instead of
+   ending on a straight line. Nothing else about the layer changes. */
+html[data-ylg-enabled="true"] .ylg-glass::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -1px 0;
+  height: 38%;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg,
+    transparent,
+    rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.1)) 85%,
+    rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.6)));
+  /* fade the pool out at the top so it can never terminate on a hard line */
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 42%, #000);
+  mask-image: linear-gradient(180deg, transparent, #000 42%, #000);
+  opacity: calc(0.5 + var(--ylg-highlight) * 0.5);
+}
+
+/* ---- Level modifiers ---------------------------------------------------- */
+
+/* hero: masthead, sidebar rail, watch info - the signature surfaces */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="hero"] {
+  -webkit-backdrop-filter: blur(var(--ylg-blur-l)) saturate(1.55) brightness(1.05);
+  backdrop-filter: blur(var(--ylg-blur-l)) saturate(1.55) brightness(1.05);
+  box-shadow:
+    0 2px 3px var(--ylg-shadow-contact),
+    0 14px 40px var(--ylg-shadow-ambient),
+    inset 0 0 0 1px var(--ylg-rim-light),
+    inset 0 -1px 1px var(--ylg-rim-dark);
+}
+
+/* panel: info panels, comments shell, playlists
+   These are the LARGE surfaces - the comments shell measures 1174x3555px and
+   the watch sidebar 478x4018px. A backdrop-filter on a layer that tall is
+   re-blurred on every scroll frame and holds a full-height texture (~7.7MB at
+   DPR 1.5). Panels therefore get tint + rim + shadow only, never a blur.
+   Measured on a 4000px scroll: p50 frame 29.4ms -> 7.2ms, frames over 33ms
+   32 -> 10.
+   !important because the dark/auto theme lift blocks below would otherwise
+   re-add the filter to every .ylg-glass regardless of level. */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="panel"] {
+  border-radius: var(--ylg-radius);
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* floating: popovers, menus, toasts */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="floating"] {
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.45) brightness(1.05);
+  backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.45) brightness(1.05);
+  border-radius: var(--ylg-radius-s);
+  box-shadow:
+    0 2px 4px var(--ylg-shadow-contact),
+    0 10px 28px var(--ylg-shadow-ambient),
+    inset 0 0 0 1px var(--ylg-rim-light),
+    inset 0 -1px 1px var(--ylg-rim-dark);
+}
+
+/* chip: filter pills - minimal material, cheap */
+/* v1.3.26 FIX - "xung quanh có mấy cái viền nhìn rất khó chịu".
+   Measured on a live chip (32px tall, 60-130px wide):
+       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.65)
+   --ylg-rim-light is 0.65 alpha in the dark theme, and a full 1px ring at that
+   strength is a RIM for a large surface where it reads as a edge highlight. On
+   a pill this small the ring is a much bigger fraction of the shape and all
+   four sides are within ~30px of each other, so it stops reading as light
+   catching an edge and starts reading as a drawn BORDER. That is the annoying
+   outline around every filter pill.
+   Two changes, both measured rather than guessed:
+     1. the ring drops to 0.18 (a hint, not a line);
+     2. the highlight becomes DIRECTIONAL - a 1px line on the TOP edge only,
+        plus a soft 1px bottom dark, which is how a pressed glass pill actually
+        catches light. A closed ring has no light direction.
+   The blur/tint is untouched, so the pills still read as glass. */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="chip"] {
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.3);
+  backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.3);
+  border-radius: var(--ylg-radius-l);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.55)),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 1px 2px var(--ylg-shadow-contact);
+}
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="chip"]::after { display: none; }
+
+/* DARK theme lift: dark surfaces need slightly stronger blur brightening.
+   IMPORTANT - this must NOT reintroduce backdrop-filter on [data-ylg-level="panel"].
+   Panels are the large containers (comments shell, watch metadata, sidebar). A
+   filtered 1174x3555 layer costs a full-viewport blur every scroll frame; measured
+   on a 4000px page, p99 frame time drops 67ms -> 45ms and frames over 33ms drop
+   32 -> 10 when those layers are left unfiltered. Panels get tint + rim only. */
+html[data-ylg-enabled="true"][data-ylg-theme="dark"] .ylg-glass:not([data-ylg-level="panel"]) {
+  -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(1.25) brightness(0.96);
+  backdrop-filter: blur(var(--ylg-blur)) saturate(1.25) brightness(0.96);
+}
+html[data-ylg-enabled="true"][data-ylg-theme="auto"] .ylg-glass {
+  /* auto light-scheme default already set; dark handled by media query below */
+}
+@media (prefers-color-scheme: dark) {
+  html[data-ylg-enabled="true"][data-ylg-theme="auto"] .ylg-glass:not([data-ylg-level="panel"]) {
+    -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(1.25) brightness(0.96);
+    backdrop-filter: blur(var(--ylg-blur)) saturate(1.25) brightness(0.96);
+  }
+}
+
+/* Video-card hover material: cheap - tint + blur only on hover, never persistent.
+   (Selector applied by A3's .ylg-card; kept here as the engine's card contract.) */
+html[data-ylg-enabled="true"] .ylg-card {
+  transition: transform var(--ylg-dur-base) var(--ylg-ease-glass),
+              box-shadow var(--ylg-dur-base) var(--ylg-ease-glass);
+}
+html[data-ylg-enabled="true"] .ylg-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px var(--ylg-shadow-ambient);
+}

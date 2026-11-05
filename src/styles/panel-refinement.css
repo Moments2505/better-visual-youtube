@@ -1,0 +1,19 @@
+/* Directional specular on panels, driven by the popup Highlight setting.
+   Restrict light to the rim rather than a broad white wash over the content. */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="panel"] {
+  box-shadow: 0 1px 2px var(--ylg-shadow-contact), 0 8px 24px var(--ylg-shadow-ambient),
+    inset 0 1px 0 rgba(255,255,255,calc(var(--ylg-highlight) * .8 * var(--ylg-fill-strength, 1))),
+    inset 1px 0 0 rgba(255,255,255,calc(var(--ylg-highlight) * .35 * var(--ylg-fill-strength, 1))),
+    inset 0 -1px 0 rgba(180,205,240,calc(var(--ylg-highlight) * .2 * var(--ylg-fill-strength, 1))) !important;
+}
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="panel"]::before {
+  background: linear-gradient(165deg, rgba(255,255,255,calc(var(--ylg-highlight) * .10 * var(--ylg-fill-strength, 1))), transparent 24%) !important;
+}
+/* Video metadata and comments share a single outer panel material and the
+   motion rules in interface-refinement.css. Do not paint or animate a second
+   description surface inside metadata: it creates a different rim and stacks
+   an independent hover movement on top of the shared panel transition. */
+html[data-ylg-enabled="true"][data-ylg-fill="none"] .ylg-glass[data-ylg-level="panel"] {
+  background: transparent !important;
+  box-shadow: none !important;
+}

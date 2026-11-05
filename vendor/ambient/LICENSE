@@ -1,0 +1,31 @@
+MIT License
+
+Copyright (c) Wessel Kroos
+
+Upstream project: "Ambient light for YouTube" (youtube-ambilight)
+Repository: https://github.com/WesselKroos/youtube-ambilight
+Bundled version: 2.38.17 (CRX unpacked from the Chrome Web Store listing
+"Ambient light for YouTube", id paponcgjfojgemddooebbgniglhkajkj)
+
+The files in this directory are copied from that project and modified only in
+asset paths (styles/content.css, scripts/injected.js, scripts/content-main.js and
+images/* were repointed to vendor/ambient/) so they load from this extension.
+All ambient-light rendering logic is upstream work, used under the MIT license.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

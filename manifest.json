@@ -1,0 +1,95 @@
+{
+  "manifest_version": 3,
+  "name": "Better visual Youtube",
+  "short_name": "Better visual",
+  "version": "1.4.53",
+  "description": "Customize YouTube with Liquid Glass surfaces, Ambient Light and smooth interface animations. Settings stay on your device.",
+  "minimum_chrome_version": "107",
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "src/shared/settings.js",
+        "src/ambient/ambient-vendor-bridge.js",
+        "vendor/ambient/content.js",
+        "src/glass/glass-refraction.js",
+        "src/glass/glass-optics.js",
+        "src/ambient/ambient-performance.js",
+        "src/ambient/ambient-renderer.js",
+        "src/ambient/ambient-controller.js",
+        "src/ambient/ambient-lifecycle.js",
+        "src/content/selector-registry.js",
+        "src/content/dom-adapter.js",
+        "src/content/navigation.js",
+        "src/content/tint-sampler.js",
+        "src/content/player-motion.js",
+        "src/content/micro-interactions.js",
+        "src/content/description-motion.js",
+        "src/content/bootstrap.js"
+      ],
+      "css": [
+        "src/glass/glass-tokens.css",
+        "src/glass/glass-material.css",
+        "src/glass/glass-refraction.css",
+        "src/glass/glass-optics.css",
+        "src/glass/glass-lighting.css",
+        "src/glass/glass-ramp.css",
+        "src/glass/glass-motion.css",
+        "src/glass/glass-fallback.css",
+        "src/glass/glass-clear.css",
+        "src/ambient/ambient.css",
+        "src/glass/glass-player.css",
+        "src/styles/youtube.css",
+        "src/styles/responsive.css",
+        "src/styles/player-surface.css",
+        "src/styles/chip-surface.css",
+        "src/styles/interface-refinement.css",
+        "src/styles/chrome-surface.css",
+        "src/styles/liquid-components.css",
+        "src/styles/panel-refinement.css",
+        "src/styles/interaction-performance.css",
+        "src/styles/micro-interactions.css",
+        "src/styles/description-motion.css"
+      ],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "Better visual Youtube",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "32": "assets/icons/icon32.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "vendor/ambient/content.css",
+        "vendor/ambient/content-main.js",
+        "vendor/ambient/injected.js",
+        "vendor/ambient/images/*.png"
+      ],
+      "matches": [
+        "https://www.youtube.com/*"
+      ]
+    }
+  ]
+}

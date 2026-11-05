@@ -1,0 +1,184 @@
+/* Repeated chrome class matches the legacy material specificity (its two
+   :not(prev/next) exclusions each count as a class). This layer loads later.
+   Player-only refinement. Preserve the original engine checkpoint and optics;
+   reduce the painted white veil and keep the video's colours through the lens.
+   Previous/next were explicitly excluded by the original material selectors. */
+/* An ancestor fading through opacity<1 becomes a backdrop root: child lenses
+   cannot sample the video until the fade completes. Show/hide the wrappers
+   atomically; retain YouTube's opacity values and autohide state selectors. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-chrome-controls {
+  transition: none !important;
+}
+/* A short reveal starts immediately, then settles over180–260ms. SVG filter
+   attributes remain static; only the pseudo's opacity, scale and light move. */
+html[data-ylg-enabled="true"][data-ylg-lens-hover="1"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-button:not(.ytp-volume-icon)::before,
+html[data-ylg-enabled="true"][data-ylg-lens-hover="1"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::before {
+  transition: opacity 180ms ease-out, transform 260ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease-out !important;
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-hover) saturate(1.25) brightness(1.12);
+  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-hover) saturate(1.25) brightness(1.12);
+}
+html[data-ylg-enabled="true"][data-ylg-lens-hover="1"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-button:not(.ytp-volume-icon):hover::before,
+html[data-ylg-enabled="true"][data-ylg-lens-hover="1"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display:hover::before {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 rgba(198, 220, 255, 0.12);
+}
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls .ytp-button::after,
+html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > .ytp-button::after {
+  transition: opacity 180ms ease-out !important;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
+  background-color: rgba(8, 11, 16, 0.07);
+  background-image: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.015) 8%,
+    transparent 25%, transparent 85%,
+    rgba(255, 255, 255, 0.015));
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    inset 0 -1px 0 rgba(198, 220, 255, 0.20),
+    inset 1px 0 0 rgba(255, 255, 255, 0.12),
+    inset -1px 0 0 rgba(255, 255, 255, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.25);
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
+  backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
+  transition: background-color 220ms ease-out, box-shadow 220ms ease-out;
+}
+
+/* The time capsule already has its own geometry-sized lens. A 32px circular
+   hover lens in its centre creates a second rim and a visible optical bump. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::before {
+  content: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  will-change: auto !important;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display :is(.ytp-time-wrapper, .ytp-time-contents) {
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(160deg, rgba(255,255,255,calc(var(--ylg-highlight, .45) * .2)), transparent 45%);
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display:is(:hover, :focus-within)::after {
+  opacity: 1;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::after {
+  transition: none;
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::after {
+  content: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::after {
+    transition: none;
+  }
+}
+
+/* Match the existing 40px control well, including previous/next. Native
+   display/visibility, click handlers, SVG glyphs and disabled states stay native. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > :is(.ytp-prev-button, .ytp-next-button) {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  align-self: center;
+  margin-inline: 0;
+  line-height: 40px;
+  padding: 0 !important;
+}
+/* These native glyphs use a24x24 viewBox while play may use36x36. Do not let
+   the full-size SVG inherit the player's old56px line box or asymmetric
+   prev/next offsets. Centre only the direct SVG inside its40px glass well. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > :is(.ytp-prev-button, .ytp-next-button) > svg {
+  position: absolute !important;
+  width: 24px !important;
+  height: 24px !important;
+  left: 50% !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: -12px 0 0 -12px !important;
+  padding: 0 !important;
+  transform: none !important;
+  display: block;
+}
+/* Previous/next already have a40px glass well: a second32px hover lens makes
+   nested discs. Keep their native glyph, centre it, and light the outer well. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > :is(.ytp-prev-button, .ytp-next-button)::before,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > :is(.ytp-prev-button, .ytp-next-button)::after {
+  content: none !important;
+  display: none !important;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > :is(.ytp-prev-button, .ytp-next-button):hover {
+  background-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* The old SVG selectors have higher specificity than the base material above.
+   Override every lens path, including the startup fallback, so desaturation
+   cannot silently restore the grey film once the lens finishes initializing. */
+html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls {
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-player) saturate(1) brightness(0.98);
+  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-player) saturate(1) brightness(0.98);
+}
+html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display,
+html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area,
+html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > .ytp-button {
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
+  backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
+}
+html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-lens-split="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display {
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-capsule) saturate(1) brightness(0.98);
+  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-capsule) saturate(1) brightness(0.98);
+}
+html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-lens-split="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-lens-split="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-well) saturate(1) brightness(0.98);
+  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-well) saturate(1) brightness(0.98);
+}
+html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-control-lens="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > .ytp-button {
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-control) saturate(1) brightness(0.98);
+  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-control) saturate(1) brightness(0.98);
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area:hover,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area:focus-within {
+  background-color: rgba(8, 11, 16, 0.12) !important;
+}
+
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area),
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Preserve the original accessibility fallback after the late material rules. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-button::before,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-button::after,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::before {
+    transition: none !important;
+  }
+}
+@media (forced-colors: active), (prefers-reduced-transparency: reduce) {
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
+    background: Canvas !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}

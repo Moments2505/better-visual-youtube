@@ -1,0 +1,151 @@
+/* Move the native controls as one unit, including the seek rail. Keep opacity
+*/
+/* Native guide injects 200ms inline on all three layers. Keep its native
+   transform/visibility behavior, synchronizing duration and easing only. */
+html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide,
+html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide > #contentContainer,
+html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide > #scrim {
+  transition-duration: 460ms !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide,
+html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide > #contentContainer,
+html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide > #scrim {
+  transition-duration: 0s !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide,
+  html[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #contentContainer,
+  html[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #scrim {
+    transition-duration: 0s !important;
+  }
+}
+/* Move the native controls as one unit, including the seek rail. Keep opacity
+   instantaneous: fading this ancestor delays its descendants' backdrop optics.
+   Individual translate preserves any native transform used by YouTube. */
+/* Filters are static. The engine's blanket filter hint can retain full-size
+   panel sheen layers without an upcoming filter animation. Keep the effect,
+   remove only that speculative resource reservation. */
+html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"] .ylg-glass::before {
+  will-change: auto;
+}
+/* Canonical lowfx value is true (legacy fallback expected 1). Mirror its
+   inexpensive sheen/settle guards without modifying checkpoint CSS. */
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass::before,
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass::after {
+  display: none;
+}
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass[data-ylg-level="floating"] {
+  animation: none;
+}
+/* Prewarm only the bounded control strip and its small hover wells while the
+   native controls are visible. Transform/translate hints do not introduce the
+   opacity backdrop root that previously delayed optical sampling. No 3D hack
+   on the video, page, sidebar or tall comments panels. */
+html[data-ylg-enabled="true"][data-ylg-motion="on"]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom {
+  will-change: translate;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"][data-ylg-lens-hover="1"]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-button::before,
+html[data-ylg-enabled="true"][data-ylg-motion="on"][data-ylg-lens-hover="1"]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-time-display::before {
+  will-change: transform;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .html5-video-player .ytp-chrome-bottom {
+  translate: 0 0;
+  transition: translate 360ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0s, visibility 0s !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .html5-video-player.ytp-autohide .ytp-chrome-bottom {
+  /* Travel by the actual group's full height plus clearance for the native
+     bottom inset, seek thumb and rim. The player's clip hides it at the end. */
+  translate: 0 calc(100% + 32px);
+  transition: translate 560ms cubic-bezier(0.4, 0, 0.6, 1), opacity 0s, visibility 0s !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+/* Native autohide may hide the inner button row separately. Keep both layers
+   painted throughout the slide, even when YouTube sets its hidden state early.
+   No opacity fade: the glass can sample the video on the first reveal frame. */
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .html5-video-player.ytp-autohide .ytp-chrome-bottom .ytp-chrome-controls {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-chrome-bottom {
+  translate: none;
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom,
+  html[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-button::before,
+  html[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-time-display::before {
+    will-change: auto;
+  }
+  html[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.html5-video-player .ytp-chrome-bottom {
+    translate: none;
+    transition: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom,
+  html[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom .ytp-chrome-controls {
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+}
+
+/* Keep one optical pass per control. The existing capsule already bends the
+   video: stacking another SVG hover lens repaints the same moving backdrop.
+   Hover still reveals its directional light and scale with the prior timing. */
+html[data-ylg-enabled="true"][data-ylg-lens-hover="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls .ytp-button::before {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+/* During the player FLIP, keep the same tint/rim but avoid repeatedly sampling
+   live video through nested SVG filters at changing scale. The final-sized
+   optical maps are rebuilt before this marker is removed. */
+html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
+  -webkit-backdrop-filter: blur(min(var(--ylg-blur, 0px), 2px)) saturate(1) !important;
+  backdrop-filter: blur(min(var(--ylg-blur, 0px), 2px)) saturate(1) !important;
+}
+html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-button::before,
+html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::before,
+html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-scrubber-button::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-player-transition="1"][data-ylg-lowfx="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+@media (forced-colors: active), (prefers-reduced-transparency: reduce) {
+  html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+/* The volume capsule changes width while opening. A fixed SVG displacement
+   texture cannot follow that animation without map rebuilds or stretching.
+   A shallow CSS blur retains its glass fill/rim and follows native geometry. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
+  -webkit-backdrop-filter: blur(min(var(--ylg-blur, 0px), 4px)) saturate(1) !important;
+  backdrop-filter: blur(min(var(--ylg-blur, 0px), 4px)) saturate(1) !important;
+}
+/* Moving a refracting thumb resamples the video at every drag position. Use
+   the shallow glass fallback only during native dragging; release restores
+   the selected optics. No seek/volume handler or pointer coordinates change. */
+html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-progress-bar-container[data-ylg-dragging="1"] .ytp-scrubber-button::after {
+  -webkit-backdrop-filter: blur(0.3px) !important;
+  backdrop-filter: blur(0.3px) !important;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area:has(.ytp-volume-panel[data-ylg-dragging="1"]) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+@media (forced-colors: active), (prefers-reduced-transparency: reduce) {
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}

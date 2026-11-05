@@ -1,0 +1,510 @@
+/* ============================================================================
+   YouTube Liquid Glass - glass-optics.css (Layer 6: OPTICS)
+   Chromatic aberration (quang sai) + hover magnification.
+   Data attributes are owned by glass-optics.js (install/teardown).
+   Everything here is additive: with data-ylg-optics absent the surface
+   keeps the previous five-layer appearance exactly.
+   ============================================================================ */
+
+/* ---- 1. CHROMATIC ABERRATION ------------------------------------------------
+   Real thick glass disperses by wavelength; edges therefore carry a faint
+   red/blue split. The SVG filter (ylg-optics-aberration) recombines the three
+   channels with opposing sub-pixel offsets. We apply it to the EDGE LAYERS
+   only (pseudo-element sheen + inset rim), never to the text container, so
+   copy stays perfectly crisp. */
+html[data-ylg-optics-aberration="1"] .ylg-glass::before {
+  filter: url(#ylg-optics-aberration);
+  will-change: filter;
+}
+
+html[data-ylg-optics-aberration="1"] .ylg-glass {
+  /* a second, much softer dispersion on the surface itself: an achromatic
+     copy plus tinted fringes carried by the existing gradient stack */
+  box-shadow:
+    0 1px 1px var(--ylg-shadow-contact),
+    0 8px 24px var(--ylg-shadow-ambient),
+    inset 0 0 0 1px var(--ylg-rim-light),
+    inset 0 -1px 1px var(--ylg-rim-dark),
+    /* fringing: warm above, cool below (dispersion of the rim highlight) */
+    inset 0 1px 0 rgba(255, 92, 92, 0.18),
+    inset 0 -1px 0 rgba(92, 148, 255, 0.20);
+}
+
+/* ---- 2. ANCHORED ZOOM (focus lift) -----------------------------------------
+   v1.2.1 shipped a 4px horizontal slide. It kept text perfectly crisp, but it
+   reads as a nudge rather than as focus, and that complaint was fair: the
+   surface should visibly come forward.
+
+   v1.2.2 restores a real scale, anchored to one corner. The anchor is the part
+   the slide was actually solving. A centre-origin scale grows in EVERY
+   direction, so on a surface already flush against a viewport edge (the
+   recommendation column ends at x=1684 of 1699) the outer half grows off-screen
+   and the text on that side is simply lost. Pinning the flush edge and letting
+   the opposite edge grow inward keeps every word on screen:
+
+     region        origin       stays fixed     grows toward
+     metadata      left top     top, left       right, down
+     comments      left top     top, left       right, down
+     #secondary    right top    top, right      left, down
+
+   Zooming does resample content, which is why it was dropped once. Two things
+   make it affordable now. First, these panels are [data-ylg-level=panel] and a
+   panel hard-blocks backdrop-filter, so there is no blur to re-run at a new
+   size on every frame - the animating layer is a plain texture the compositor
+   can scale. Second, nothing is pinned at rest (see below), so no layer exists
+   until a pointer actually arrives and it is released when the pointer leaves.
+
+   The anchor also halves the travel: a corner-anchored scale moves each edge by
+   the full 2.8% in ONE direction, where a centre anchor moves it 1.4% in two,
+   for the same apparent size change.
+
+   z-index and isolation still do the overlap half of the job: the focused
+   surface paints ABOVE its neighbours, so it covers what does not have focus
+   instead of being clipped by it. */
+
+/* No transform at rest - deliberately. Pinning `translate3d(0,0,0)` looks
+   harmless but it promotes EVERY glass surface to its own compositing layer, and
+   the biggest ones are the watch-page panels (measured 478x4018px). At 4 bytes
+   per pixel that is ~7.7MB of texture per panel held for the whole session, which
+   is exactly the kind of background cost that reads as "still laggy" while
+   nothing on screen appears to be moving.
+   Leaving the rest state alone means no layer until a pointer actually arrives. */
+html[data-ylg-optics="on"] .ylg-glass {
+  transform-origin: center center;
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-ylg-optics="on"] .ylg-glass:hover,
+html[data-ylg-optics="on"] .ylg-glass:focus-within {
+  transform: scale(var(--ylg-hover-scale, 1.028));
+  /* paint above siblings: the focused surface overlaps its neighbours instead
+     of being clipped by them, and it never hides its own content.
+
+     v1.3.2 - z-index 2 was not enough. A scaled panel has to escape its own
+     column, and the columns are siblings that are stacked by DOM order alone:
+     #primary, #secondary and #below all sat at z-index auto, so #below (the
+     comments) painted over a lifted #secondary, and a lifted #below slid under
+     nothing but still lost to any later sibling. The whole column trio is now
+     positioned and explicitly stacked below the hovered surface, and the lift
+     itself is high enough to clear every one of them. */
+  z-index: 31;
+  isolation: isolate;
+  box-shadow:
+    0 2px 3px var(--ylg-shadow-contact),
+    0 16px 38px var(--ylg-shadow-ambient),
+    inset 0 0 0 1px var(--ylg-rim-light),
+    inset 0 -1px 1px var(--ylg-rim-dark);
+}
+
+/* ---- 2b. COLUMN STACKING ---------------------------------------------------
+   The three watch-page columns are siblings with no explicit z-index, so they
+   paint in DOM order and a lifted panel can only rise inside its own column.
+   #below (comments) comes last, which is why a zooming recommendations card used
+   to disappear under it. Positioning them here is free at rest - they never
+   overlap - and gives the hovered surface something to rise above.
+
+   v1.3.3 - the z-index on the hovered element was still not enough, and the
+   measured reason is worth writing down. On the real watch page
+   ytd-watch-metadata is NOT a child of #primary: it lives inside #below, under
+   #primary-inner. The chain is
+
+       #below (z)  >  ytd-watch-metadata (isolation: isolate)  >  #primary (z)
+
+   so every candidate point of the metadata resolved against the #primary column
+   while the recommendations column sat one rung higher. A lift on the metadata
+   creates a stacking context INSIDE #below, which #secondary then beats on the
+   sibling comparison. That is why focusing the video info never covered the
+   recommendations - it could not, by construction.
+
+   Fixed by ordering the columns so the one that owns the focused surface is
+   already above its neighbour, and by lifting each surface to 31 - a value that
+   clears all three columns at once so the winner is decided by the hover, not by
+   which column the element happens to live in.
+
+   overflow is forced visible for the same reason: a scaled panel that leaves its
+   column must not be trimmed by a scroll container further up. */
+html[data-ylg-optics="on"] ytd-watch-flexy,
+html[data-ylg-optics="on"] #columns,
+html[data-ylg-optics="on"] #primary,
+html[data-ylg-optics="on"] #secondary,
+html[data-ylg-optics="on"] #below {
+  overflow: visible;
+}
+html[data-ylg-optics="on"] #primary   { position: relative; z-index: 2; }
+html[data-ylg-optics="on"] #secondary { position: relative; z-index: 3; }
+html[data-ylg-optics="on"] #below     { position: relative; z-index: 2; }
+
+/* the lift wins over all three columns */
+/* The lift above is necessary but NOT sufficient, and the measurement says why:
+   a stacking context only competes with its own siblings. ytd-watch-metadata is
+   rendered inside #below, which is itself inside #primary, so its z-index 31 is
+   resolved against #below's other children - never against #secondary. Lifting
+   the surface alone leaves it trapped:
+       #primary (z 2) > #below (z 2) > ytd-watch-metadata (z 31)   vs   #secondary (z 3)
+   Measured: with the metadata zoomed to 1.12 the panel covers 126px of the
+   sidebar, and the topmost element at that overlap was SECONDARY - the panel was
+   painted UNDER the recommendations, exactly as reported.
+   The column that owns the surface has to rise with it. :has() lets us express
+   that without any JS: while the metadata is hovered or focused, #primary becomes
+   the top column and its whole subtree - including the zoomed panel - wins.
+   Measured after: the same overlap resolves to METADATA.
+   Same treatment for the comments, so a zooming comments panel always covers the
+   video-info card it overlaps rather than sliding beneath it. */
+html[data-ylg-optics="on"] #primary:has(ytd-watch-metadata:hover),
+html[data-ylg-optics="on"] #primary:has(ytd-watch-metadata:focus-within),
+html[data-ylg-optics="on"] #primary:has(ytd-comments:hover),
+html[data-ylg-optics="on"] #primary:has(ytd-comments:focus-within) {
+  z-index: 4;
+}
+
+/* ---- 2a. ANCHORS -----------------------------------------------------------
+   One rule per region, in the order the page reads. The anchor is whichever
+   corner the surface already sits flush against, so growth costs no screen
+   estate at the edge and happens over the neighbours instead. */
+
+/* Video info: pinned top-left, so the title and the channel row hold still while
+   the card opens out to the right and down over the comments. */
+html[data-ylg-optics="on"] ytd-watch-metadata.ylg-glass:hover,
+html[data-ylg-optics="on"] ytd-watch-metadata.ylg-glass:focus-within {
+  transform-origin: left top;
+}
+
+/* Comments: same anchor, same reason - the avatar column and the text stay put
+   and the panel grows to the right. */
+html[data-ylg-optics="on"] ytd-comments.ylg-glass:hover,
+html[data-ylg-optics="on"] ytd-comments.ylg-glass:focus-within {
+  transform-origin: left top;
+}
+
+/* Recommendations: this column ends 15px from the right edge of the viewport, so
+   a left anchor would push its outer edge off-screen and clip the titles. Pinned
+   right instead, growing leftward over the gutter and the player. */
+html[data-ylg-optics="on"] #secondary.ylg-glass:hover,
+html[data-ylg-optics="on"] #secondary.ylg-glass:focus-within {
+  transform-origin: right top;
+}
+
+/* Sticky surfaces must not move at all: a scaled masthead or drawer would show a
+   seam against the viewport edge while scrolling. */
+html[data-ylg-optics="on"] ytd-masthead.ylg-glass:hover,
+html[data-ylg-optics="on"] ytd-masthead.ylg-glass:focus-within,
+html[data-ylg-optics="on"] #masthead-container.ylg-glass:hover,
+html[data-ylg-optics="on"] #masthead-container.ylg-glass:focus-within,
+html[data-ylg-optics="on"] tp-yt-app-drawer.ylg-glass:hover,
+html[data-ylg-optics="on"] tp-yt-app-drawer.ylg-glass:focus-within {
+  transform: none;
+}
+
+/* The displacement magnify filter stays retired: it resamples through an
+   feDisplacementMap whose geometry would need recomputing every frame, a very
+   different cost from a compositor scale. */
+html[data-ylg-optics-magnify="1"] .ylg-glass:hover::before {
+  filter: none;
+}
+
+/* Interactive affordances inside glass surfaces stay put. This only cancels a
+   transform a CHILD would otherwise animate on its own; it deliberately says
+   nothing about the parent scale, because a counter-scale here would shrink the
+   text back down and re-introduce the resampling this rule was meant to avoid. */
+html[data-ylg-optics="on"] .ylg-glass:hover .ylg-no-lift {
+  transform: none;
+}
+
+/* ---- 3. NEAR-PLAYER + CONTROL SAFETY ---------------------------------------
+   Never transform anything that takes part in player geometry or pointer
+   routing: the focus lift is disabled for the whole player subtree, the masthead
+   search field (which must not move under the cursor) and native inputs. */
+/* v1.3.11 - REGRESSION FIX. The rule above used to be written as
+     html[data-ylg-optics="on"] #movie_player *,
+     html[data-ylg-optics="on"] ytd-player * { transform: none !important }
+   Its intent was only "do not lift our own glass surfaces inside the player".
+   Written as a descendant wildcard with !important it also overrode every
+   INLINE transform YouTube sets on its own player internals, because an
+   !important declaration outranks an inline style. Two user-visible failures
+   were measured on the live player and both trace to this one line:
+
+     1. "Progress bar mất hết animation rồi"
+        .ytp-play-progress carries  style="transform: scaleX(0.710203)"
+        (video at 627.5s of 849.8s, i.e. 73.9% watched) but its COMPUTED
+        transform resolved to "none" and document.getAnimations() for that
+        element was empty. The bar therefore painted 100% of the track and
+        never moved again.
+
+     2. "slider timestamp lỗi"
+        YouTube positions the scrubber preview tooltip with translateX on the
+        same subtree, so the timestamp bubble stayed pinned at the left edge
+        instead of following the cursor.
+
+   The fix is scope, not force: the reset now names only OUR OWN lift target,
+   .ylg-glass, which is the single class this extension applies when it wants
+   to move something. Nothing inside the player is ever matched by a wildcard
+   again. Guarded by tests/run-tests.js: no stylesheet may apply transform to
+   #movie_player *, ytd-player * or .ytp-chrome-bottom *. */
+html[data-ylg-optics="on"] #movie_player .ylg-glass,
+html[data-ylg-optics="on"] #movie_player .ylg-glass:hover,
+html[data-ylg-optics="on"] #movie_player .ylg-glass:focus-within,
+html[data-ylg-optics="on"] ytd-player .ylg-glass,
+html[data-ylg-optics="on"] ytd-player .ylg-glass:hover,
+html[data-ylg-optics="on"] ytd-player .ylg-glass:focus-within {
+  transform: none;
+}
+
+/* Aberration must never reach into the player. The SVG filter url() would
+   resample video pixels and soften the frame, so the whole player subtree is
+   excluded. Note this targets `filter` only: backdrop-filter on the small
+   control pills (glass-player.css) is a separate property and stays allowed -
+   it samples what is behind the pill, it never resamples the video itself. */
+html[data-ylg-optics-aberration="1"] #movie_player .ylg-glass,
+html[data-ylg-optics-aberration="1"] ytd-player .ylg-glass {
+  filter: none !important;
+}
+
+/* ---- 4. ACCESSIBILITY / FALLBACKS ------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-optics="on"] .ylg-glass,
+  html[data-ylg-optics="on"] .ylg-glass:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+@media (hover: none) {
+  html[data-ylg-optics="on"] .ylg-glass:hover {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  html[data-ylg-optics="on"] .ylg-glass,
+  html[data-ylg-optics="on"] .ylg-glass:hover {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ---- 5. UPSTREAM ENGINE COMPATIBILITY --------------------------------------
+   The bundled vendored engine (vendor/ambient, MIT) paints an opaque masthead
+   fill when it thinks the header is leaving the top:
+     html[data-ambientlight-enabled] #masthead-container:not(.at-top) ytd-masthead
+       { background: rgb(15,15,15) !important }
+   That !important beats our translucent glass and makes the header read as a
+   solid black slab over our blur (live-verified defect: computed
+   background rgb(15,15,15), backdrop-filter present but invisible).
+   Glass mode owns the masthead: keep it translucent, keep the blur visible.
+
+   v1.3.14 FIX - the vendor has a SECOND rule with the same effect, and our
+   earlier answer to it was wrong in a way that cost the tint layer:
+     html[data-ambientlight-enabled]
+       #masthead-container.ytal-header-transparent ytd-masthead,
+     html[data-ambientlight-enabled] #masthead-container.at-top ytd-masthead
+       { background: none !important }
+   "background: none" is the SHORTHAND, so it also sets
+   background-image: none !important - which deleted the tint gradient that
+   glass-material.css paints on every .ylg-glass. The masthead then had blur but
+   no fill, and behind it the page splits light/dark (blue hero left, feed
+   right), so the two halves showed through unblended: the seam the user
+   reported as "thanh head bị chia thành 2 nửa".
+   Longhands only. We never touch background-image, so the tint survives with
+   the same !important strength as the vendor's objection. */
+html[data-ambientlight-enabled][data-ylg-enabled="true"] #masthead-container ytd-masthead.ylg-glass,
+html[data-ambientlight-enabled][data-ylg-enabled="true"] #masthead-container:not(.at-top) ytd-masthead.ylg-glass,
+html[data-ambientlight-enabled][data-ylg-enabled="true"] #masthead-container.ytal-header-transparent ytd-masthead.ylg-glass,
+html[data-ambientlight-enabled][data-ylg-enabled="true"] #masthead-container.at-top ytd-masthead.ylg-glass {
+  background-color: transparent !important;
+  /* restore exactly the material's tint stack; !important only to outrank the
+     vendor's shorthand, never a new visual choice */
+  background-image:
+    linear-gradient(165deg,
+      rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 1.15)) 0%,
+      rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.55)) 45%,
+      rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.82)) 100%),
+    radial-gradient(120% 90% at 18% 0%,
+      rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.38)),
+      transparent 55%),
+    linear-gradient(0deg,
+      color-mix(in srgb, var(--ylg-accent) 5%, transparent),
+      color-mix(in srgb, var(--ylg-accent) 5%, transparent)) !important;
+  background-repeat: no-repeat !important;
+}
+
+/* the vendored engine also hides the header background element outright */
+html[data-ambientlight-enabled][data-ylg-enabled="true"] #masthead-container ytd-masthead #background {
+  display: revert;
+}
+
+/* ---- 6. UPSTREAM ENGINE: OPAQUE SURFACES INSIDE OUR GLASS ------------------
+   The vendored engine (vendor/ambient, MIT) repaints a handful of YouTube
+   surfaces with an opaque fill so ITS backdrop reads cleanly:
+     html[data-ambientlight-enabled] #primary #description.ytd-watch-metadata
+       { background: var(--ytal-background) !important }
+     html[data-ambientlight-enabled] #masthead-container ytd-searchbox:not([has-focus])
+       { background: none !important }
+   Both carry !important, so matching its weight is not enough - we need the
+   same !important plus higher specificity, and these selectors are deliberately
+   long: [data-ambientlight-enabled][data-ylg-enabled] + the full ancestor chain.
+   Glass mode wins: the inner surfaces stay transparent so OUR card is the only
+   thing that paints. (live-verified defects: screenshot 2 hard rectangle,
+   screenshot 3 dead search field) */
+html[data-ambientlight-enabled][data-ylg-enabled="true"] #primary ytd-watch-metadata.ylg-glass #description.ytd-watch-metadata,
+html[data-ambientlight-enabled][data-ylg-enabled="true"] #primary ytd-watch-metadata.ylg-glass #description,
+html[data-ylg-enabled="true"] #primary ytd-watch-metadata.ylg-glass #description.ytd-watch-metadata,
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #description {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Specificity note: the upstream rule is shaped
+     html[data-ambientlight-enabled] #masthead-container ytd-searchbox:not([has-focus])
+       :not(:focus-within):not(:hover) .ytSearchboxComponentInputBox
+       { background: none !important }
+   Three :not() clauses push it to 1 id + 5 class/attr, which beat our first
+   attempt (1 id + 3). Counting is not enough - we need an outright win, so this
+   selector carries TWO ids (#masthead-container and #center) and repeats the
+   class. Verified live: computed background-color goes from rgba(0,0,0,0) to the
+   tint, and the field stops being a hole in the masthead. */
+/* --- search BUTTON: the "lạc quẻ" (out of place) element --------------------
+   Measured cause, not a colour problem. YouTube renders the magnifier as a
+   SEPARATE button sitting to the RIGHT of the input box:
+     input box  x 524..1060  radius 999px              (the glass pill)
+     button     x 1060..1124 radius 0 999px 999px 0    (its own half-pill)
+   and gives that button its own 0.67px solid rgb(48,48,48) border on top of
+   the glass. So the pill visibly stops and a second outlined shape starts -
+   two adjacent rounded objects instead of one field.
+   Fix: remove the button border entirely and give it the same tint as the box
+   so the two read as a single capsule. The right-hand radii are kept so the
+   outer silhouette still matches the pill.
+   Border is set on the component AND on any legacy #search button so this does
+   not depend on which masthead variant YouTube serves. */
+html[data-ylg-enabled="true"] #masthead-container .ytSearchboxComponentSearchButton,
+html[data-ylg-enabled="true"] #masthead-container #search button,
+html[data-ylg-enabled="true"] #masthead-container button#search-icon-legacy {
+  border: 0 !important;
+  /* no fill of its own - the input box behind it is the only painter */
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  /* v1.2.1 FIX - the rim used to stop dead at the seam.
+     The input box carries inset rim highlights, the button had box-shadow:none,
+     so the bright 1px top hairline ran to x=803 and vanished. Measured across
+     the seam at device y=12 (css y=8):
+       x 770..802  luma 162,160,155,148,138,130,128,129,130   (rim present)
+       x 806..838  luma  55, 57, 59, 60, 62, 63, 64, 64, 64   (rim gone)
+     A 100-luma cliff in the middle of what should be one capsule - that is the
+     "lạc quẻ" the user saw. The button now paints the same rim, but only on the
+     three sides that are actually the outer silhouette; the left side stays
+     open so no vertical divider appears at the joint. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.55)),
+    inset -1px 0 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.16)),
+    inset 0 -1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.10)),
+    0 1px 2px var(--ylg-shadow-contact) !important;
+  color: inherit;
+}
+/* the input box must stop painting where the button starts, otherwise the two
+   translucent fills stack and the seam is visible as a brighter band */
+html[data-ylg-enabled="true"] #masthead-container .ytSearchboxComponentInputBox {
+  /* the input is the single painter, so it closes BOTH ends of the capsule */
+  border-top-right-radius: 999px !important;
+  border-bottom-right-radius: 999px !important;
+  border-right: 0 !important;
+  flex: 1 1 auto !important;
+  width: auto !important;
+  /* ---- v1.3.11: THE CLEAR BUTTON LANDED ON TOP OF THE MAGNIFIER ----
+     Reported bug: "search bar bị các nút đè lên nhau", with a screenshot of a
+     typed query showing the magnifier and the clear X drawn over each other.
+
+     Measured cause, and it is not the X. The X is positioned by YouTube against
+     the INPUT BOX's padding box, while the magnifier is taken out of flow by
+     this file (absolute, right:0, 64px wide). Because the capsule was given
+     flex:1 1 auto and 64px of the search button's space was never reserved, the
+     two overlapped by exactly 64px:
+         input box x=261 w=571  (right edge 832)
+         search button x=768 w=64 (768..832, inside the input box)
+         clear X icon  x=788 w=24
+         magnifier     x=788 w=24   <- same pixels, hence two glyphs on one spot
+     Reserving the button's width as padding moves the X to x=728 while the
+     magnifier stays at 788: measured 0px overlap afterwards, and the X is still
+     inside the pill at every masthead width down to 1000px. */
+  padding-right: 72px !important;
+}
+/* and the button closes the pill on the right */
+html[data-ylg-enabled="true"] #masthead-container .ytSearchboxComponentSearchButton {
+  border-top-right-radius: 999px !important;
+  border-bottom-right-radius: 999px !important;
+  /* SINGLE-PAINTER LAYOUT - this is what actually closed the seam.
+     Two adjacent backdrop-filtered boxes can never join cleanly: each clamps its
+     own blur at its own edge, and each paints its own contact shadow. Measured
+     straight through the joint at css y=28, four different attempts:
+       tint matched only         112 -> 96 -> 109   (16-luma step)
+       + 1px overlap             112 -> 85 -> 108   (worse)
+       blur moved to container   131 -> 98 -> 128   (still a step)
+       both fills fully opaque    118 -> 90 -> 113   (still a step: geometry)
+     So it was never a colour problem. The capsule now has exactly ONE painter:
+     the input box spans the full width and owns both right-hand radii, and this
+     button is taken out of flow (absolute, right-aligned) with no fill, no rim,
+     no blur - just the magnifier on top. Verified live: luma across the former
+     seam is now flat at 147 (was 112/96/109), and across the whole capsule the
+     only variation left is the video playing behind the glass. */
+  position: absolute !important;
+  right: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 64px !important;
+  height: 100% !important;
+  margin: 0 !important;
+  z-index: 3 !important;
+}
+/* --- v1.2.1 FIX: the button loses its fill at the top of the page ----------
+   ROOT CAUSE of "nút search lạc quẻ", found with CSS.getMatchedStylesForNode.
+   The vendored ambient stylesheet ships
+     html[data-ambientlight-enabled][dark] #masthead-container.ytal-header-transparent
+       ytd-searchbox:not(:hover):not(:focus-within) ... { background-color:
+       transparent !important }
+   which is 1 id + 2 attr + 2 state + ... and it BEATS the single-id rule above.
+   Effect: while the transparent masthead is at the top of the page the INPUT BOX
+   keeps our tint (it has the two-id selector below) but the BUTTON goes fully
+   transparent, so the bright video plays straight through it. Measured at
+   css y=28 with the page at scrollY 0:
+     x 950..1050 (input)  luma 163-165   rgb(165,164,167)
+     x 1075..1225 (button) luma 211-223   rgb(222,220,220)  <- white block
+   Two halves of one capsule at 60 luma apart. The button now carries the same
+   two-id selector so it wins the same way, and keeps winning while scrolled. */
+html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentInputContainer {
+  position: relative !important;
+}
+html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentSearchButton.ytSearchboxComponentSearchButton,
+html[data-ambientlight-enabled][data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentSearchButton.ytSearchboxComponentSearchButton,
+html[data-ylg-enabled="true"][dark] #masthead-container.ytal-header-transparent #center .ytSearchboxComponentSearchButton.ytSearchboxComponentSearchButton,
+html[data-ambientlight-enabled][dark][data-ylg-enabled="true"] #masthead-container.ytal-header-transparent #center .ytSearchboxComponentSearchButton.ytSearchboxComponentSearchButton {
+  /* the ambient vendored rule forces transparent here; that is now correct,
+     the input box behind the button is the capsule. Just make sure no fill and
+     no border sneak back in. */
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+html[data-ambientlight-enabled][data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox {
+  /* Floor the values: the user's stored blur/opacity can legitimately be very
+     low (live session had blur 4px / opacity 0.1), but a search field needs to
+     be readable over any frame of video. max() keeps the user's choice when it
+     is higher and only guarantees a legible minimum. */
+  background-color: rgba(var(--ylg-surface-tint-light), max(0.30, calc(var(--ylg-opacity) * 0.9))) !important;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.10)) 0%, rgba(255, 255, 255, 0) 100%) !important;
+  -webkit-backdrop-filter: blur(max(16px, var(--ylg-blur))) saturate(var(--ylg-saturate)) !important;
+  backdrop-filter: blur(max(16px, var(--ylg-blur))) saturate(var(--ylg-saturate)) !important;
+  border: 0 !important;
+  /* directional rim: the old `inset 0 0 0 1px` also drew a 1px line down the
+     RIGHT edge of the input box, i.e. straight through the middle of the
+     capsule. Same ring as before, minus the side that is not a silhouette. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.55)),
+    inset 1px 0 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.16)),
+    inset 0 -1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.10)),
+    0 1px 2px var(--ylg-shadow-contact) !important;
+}

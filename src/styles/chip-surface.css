@@ -1,0 +1,50 @@
+/* Filter chips are tonal controls, not miniature glass panels. One painter
+   replaces the legacy glass gradients, bevels and native nested chip fill. */
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
+  background-color: var(--yt-sys-color-baseline--tonal-background, rgba(128, 128, 128, 0.12)) !important;
+  background-image: none !important;
+  color: var(--yt-sys-color-baseline--text-primary, CanvasText) !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  transform: none !important;
+  transition: background-color 100ms ease-out;
+}
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"]:hover {
+  background-color: var(--yt-sys-color-baseline--mono-tonal-hover, rgba(128, 128, 128, 0.2)) !important;
+}
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"]:is([selected], [aria-selected="true"]) {
+  background-color: var(--yt-sys-color-baseline--text-primary, CanvasText) !important;
+  color: var(--yt-sys-color-baseline--text-primary-inverse, Canvas) !important;
+}
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"]::before,
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"]::after {
+  content: none !important;
+  display: none !important;
+}
+/* Modern YouTube puts its rounded chip inside the tagged renderer. */
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] :is(.ytChipShapeChip, .ytChipShapeButtonReset) {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  color: inherit !important;
+}
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] .ytChipShapeText {
+  color: inherit !important;
+}
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"]:is(:focus-visible, :has(:focus-visible)) {
+  outline: 2px solid var(--ylg-accent, Highlight);
+  outline-offset: 2px;
+}
+@media (forced-colors: active) {
+  html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
+    border: 1px solid ButtonText !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
+    transition: none;
+  }
+}

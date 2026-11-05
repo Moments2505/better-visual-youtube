@@ -1,0 +1,17 @@
+"use strict";
+const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
+const base=path.join(__dirname,"..");
+const captured=JSON.parse(fs.readFileSync(path.join(base,"default-settings.json"),"utf8"));
+const w={};w.window=w;
+vm.runInNewContext(fs.readFileSync(path.join(base,"src/shared/settings.js"),"utf8"),w);
+const plain=v=>JSON.parse(JSON.stringify(v));
+assert.deepEqual(plain(w.YLG_SETTINGS.normalizeSettings({})),captured);
+assert.deepEqual(plain(w.YLG_SETTINGS.normalizeSettings(captured)),captured);
+w.YLG_SETTINGS.getStoredSettings(s=>assert.deepEqual(plain(s),captured));
+const changed={...captured,theme:"dark",blur:7,ambientLight:{...captured.ambientLight,spread:42}};
+assert.deepEqual(plain(w.YLG_SETTINGS.normalizeSettings(changed)),changed);
+const manifest=JSON.parse(fs.readFileSync(path.join(base,"manifest.json"),"utf8"));
+assert.equal(manifest.name,"Better visual Youtube");
+assert.equal(manifest.action.default_title,manifest.name);
+for(const language of ["EN","VI"])assert.ok(fs.readFileSync(path.join(base,"INSTALL-"+language+".md"),"utf8").includes("manifest.json"));
+console.log("PASS exact captured defaults, fresh install, round-trip, saved overrides, branding and bilingual guides");

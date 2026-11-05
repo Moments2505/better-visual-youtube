@@ -1,0 +1,69 @@
+/* ============================================================================
+   YouTube Liquid Glass - glass-refraction.css (Layer 1: REFRACTION)
+   TWO paths:
+   (A) FAUX (default, always safe): edge-bend illusion via colored 1px fringes
+       + strengthened rims on refract surfaces. Pure paint, zero filters.
+   (B) ADVANCED (only under html[data-ylg-advanced-ok="1"], set by bootstrap
+       after YLG_REFRACTION.probeSupported()): real feDisplacementMap refraction
+       via backdrop-filter url(#same-document-svg-filter).
+       * VERIFIED rendering in Chromium/Edge today (see docs/reference-audit.md);
+         content-script-injected same-document refs remain UNVERIFIED until
+         browser-tested - faux path stays the default.
+       * Filters are same-document inline <svg> only (external .svg#id is broken
+         in Chromium, crbug 40347855). No ::backdrop usage (crbug 411598594).
+       * Element budget enforced by the DOM adapter (<= 8 refract surfaces).
+   ============================================================================ */
+
+/* ---- (A) FAUX REFRACTION (default) ---------------------------------------- */
+/* Chromatic fringe pair: cool light bends at the top edge, warm at the bottom.
+   Appended AFTER the specular insets so they tint the rim line. */
+html[data-ylg-enabled="true"] [data-ylg-refract="1"] {
+  box-shadow:
+    0 1px 1px var(--ylg-shadow-contact),
+    0 8px 24px var(--ylg-shadow-ambient),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9)),
+    inset 1px 0 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.45)),
+    inset 0 -1px 0 rgba(15, 23, 42, calc(var(--ylg-highlight) * 0.28)),
+    inset 0 0 0 1px var(--ylg-rim-light),
+    /* refractive fringes */
+    inset 0 2px 1px -1px var(--ylg-fringe-cool),
+    inset 0 -2px 1px -1px var(--ylg-fringe-warm);
+}
+
+/* Lens-edge light concentration: faint bright line just inside each vertical edge */
+html[data-ylg-enabled="true"] [data-ylg-refract="1"]::after {
+  /* ::after already paints bottom scatter (material); extend it with the
+     vertical edge concentration using a second gradient layer. */
+  background:
+    linear-gradient(90deg,
+      rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.18)),
+      transparent 3px,
+      transparent calc(100% - 3px),
+      rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.12))),
+    linear-gradient(180deg,
+      transparent,
+      rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.1)) 85%,
+      rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.6)));
+}
+
+/* ---- (B) ADVANCED REFRACTION (gated) -------------------------------------- */
+/* Replaces the base backdrop-filter with blur + url() composite. The SVG filter
+   chain (glass-refraction.js) already includes rim-light compositing, so the
+   specular box-shadows above remain as CSS-side depth cues. */
+html[data-ylg-enabled="true"][data-ylg-advanced-ok="1"] [data-ylg-refract="1"] {
+  -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(1.5) url(#ylg-refract-panel);
+  backdrop-filter: blur(var(--ylg-blur)) saturate(1.5) url(#ylg-refract-panel);
+}
+html[data-ylg-enabled="true"][data-ylg-advanced-ok="1"] [data-ylg-refract="1"][data-ylg-level="hero"] {
+  -webkit-backdrop-filter: blur(var(--ylg-blur-l)) saturate(1.55) url(#ylg-refract-hero);
+  backdrop-filter: blur(var(--ylg-blur-l)) saturate(1.55) url(#ylg-refract-hero);
+}
+/* Faux fringes remain in advanced mode (they read as rim tint under the filter). */
+
+/* Safety: never filter the video player even if a surface is mis-tagged */
+html[data-ylg-enabled="true"] .html5-video-player,
+html[data-ylg-enabled="true"] #movie_player {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}

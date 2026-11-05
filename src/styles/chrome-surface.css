@@ -1,0 +1,150 @@
+/* One chrome painter, confined to the masthead (not the filter-chip row).
+   This file intentionally loads after all legacy/responsive overrides. */
+/* Below chips (2019) and masthead (2020), never over their glyphs. */
+/* YouTube keeps the sheet in the DOM but gives it .none on watch pages.
+   Presence-based child resets still apply there, so ensure the sole painter
+   actually displays. Respect fullscreen, which owns the entire viewport. */
+html[data-ylg-enabled="true"]:not(:fullscreen):not(:has(:fullscreen)) ytd-app[is-watch-page]:not([fullscreen]) #frosted-glass {
+  display: block !important;
+}
+html[data-ylg-enabled="true"] #frosted-glass {
+  z-index: 1999 !important;
+  pointer-events: none !important;
+  /* YouTube grows this native sheet to 112px when chips are present. The
+     extension's headbar material must stop at the masthead's own height.
+     Keep overflow bounded without creating a backdrop root around the
+     filtered child. A clip-path on this parent traps the child's backdrop
+     sampling inside an empty transparent sheet and makes the glass vanish. */
+  height: var(--ytd-masthead-height, 56px) !important;
+  max-height: var(--ytd-masthead-height, 56px) !important;
+  overflow: hidden !important;
+  clip-path: none !important;
+  border-radius: 0 0 10px 10px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.20) !important;
+}
+html[data-ylg-enabled="true"] #frosted-glass::before {
+  content: "";
+  position: absolute;
+  /* The player lens samples inward, so it needs no old hero-filter gutter.
+     Its map follows the visible headbar box for the same centred optics. */
+  inset: 0;
+  pointer-events: none;
+  /* Clip the filter output on the painter itself, after it samples the page.
+     This preserves the 56px boundary without isolating its backdrop. */
+  clip-path: inset(0 round 0 0 10px 10px);
+  background: var(--ylg-chrome-scrim);
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
+  backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
+  /* Directional edge light belongs to the bounded headbar.
+     Scale with the opacity ramp so low opacity does not reveal a hard rim. */
+  box-shadow: none;
+}
+/* Paint the lower rim at the visible boundary, not at the bottom of the
+   oversized backdrop sampler. Use the panel material's theme-aware rim token. */
+html[data-ylg-enabled="true"] #frosted-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border-radius: inherit;
+  border: 0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9 * var(--ylg-fill-strength, 1))),
+    inset 1px 0 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.45 * var(--ylg-fill-strength, 1))),
+    inset 0 -1px 0 rgba(15, 23, 42, calc(var(--ylg-highlight) * 0.28 * var(--ylg-fill-strength, 1))),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-fill-strength, 1) * 100%), transparent);
+  pointer-events: none;
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass::after {
+  content: none;
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass {
+  box-shadow: none !important;
+}
+/* A 16px edge profile blends opposing edges smoothly; colour treatment remains
+   consistent with the player without applying its whole-capsule magnifier. */
+html[data-ylg-enabled="true"][data-ylg-chrome-lens="1"] #frosted-glass::before {
+  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-chrome) saturate(1) brightness(0.98);
+  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-chrome) saturate(1) brightness(0.98);
+}
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] #frosted-glass::before {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass::before {
+  content: none;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+/* The bounded sheet owns the only headbar painter. */
+html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container#masthead-container ytd-masthead.ylg-glass,
+html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+html[data-ylg-enabled="true"]:has(#frosted-glass) #chips-wrapper,
+html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-searchbox.ylg-glass {
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-masthead.ylg-glass::before,
+html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-masthead.ylg-glass::after {
+  content: none;
+  display: none;
+}
+/* Legacy watch-column stacking must not trap the HOME chipbar underneath the
+   fixed frosted sheet. Home #primary is not the watch-page player column. */
+html[data-ylg-enabled="true"] ytd-browse #primary {
+  z-index: auto !important;
+}
+
+/* Match Create's native mono-tonal control rather than another glass panel:
+   same site-theme tokens, 20px corners, no resting border or extra blur. The
+   repeated ancestor ID matches the specificity of the shared-painter reset. */
+html[data-ylg-enabled="true"] #masthead-container {
+  --ylg-chrome-text: var(--yt-sys-color-baseline--text-primary, CanvasText);
+  --ylg-chrome-muted: var(--yt-sys-color-baseline--text-primary, CanvasText);
+}
+html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentInput,
+html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentSearchButton {
+  color: var(--ylg-chrome-text) !important;
+}
+html[data-ylg-enabled="true"] #masthead-container #center input::placeholder {
+  color: var(--ylg-chrome-text) !important;
+  opacity: 1;
+}
+html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentSearchButton svg {
+  fill: currentColor;
+}
+html[data-ylg-enabled="true"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox {
+  background-color: var(--yt-sys-color-baseline--tonal-background, rgba(128, 128, 128, 0.1)) !important;
+  background-image: none !important;
+  border-radius: 20px !important;
+  outline: none;
+}
+html[data-ylg-enabled="true"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox:hover {
+  background-color: var(--yt-sys-color-baseline--mono-tonal-hover, rgba(128, 128, 128, 0.2)) !important;
+}
+/* Keyboard focus stays visible without introducing another material painter. */
+html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox:focus-within {
+  outline: 2px solid var(--ylg-accent);
+  outline-offset: -2px;
+}
+@media (forced-colors: active) {
+  html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox {
+    outline-color: CanvasText;
+  }
+}
+@media (forced-colors: active), (prefers-reduced-transparency: reduce) {
+  html[data-ylg-enabled="true"] #frosted-glass::before,
+  html[data-ylg-enabled="true"][data-ylg-chrome-lens="1"] #frosted-glass::before,
+  html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass::before {
+    content: "";
+    background: Canvas;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+}

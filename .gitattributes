@@ -1,0 +1,2 @@
+# Preserve the byte-verified glass visual baseline across platforms.
+src/glass/*.css -text

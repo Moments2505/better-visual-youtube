@@ -1,0 +1,93 @@
+/* ============================================================================
+   YouTube Liquid Glass - glass-tokens.css (Layer contract: TOKENS)
+   Engine-owned token set. NO visual rules here - variables only.
+   All values are static fallbacks; YLG_SETTINGS.applySettingsToDocument()
+   overrides the user-facing ones on documentElement at runtime.
+   ============================================================================ */
+
+:root {
+  /* --- user-tunable (JS overrides at runtime) --- */
+  --ylg-blur: 18px;
+  --ylg-saturate: 1.5; /* backdrop saturation; Apple glass is ~1.5-1.8 */
+  --ylg-blur-s: 9px;
+  --ylg-blur-l: 27px;
+  --ylg-opacity: 0.45;
+  --ylg-radius: 18px;
+  --ylg-radius-s: 10px;
+  --ylg-radius-l: 28px;
+  --ylg-refraction: 0.5;
+  --ylg-highlight: 0.6;
+  --ylg-accent: #3ea6ff;
+  --ylg-accent-soft: color-mix(in srgb, #3ea6ff 45%, transparent);
+
+  /* --- engine-internal: surface tint per theme --- */
+  --ylg-surface-tint-light: 255, 255, 255;
+  --ylg-surface-tint-dark: 22, 28, 38;
+
+  /* --- engine-internal: rims (specular pair) --- */
+  --ylg-rim-light: rgba(255, 255, 255, 0.55);
+  --ylg-rim-dark: rgba(15, 23, 42, 0.22);
+
+  /* --- engine-internal: sheen + scatter --- */
+  --ylg-sheen-alpha: 0.35;
+  --ylg-scatter-alpha: 0.22;
+
+  /* --- engine-internal: depth shadows --- */
+  --ylg-shadow-ambient: rgba(9, 17, 28, 0.18);
+  --ylg-shadow-contact: rgba(9, 17, 28, 0.12);
+
+  /* --- engine-internal: faux-refraction edge fringes --- */
+  --ylg-fringe-warm: rgba(255, 138, 168, 0.16);
+  --ylg-fringe-cool: rgba(122, 178, 255, 0.22);
+
+  /* --- glass fill derivatives (computed from opacity + theme tint) --- */
+  --ylg-fill-a: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 1.15));
+  --ylg-fill-b: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.55));
+  --ylg-fill-c: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.82));
+
+  /* --- motion language --- */
+  --ylg-ease-glass: cubic-bezier(0.32, 0.72, 0, 1);
+  --ylg-dur-fast: 140ms;
+  --ylg-dur-base: 180ms;
+  --ylg-dur-slow: 240ms;
+}
+
+/* Theme: LIGHT (explicit) */
+[data-ylg-theme="light"] {
+  --ylg-surface-tint-light: 255, 255, 255;
+  --ylg-rim-light: rgba(255, 255, 255, 0.65);
+  --ylg-rim-dark: rgba(15, 23, 42, 0.18);
+  --ylg-shadow-ambient: rgba(9, 17, 28, 0.16);
+  --ylg-shadow-contact: rgba(9, 17, 28, 0.10);
+}
+
+/* Theme: DARK (explicit) */
+[data-ylg-theme="dark"] {
+  --ylg-surface-tint-light: 22, 28, 38;          /* repurposed channel triplet */
+  --ylg-rim-light: rgba(255, 255, 255, 0.16);
+  --ylg-rim-dark: rgba(0, 0, 0, 0.45);
+  --ylg-sheen-alpha: 0.14;
+  --ylg-scatter-alpha: 0.10;
+  --ylg-shadow-ambient: rgba(0, 0, 0, 0.45);
+  --ylg-shadow-contact: rgba(0, 0, 0, 0.35);
+  --ylg-fringe-warm: rgba(255, 138, 168, 0.10);
+  --ylg-fringe-cool: rgba(122, 178, 255, 0.13);
+}
+
+/* Theme: AUTO follows OS */
+[data-ylg-theme="auto"] {
+  --ylg-surface-tint-light: 255, 255, 255;
+  --ylg-rim-light: rgba(255, 255, 255, 0.65);
+  --ylg-rim-dark: rgba(15, 23, 42, 0.18);
+}
+@media (prefers-color-scheme: dark) {
+  [data-ylg-theme="auto"] {
+    --ylg-surface-tint-light: 22, 28, 38;
+    --ylg-rim-light: rgba(255, 255, 255, 0.16);
+    --ylg-rim-dark: rgba(0, 0, 0, 0.45);
+    --ylg-sheen-alpha: 0.14;
+    --ylg-scatter-alpha: 0.10;
+    --ylg-shadow-ambient: rgba(0, 0, 0, 0.45);
+    --ylg-shadow-contact: rgba(0, 0, 0, 0.35);
+  }
+}

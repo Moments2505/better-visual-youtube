@@ -1,0 +1,71 @@
+/* Small one-shot motion only. No SVG path replacement, layout animation,
+   backdrop/filter animation, or permanent compositing hints. */
+@keyframes ylg-icon-hop {
+  0%, 100% { translate: 0 0; }
+  45% { translate: 0 -5px; }
+}
+@keyframes ylg-menu-enter {
+  from { opacity: 0; translate: 0 6px; }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes ylg-tip-enter {
+  from { opacity: 0; translate: 0 4px; }
+  to { opacity: 1; translate: 0 0; }
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox {
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  transition: outline-color 180ms ease-out, box-shadow 180ms ease-out !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox:focus-within {
+  outline: 1px solid var(--ylg-accent) !important;
+  outline-offset: -1px;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-chrome-bottom .ytp-scrubber-button::after,
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-chrome-bottom .ytp-volume-slider-handle {
+  scale: 1;
+  transition: scale 140ms cubic-bezier(.22,.61,.36,1), opacity 180ms ease-out !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-progress-bar-container[data-ylg-dragging="1"] .ytp-scrubber-button::after {
+  scale: 1.08;
+  opacity: 1;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-volume-panel[data-ylg-dragging="1"] .ytp-volume-slider-handle {
+  scale: 1.12;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-chrome-bottom .ytp-button {
+  scale: 1;
+  transition: scale 120ms ease-out !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-chrome-bottom .ytp-button:active:not(:disabled) {
+  scale: .97;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-chrome-bottom .ytp-button:not(.ytp-play-button):is(:hover, :focus-visible) svg {
+  animation: ylg-icon-hop 220ms cubic-bezier(.22,.61,.36,1);
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
+  transition: background-color 140ms ease-out, color 140ms ease-out !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ylg-glass[data-ylg-level="floating"] {
+  animation: ylg-menu-enter 200ms cubic-bezier(.22,.61,.36,1) both;
+}
+/* Native display:none still owns hiding. Entry animates only once visible;
+   never hold a tooltip/menu open or make an aria-hidden popup visible. */
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-settings-menu:not([aria-hidden="true"]):not([style*="display: none"]):not([style*="display:none"]) {
+  animation: ylg-menu-enter 200ms cubic-bezier(.22,.61,.36,1);
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-tooltip:not([aria-hidden="true"]):not([style*="display: none"]):not([style*="display:none"]) {
+  animation: ylg-tip-enter 140ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"][data-ylg-motion="on"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"][data-ylg-motion="on"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
+    transition: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-motion="on"] :is(.ytp-button, .ytp-button svg, .ytp-volume-slider-handle, .ytp-settings-menu, .ytp-tooltip, .ylg-glass[data-ylg-level="floating"]),
+  html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-scrubber-button::after {
+    animation: none !important;
+    transition: none !important;
+    scale: 1 !important;
+  }
+}

@@ -1,0 +1,155 @@
+/* ============================================================================
+   glass-clear.css - OPTIONAL "fully clear" state (Liquid Glass, additive layer)
+   ----------------------------------------------------------------------------
+   User request: panels and the headbar must be able to be COMPLETELY
+   transparent, while the Opacity slider still controls how see-through they
+   are at every other value.
+
+   This file is deliberately separate from the original eight engine files so
+   their bytes and their animation stay exactly as approved. It only activates
+   on html[data-ylg-fill="none"], which applySettingsToDocument() sets when - and
+   only when - opacity is exactly 0.
+
+   What stays at 0%: the hover/focus transitions and the text. What goes away:
+   every painted fill, the bottom light scatter, the specular rim AND the
+   backdrop blur/scattering. A translucent blurred rectangle is not "clear": over
+   a bright frame the blur itself reads as a milky band, so the scattering layer
+   has to go too for the page behind to show its real colours.
+   ============================================================================ */
+
+html[data-ylg-enabled="true"][data-ylg-fill="none"] .ylg-glass {
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  /* A blur over a bright frame still reads as a milky band, so "clear" must
+     also stop scattering the backdrop. The hover/focus transitions below are
+     untouched and still run; only the frozen paint is removed. */
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Refraction surfaces carry their own rim/fringe paint (glass-refraction.css),
+   so they need the same reset or the panel keeps a visible outline even with no
+   fill at all. */
+html[data-ylg-enabled="true"][data-ylg-fill="none"] [data-ylg-refract="1"] {
+  box-shadow: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] [data-ylg-refract="1"]::after {
+  background: none !important;
+}
+
+html[data-ylg-enabled="true"][data-ylg-fill="none"] .ylg-glass::after {
+  content: none;
+  display: none;
+}
+
+/* The sheen pseudo-element is a painted highlight, not transmission. */
+html[data-ylg-enabled="true"][data-ylg-fill="none"] .ylg-glass::before {
+  content: none;
+  display: none;
+}
+
+/* Header bar: same clear state, no scrim line and no bottom hairline. */
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-masthead.ylg-glass,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #masthead.ylg-glass {
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* YouTube's own frosted-chrome layer.
+   Reported and reproduced as a wide, scrim-less blur band across the header and
+   the top of the feed - vivid thumbnail colours smearing with no dark tint over
+   them. The band is not our material: it is YouTube's frosted sheet, whose
+   filter comes from a CSS variable rather than a hard-coded value, so it can be
+   switched on per account (Premium) and per load state without any rule of ours
+   being involved:
+       --yt-frosted-glass-backdrop-filter-override   (measured empty here,
+                                                      set to a blur elsewhere)
+   Neutralising the variable AND the layer covers both shapes, and it is written
+   for clear mode only, so a visible material is untouched. */
+/* The variable is declared on several levels of the tree depending on account,
+   and a value set on ytd-app would win over one set on html, so it is pinned on
+   every element that can carry it - each rule names a real target rather than
+   the gate alone. */
+html[data-ylg-enabled="true"][data-ylg-fill="none"] body,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-app,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-masthead,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #masthead-container {
+  --yt-frosted-glass-backdrop-filter-override: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass.with-chipbar,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass.loading-with-chipbar,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #masthead-container,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-masthead,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #chips-wrapper {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Search pill keeps its focus ring so the field stays findable and operable,
+   but drops the fill and blur that make it read as an opaque lozenge. */
+html[data-ylg-enabled="true"][data-ylg-fill="none"] .ytSearchboxComponentInputBox,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] yt-searchbox .ytSearchboxComponentInputBox {
+  background-color: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Measured defect: with clear mode on, the masthead read as two different
+   surfaces - one blurred band, one fully clear. Exactly ONE element still
+   carried a filter, found by walking every node in the top 160px:
+     .ytSearchboxComponentInputBox  [402,8,600,40]  blur(18px) saturate(1.5)
+   It comes from glass-optics.css, which floors the search field's legibility
+   with `backdrop-filter: blur(max(16px, --ylg-blur)) !important` and a
+   `max(0.30, ...)` fill. Matching specificity is not enough against !important,
+   so this rule repeats the same two-id ancestor chain plus the clear attribute
+   and restates both properties with !important. Clear means clear. */
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] #masthead-container #center .ytSearchboxComponentInputBox {
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] .ytSearchboxComponentInputBox:focus-within {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-accent) 55%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--ylg-accent) 22%, transparent);
+}
+
+/* Chips/controls are small affordances, but a filled pill is still a surface. */
+html[data-ylg-enabled="true"][data-ylg-fill="none"] .ylg-glass[data-ylg-level="chip"] {
+  background-image: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+/* YouTube paints its OWN surface inside the glass card - the description
+   container is rgba(255,255,255,.10) at 12px radius - so a fully clear panel
+   still showed a grey rectangle floating inside it. The engine already flattens
+   this when glass paints; in clear mode there is no parent glass to sit on, so
+   the inner surface has to go transparent too. */
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-watch-metadata #description,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-watch-metadata #description.ytd-watch-metadata,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-watch-metadata #description-inline-expander,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-watch-metadata #description-inner {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Forced-colors / reduced-transparency: the platform asks for solid surfaces,
+   which outranks this preference. */
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  html[data-ylg-enabled="true"][data-ylg-fill="none"] .ylg-glass {
+    background-color: Canvas;
+    background-image: none;
+    box-shadow: none;
+  }
+}

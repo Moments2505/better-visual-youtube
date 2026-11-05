@@ -1,0 +1,86 @@
+/* ============================================================================
+   YouTube Liquid Glass - glass-lighting.css (Layer 4: SPECULAR + interaction)
+   Rim-light pair scaled by --ylg-highlight, elliptical top sheen (::before),
+   hover light-sweep (transform/opacity only), focus ring, accent glow.
+   ============================================================================ */
+
+html[data-ylg-enabled="true"] .ylg-glass {
+  box-shadow:
+    0 1px 1px var(--ylg-shadow-contact),
+    0 8px 24px var(--ylg-shadow-ambient),
+    /* specular rim: bright top-left */
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9)),
+    inset 1px 0 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.45)),
+    /* dark bottom-right counter-rim */
+    inset 0 -1px 0 rgba(15, 23, 42, calc(var(--ylg-highlight) * 0.28)),
+    inset 0 0 0 1px var(--ylg-rim-light);
+}
+
+/* Elliptical top sheen on hero/panel/floating (uses the ::before slot) */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="hero"]::before,
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="panel"]::before,
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="floating"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(120% 55% at 30% 0%,
+      rgba(255, 255, 255, calc(var(--ylg-highlight) * var(--ylg-sheen-alpha))),
+      transparent 62%);
+  /* hover light-sweep reuses this pseudo via transform (compositor-only) */
+  transition: transform var(--ylg-dur-slow) var(--ylg-ease-glass),
+              opacity var(--ylg-dur-slow) var(--ylg-ease-glass);
+}
+
+/* Light sweep: interactive glass translates its sheen diagonally on hover */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-interactive="1"]:hover::before {
+  transform: translate3d(2.5%, 1.5%, 0);
+  opacity: 1.35;
+}
+
+/* Focus ring - accent, always visible (accessibility) */
+html[data-ylg-enabled="true"] .ylg-glass:focus-visible,
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-interactive="1"]:focus-visible {
+  outline: 2px solid var(--ylg-accent);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--ylg-accent) 22%, transparent),
+    0 1px 1px var(--ylg-shadow-contact),
+    0 8px 24px var(--ylg-shadow-ambient),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9));
+}
+
+/* Active nav accent glow (sidebar/active chips - adapter tags data-ylg-active) */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-active="1"],
+html[data-ylg-enabled="true"] .ylg-chip[data-ylg-active="1"] {
+  background-color: color-mix(in srgb, var(--ylg-accent) 13%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-accent) 38%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.55)),
+    0 2px 8px color-mix(in srgb, var(--ylg-accent) 16%, transparent);
+}
+
+/* Search-box focus glow (adapter tags the search container) */
+html[data-ylg-enabled="true"] [data-ylg-search-focus="1"] {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ylg-accent) 32%, transparent),
+    0 2px 4px var(--ylg-shadow-contact),
+    0 10px 28px var(--ylg-shadow-ambient),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9));
+}
+
+/* Chips: hover lift (shared chip class from adapter) */
+html[data-ylg-enabled="true"] .ylg-chip {
+  transition: transform var(--ylg-dur-fast) var(--ylg-ease-glass),
+              box-shadow var(--ylg-dur-fast) var(--ylg-ease-glass),
+              background-color var(--ylg-dur-fast) linear;
+}
+html[data-ylg-enabled="true"] .ylg-chip:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px var(--ylg-rim-light),
+    0 2px 6px var(--ylg-shadow-contact);
+}

@@ -1,0 +1,214 @@
+/* ============================================================================
+   YouTube Liquid Glass - glass-ramp.css (ADDITIVE layer: OPACITY RAMP)
+   ----------------------------------------------------------------------------
+   Problem: the panel FILL scales with --ylg-opacity, but every DECORATION
+   (rim, sheen, scatter) was scaled by --ylg-highlight / --ylg-scatter-alpha,
+   which do not depend on opacity. At opacity 1% the surface therefore already
+   painted a full-strength bright hairline rim and a full-strength sheen, so the
+   0 -> 1 range of the slider read as an on/off switch instead of a fade.
+
+   Fix: every decorative alpha below is multiplied by --ylg-fill-strength, the
+   perceptual 0..1 value that applySettingsToDocument() writes on <html>
+   (0 at opacity 0, 1 at the maximum opacity). At 1 each factor becomes 1 and
+   every rule reproduces its original declaration EXACTLY, so the restored
+   checkpoint look is unchanged; at 0 the decorations are fully gone.
+
+   WHY THE ORIGINAL FILES COULD NOT BE EDITED
+   The eight engine stylesheets are pinned byte-for-byte by
+   tests/visual-restore-regressions.js (sha256 per file). Changing an alpha in
+   glass-material.css / glass-lighting.css / glass-refraction.css would fail
+   that checkpoint, so the ramp has to be a NEW stylesheet that re-states the
+   same declarations with one extra factor.
+
+   THE MATHS (kept deliberately simple)
+       new_alpha = original_alpha * var(--ylg-ramp)
+
+   --ylg-ramp is an alias declared once, on the .ylg-glass block itself:
+       --ylg-ramp: var(--ylg-fill-strength, 1)
+   Declaring it there (rather than on :root/<html>) means no rule in this file
+   touches a node that is not a glass surface, and every surface plus its
+   pseudo-elements inherits the same value.
+
+   * A bare multiplier, no extra curve, because --ylg-fill-strength is ALREADY
+     the perceptually shaped value (the contract says it is not raw alpha).
+     Shaping it a second time here would double the curve and make the low end
+     fade faster than the fill does.
+   * Colour tokens that carry their own alpha (--ylg-rim-light, --ylg-rim-dark,
+     --ylg-fringe-cool, --ylg-fringe-warm) cannot be multiplied inside rgba()
+     because their alpha is baked into the token. They are scaled with
+         color-mix(in srgb, TOKEN calc(var(--ylg-ramp) * 100%), transparent)
+     which mixes in premultiplied sRGB: the RGB stays identical and the alpha
+     becomes token_alpha * percentage. At 100% it returns the token unchanged.
+   * The fallback `1` on the alias matters: if the property is absent (older
+     settings.js, or a browser that drops it) every rule equals its original, so
+     this file is inert rather than destructive.
+   * Alpha is clamped by the browser at 1, so any out-of-range value degrades
+     safely instead of producing invalid CSS.
+
+   ORDER INSIDE THIS FILE IS PART OF THE MIRROR, NOT A PREFERENCE
+   The declarations copied here are the ones that WIN today, which is decided by
+   specificity first and stylesheet order second:
+     - box-shadow on .ylg-glass .......... glass-lighting.css (loaded last of
+       the equal-specificity pair; its rule beats the refraction rule, so the
+       faux fringes are dormant on surfaces that are both .ylg-glass and
+       [data-ylg-refract="1"] - which is every tagged refract surface, see
+       dom-adapter.js tag(): addClass("ylg-glass") + setAttr("data-ylg-refract")).
+     - box-shadow on hero/floating/chip ... glass-material.css (0,3,1 beats
+       0,2,1), so the level block below wins over the .ylg-glass block.
+     - ::after background ................ glass-refraction.css on refract
+       surfaces (loaded after the material rule of equal specificity), so the
+       two-layer refract version is re-stated AFTER the plain scatter.
+   Rule 1 therefore sits BEFORE rule 2 (so the base rim still wins on a refract
+   surface, as glass-lighting.css does today) and rule 8 sits AFTER rule 7 (so
+   the two-layer refract ::after still wins, as glass-refraction.css does today):
+   reproducing today's winners exactly instead of inventing a new one.
+
+   LOAD POSITION (integration, not visual): must come AFTER glass-lighting.css
+   (rule 2 competes with it at equal specificity) and after glass-material.css /
+   glass-refraction.css, i.e. anywhere at the end of the manifest "css" array.
+   Nothing here is !important, so the opt-in clear-state layer, glass-fallback.css
+   (forced colors, lowfx) and glass-motion.css still win their own properties,
+   and this file never names or pulls in the clear layer.
+
+   Never matches video, #movie_player, .ytp-*, the progress bar or any plain
+   YouTube element: every selector is gated on html[data-ylg-enabled="true"] and
+   ends in .ylg-glass (or [data-ylg-refract="1"], which the adapter only ever
+   sets on a .ylg-glass surface). No layout, geometry, radius, pointer or
+   transition is touched - only alpha values, i.e. paint.
+   ============================================================================ */
+
+/* ---- 1. REFRACTION RIM (mirrors glass-refraction.css [data-ylg-refract="1"]) -
+   Ramps: specular top/left hairline, dark counter-rim, the 1px rim ring and the
+   cool/warm chromatic fringes.
+   Original values (root tokens, --ylg-highlight 0.6):
+     inset 0 1px 0   rgba(255, 255, 255, 0.6*0.9)  = 0.54
+     inset 1px 0 0   rgba(255, 255, 255, 0.6*0.45) = 0.27
+     inset 0 -1px 0  rgba(15, 23, 42,  0.6*0.28)   = 0.168
+     inset 0 0 0 1px var(--ylg-rim-light)            = rgba(255,255,255,0.55)
+     inset 0 2px 1px -1px var(--ylg-fringe-cool)     = rgba(122,178,255,0.22)
+     inset 0 -2px 1px -1px var(--ylg-fringe-warm)    = rgba(255,138,168,0.16)
+   Deliberately FIRST: rule 2 below must keep beating it on a refract surface,
+   exactly as glass-lighting.css beats glass-refraction.css today. */
+html[data-ylg-enabled="true"] [data-ylg-refract="1"] {
+  box-shadow:
+    0 1px 1px var(--ylg-shadow-contact),
+    0 8px 24px var(--ylg-shadow-ambient),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9 * var(--ylg-ramp))),
+    inset 1px 0 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.45 * var(--ylg-ramp))),
+    inset 0 -1px 0 rgba(15, 23, 42, calc(var(--ylg-highlight) * 0.28 * var(--ylg-ramp))),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-ramp) * 100%), transparent),
+    inset 0 2px 1px -1px color-mix(in srgb, var(--ylg-fringe-cool) calc(var(--ylg-ramp) * 100%), transparent),
+    inset 0 -2px 1px -1px color-mix(in srgb, var(--ylg-fringe-warm) calc(var(--ylg-ramp) * 100%), transparent);
+}
+
+/* ---- 2. BASE RIM (mirrors glass-lighting.css `.ylg-glass`) -------------------
+   Ramps: the bright top-left specular hairline, the weak left hairline, the dark
+   bottom-right counter-rim, and the 1px rim ring. Depth shadows
+   (--ylg-shadow-contact / -ambient) are NOT decorations and are left untouched,
+   so the surface keeps its height at every opacity.
+   Original values: identical list to rule 1 minus the two fringes.
+   This is the rule that paints panel-level surfaces (watch metadata, #secondary,
+   the comments shell) today.
+
+   This rule also declares the alias below, so --ylg-ramp is defined on EVERY
+   .ylg-glass element (and inherited by its ::before / ::after) without any rule
+   ever targeting a non-glass node. */
+html[data-ylg-enabled="true"] .ylg-glass {
+  --ylg-ramp: var(--ylg-fill-strength, 1);
+  box-shadow:
+    0 1px 1px var(--ylg-shadow-contact),
+    0 8px 24px var(--ylg-shadow-ambient),
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9 * var(--ylg-ramp))),
+    inset 1px 0 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.45 * var(--ylg-ramp))),
+    inset 0 -1px 0 rgba(15, 23, 42, calc(var(--ylg-highlight) * 0.28 * var(--ylg-ramp))),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-ramp) * 100%), transparent);
+}
+
+/* ---- 3. HERO RIM (mirrors glass-material.css [data-ylg-level="hero"]) --------
+   Ramps: the 1px rim ring + the soft 1px dark inner bottom edge.
+   Original values: inset 0 0 0 1px var(--ylg-rim-light) = rgba(255,255,255,0.55),
+                    inset 0 -1px 1px var(--ylg-rim-dark)  = rgba(15,23,42,0.22).
+   Covers the masthead and the search capsule (both tagged level="hero"). The
+   guide rail is tagged hero too but its ID selector in src/styles/youtube.css
+   already replaces the whole shadow with a contact shadow only (no rim), so it
+   has no decoration to ramp. Specificity 0,3,1, so this wins over rule 2 exactly
+   as the material rule does today. */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="hero"] {
+  box-shadow:
+    0 2px 3px var(--ylg-shadow-contact),
+    0 14px 40px var(--ylg-shadow-ambient),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-ramp) * 100%), transparent),
+    inset 0 -1px 1px color-mix(in srgb, var(--ylg-rim-dark) calc(var(--ylg-ramp) * 100%), transparent);
+}
+
+/* ---- 4. FLOATING RIM (mirrors glass-material.css [data-ylg-level="floating"]) */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="floating"] {
+  box-shadow:
+    0 2px 4px var(--ylg-shadow-contact),
+    0 10px 28px var(--ylg-shadow-ambient),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-ramp) * 100%), transparent),
+    inset 0 -1px 1px color-mix(in srgb, var(--ylg-rim-dark) calc(var(--ylg-ramp) * 100%), transparent);
+}
+
+/* ---- 5. CHIP TOP HAIRLINE (mirrors glass-material.css [data-ylg-level="chip"])
+   Ramps: the directional top hairline plus the 0.18 rim ring and the 0.18 dark
+   bottom line that replaced the old closed ring (v1.3.26 fix).
+   Original values:
+     inset 0 1px 0      rgba(255, 255, 255, 0.6*0.55) = 0.33
+     inset 0 0 0 1px    rgba(255, 255, 255, 0.18)
+     inset 0 -1px 0     rgba(0, 0, 0, 0.18) */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="chip"] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.55 * var(--ylg-ramp))),
+    inset 0 0 0 1px rgba(255, 255, 255, calc(0.18 * var(--ylg-ramp))),
+    inset 0 -1px 0 rgba(0, 0, 0, calc(0.18 * var(--ylg-ramp))),
+    0 1px 2px var(--ylg-shadow-contact);
+}
+
+/* ---- 6. SPECULAR SHEEN (mirrors glass-lighting.css ::before) -----------------
+   Ramps: only the alpha of the elliptical top sheen gradient. content, inset,
+   z-index, pointer-events and the hover light-sweep transition stay owned by
+   glass-lighting.css - this file changes one value, not the layer.
+   Original value: rgba(255, 255, 255, 0.6 * 0.35) = 0.21 (0.6 * 0.14 = 0.084 in
+   the dark theme, where --ylg-sheen-alpha is 0.14). */
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="hero"]::before,
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="panel"]::before,
+html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="floating"]::before {
+  background:
+    radial-gradient(120% 55% at 30% 0%,
+      rgba(255, 255, 255, calc(var(--ylg-highlight) * var(--ylg-sheen-alpha) * var(--ylg-ramp))),
+      transparent 62%);
+}
+
+/* ---- 7. BOTTOM SCATTER (mirrors glass-material.css ::after) ------------------
+   Ramps: the two white stops of the bottom light pool. The ::after element's own
+   opacity: calc(0.5 + highlight * 0.5) and its fade mask are untouched, so the
+   pool keeps its shape and only its brightness follows the ramp.
+   Original values: rgba(255,255,255, 0.22*1.1 = 0.242) at 85%,
+                    rgba(255,255,255, 0.22*1.6 = 0.352) at 100%. */
+html[data-ylg-enabled="true"] .ylg-glass::after {
+  background:
+    linear-gradient(180deg,
+      transparent,
+      rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.1 * var(--ylg-ramp))) 85%,
+      rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.6 * var(--ylg-ramp))));
+}
+
+/* ---- 8. REFRACT ::after (mirrors glass-refraction.css [data-ylg-refract="1"]) -
+   On a refract surface this two-layer version wins over rule 7 today (equal
+   specificity, later file), so it is re-stated AFTER it and ramps both layers:
+   the lens-edge concentration down each vertical edge and the same bottom pool.
+   Original values: rgba(255,255,255, 0.6*0.18 = 0.108) / (0.6*0.12 = 0.072)
+   for the edges, plus the 0.242 / 0.352 stops of rule 7. */
+html[data-ylg-enabled="true"] [data-ylg-refract="1"]::after {
+  background:
+    linear-gradient(90deg,
+      rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.18 * var(--ylg-ramp))),
+      transparent 3px,
+      transparent calc(100% - 3px),
+      rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.12 * var(--ylg-ramp)))),
+    linear-gradient(180deg,
+      transparent,
+      rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.1 * var(--ylg-ramp))) 85%,
+      rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.6 * var(--ylg-ramp))));
+}

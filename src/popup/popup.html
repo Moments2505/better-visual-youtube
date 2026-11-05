@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Better visual Youtube</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="ylg-panel">
+    <div class="ylg-sheen" aria-hidden="true"></div>
+
+    <header class="ylg-header">
+      <div class="ylg-orb" aria-hidden="true"></div>
+      <h1>Better visual Youtube</h1>
+      <label class="ylg-switch" title="Enable extension">
+        <input type="checkbox" id="ylg-enabled" role="switch" aria-label="Enable extension">
+        <span class="ylg-knob"></span>
+      </label>
+    </header>
+
+    <main id="ylg-body">
+      <section class="ylg-section" aria-labelledby="ylg-theme-h">
+        <h2 id="ylg-theme-h">Theme</h2>
+        <div class="ylg-segmented" role="radiogroup" aria-labelledby="ylg-theme-h" id="ylg-theme">
+          <button type="button" data-value="auto" role="radio">Auto</button>
+          <button type="button" data-value="light" role="radio">Light</button>
+          <button type="button" data-value="dark" role="radio">Dark</button>
+        </div>
+      </section>
+
+      <section class="ylg-section" aria-labelledby="ylg-adj-h">
+        <h2 id="ylg-adj-h">Adjustments</h2>
+        <div class="ylg-slider-row">
+          <label for="ylg-blur">Blur strength</label>
+          <input type="range" id="ylg-blur" min="0" max="40" step="1" aria-label="Blur strength in pixels">
+          <output id="ylg-blur-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-opacity">Opacity</label>
+          <input type="range" id="ylg-opacity" min="0" max="100" step="1" aria-label="Surface opacity percent">
+          <output id="ylg-opacity-v"></output>
+        </div>
+        <div class="ylg-tint-row">
+          <label id="ylg-tint-label">Colour</label>
+          <div class="ylg-segmented ylg-five" role="radiogroup" aria-labelledby="ylg-tint-label" id="ylg-tint">
+            <button type="button" data-value="auto" role="radio">Auto</button>
+            <button type="button" data-value="black" role="radio">Black</button>
+            <button type="button" data-value="white" role="radio">White</button>
+            <button type="button" data-value="media" role="radio">Thumbnail</button>
+            <button type="button" data-value="custom" role="radio">Custom</button>
+          </div>
+          <div class="ylg-accent-row" id="ylg-accent-row" hidden>
+            <input type="color" id="ylg-accent" aria-label="Custom colour" value="#3ea6ff">
+            <div class="ylg-swatches" role="group" aria-label="Colour swatches">
+              <button type="button" class="ylg-swatch" data-color="#3ea6ff" style="background:#3ea6ff" aria-label="Blue"></button>
+              <button type="button" class="ylg-swatch" data-color="#a78bfa" style="background:#a78bfa" aria-label="Purple"></button>
+              <button type="button" class="ylg-swatch" data-color="#2dd4bf" style="background:#2dd4bf" aria-label="Teal"></button>
+              <button type="button" class="ylg-swatch" data-color="#fb7185" style="background:#fb7185" aria-label="Rose"></button>
+              <button type="button" class="ylg-swatch" data-color="#f59e0b" style="background:#f59e0b" aria-label="Amber"></button>
+            </div>
+          </div>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-refraction">Refraction</label>
+          <input type="range" id="ylg-refraction" min="0" max="100" step="1" aria-label="Refraction strength percent">
+          <output id="ylg-refraction-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-radius">Corner radius</label>
+          <input type="range" id="ylg-radius" min="6" max="28" step="1" aria-label="Corner radius in pixels">
+          <output id="ylg-radius-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-highlight">Specular Highlight</label>
+          <input type="range" id="ylg-highlight" min="0" max="100" step="1" aria-label="Specular highlight percent">
+          <output id="ylg-highlight-v"></output>
+        </div>
+        <label class="ylg-check-row" for="ylg-motion">
+          <input type="checkbox" id="ylg-motion"> Motion effects
+        </label>
+      </section>
+
+      <section class="ylg-section" aria-labelledby="ylg-optics-h">
+        <h2 id="ylg-optics-h">Optics</h2>
+        <label class="ylg-check-row" for="ylg-optics-enabled">
+          <input type="checkbox" id="ylg-optics-enabled" role="switch"> Optical depth (aberration + hover lens)
+        </label>
+        <label class="ylg-check-row" for="ylg-optics-aberration">
+          <input type="checkbox" id="ylg-optics-aberration"> Chromatic aberration
+        </label>
+        <div class="ylg-slider-row">
+          <label for="ylg-optics-ab">Dispersion</label>
+          <input type="range" id="ylg-optics-ab" min="0" max="40" step="1" aria-label="Chromatic dispersion">
+          <output id="ylg-optics-ab-v"></output>
+        </div>
+        <div class="ylg-slider-row"><label for="ylg-optics-lens">Magnifying Glass</label><input type="range" id="ylg-optics-lens" min="0" max="300" step="1" aria-label="Magnifying glass strength"><output id="ylg-optics-lens-v"></output></div>
+        <label class="ylg-check-row" for="ylg-optics-magnify">
+          <input type="checkbox" id="ylg-optics-magnify"> Hover magnification
+        </label>
+        <div class="ylg-slider-row">
+          <label for="ylg-optics-scale">Lens strength</label>
+          <input type="range" id="ylg-optics-scale" min="0" max="60" step="1" aria-label="Hover lens strength">
+          <output id="ylg-optics-scale-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-optics-hover">Hover lift</label>
+          <input type="range" id="ylg-optics-hover" min="100" max="112" step="1" aria-label="Hover scale percent">
+          <output id="ylg-optics-hover-v"></output>
+        </div>
+      </section>
+
+      <section class="ylg-section" aria-labelledby="ylg-amb-h">
+        <h2 id="ylg-amb-h">Ambient Light</h2>
+        <p class="ylg-hint">Manage ambient glow, quality and playback modes here.</p>
+        <label class="ylg-check-row" for="ylg-ambient-enabled">
+          <input type="checkbox" id="ylg-ambient-enabled" role="switch"> Enable Ambient Light
+        </label>
+        <div class="ylg-segmented ylg-quad" role="radiogroup" aria-label="Ambient quality" id="ylg-ambient-quality">
+          <button type="button" data-value="eco" role="radio">Eco</button>
+          <button type="button" data-value="balanced" role="radio">Balanced</button>
+          <button type="button" data-value="high" role="radio">High</button>
+          <button type="button" data-value="auto" role="radio">Auto</button>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-amb-blur">Glow blur</label>
+          <input type="range" id="ylg-amb-blur" min="0" max="140" step="5" aria-label="Ambient glow blur in pixels">
+          <output id="ylg-amb-blur-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-amb-spread">Spread</label>
+          <input type="range" id="ylg-amb-spread" min="0" max="200" step="1" aria-label="Ambient spread percent">
+          <output id="ylg-amb-spread-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-amb-saturation">Saturation</label>
+          <input type="range" id="ylg-amb-saturation" min="0" max="200" step="5" aria-label="Ambient saturation percent">
+          <output id="ylg-amb-saturation-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-amb-brightness">Brightness</label>
+          <input type="range" id="ylg-amb-brightness" min="0" max="200" step="5" aria-label="Ambient brightness percent">
+          <output id="ylg-amb-brightness-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-amb-fps">FPS limit</label>
+          <input type="range" id="ylg-amb-fps" min="1" max="30" step="1" aria-label="Ambient frames per second limit">
+          <output id="ylg-amb-fps-v"></output>
+        </div>
+        <div class="ylg-modes">
+          <label class="ylg-check-row" for="ylg-amb-normal"><input type="checkbox" id="ylg-amb-normal"> Normal mode</label>
+          <label class="ylg-check-row" for="ylg-amb-theater"><input type="checkbox" id="ylg-amb-theater"> Theater mode</label>
+          <label class="ylg-check-row" for="ylg-amb-fullscreen"><input type="checkbox" id="ylg-amb-fullscreen"> Fullscreen <span class="ylg-hint">(experimental)</span></label>
+        </div>
+      </section>
+    </main>
+
+    <footer class="ylg-footer">
+      <button type="button" id="ylg-reset">Reset to Defaults</button>
+      <span id="ylg-status" role="status" aria-live="polite"></span>
+    </footer>
+  </div>
+  <script src="../shared/settings.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

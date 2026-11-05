@@ -1,0 +1,105 @@
+/* ============================================================================
+   YouTube Liquid Glass - responsive.css (A3 scope, Lead-executed)
+   Breakpoints 1920/1440/1366/1280 + player modes (theater/fullscreen/mini)
+   + narrow-window + browser-zoom resilience. Only scales variables and
+   context-gated overrides - never restates material effects.
+   ============================================================================ */
+
+/* ---- Large desktop: slightly larger radii read better ------------------- */
+@media (min-width: 1920px) {
+  html[data-ylg-enabled="true"] {
+    --ylg-radius: calc(var(--ylg-radius) + 2px);
+  }
+}
+
+/* ---- 1440 and below: pull blur down a notch on hero surfaces ------------- */
+@media (max-width: 1440px) {
+  html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="hero"] {
+    -webkit-backdrop-filter: blur(calc(var(--ylg-blur-l) * 0.92)) saturate(1.5) brightness(1.04);
+    backdrop-filter: blur(calc(var(--ylg-blur-l) * 0.92)) saturate(1.5) brightness(1.04);
+  }
+}
+
+/* ---- 1366: tighten chips + cards ---------------------------------------- */
+@media (max-width: 1366px) {
+  html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="chip"] {
+    -webkit-backdrop-filter: blur(calc(var(--ylg-blur-s) * 0.85)) saturate(1.25);
+    backdrop-filter: blur(calc(var(--ylg-blur-s) * 0.85)) saturate(1.25);
+  }
+}
+
+/* ---- 1280: smallest supported desktop width ------------------------------ */
+@media (max-width: 1280px) {
+  html[data-ylg-enabled="true"] {
+    --ylg-radius: min(var(--ylg-radius), 14px);
+  }
+  html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="hero"] {
+    -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(1.45) brightness(1.04);
+    backdrop-filter: blur(var(--ylg-blur)) saturate(1.45) brightness(1.04);
+  }
+}
+
+/* ---- Narrow windows (zoomed or small): compact masthead/search ----------- */
+@media (max-width: 1000px) {
+  html[data-ylg-enabled="true"] ytd-masthead.ylg-glass {
+    border-radius: 0 0 var(--ylg-radius-s) var(--ylg-radius-s);
+  }
+  html[data-ylg-enabled="true"] #search-container.ylg-glass,
+  html[data-ylg-enabled="true"] ytd-searchbox.ylg-glass {
+    max-width: 52vw; /* keep logo + avatar visible, zoom-safe */
+  }
+}
+
+/* ---- THEATER MODE: header persists, secondary hidden by YouTube ---------
+   YouTube collapses #secondary in theater by removing it from the flow. The
+   previous rule forced opacity:1 here, which resurrected a ghost column and
+   produced a pale strip at the right edge (live-verified defect). Correct
+   behaviour: never override YouTube's own visibility; only make sure our glass
+   stops painting if the node is display:none anyway. */
+html[data-ylg-enabled="true"] ytd-watch-flexy[theater] #secondary.ylg-glass {
+  display: revert; /* respect YouTube; do not force a hidden sidebar visible */
+  opacity: inherit;
+}
+html[data-ylg-enabled="true"] ytd-watch-flexy[theater] ytd-masthead.ylg-glass {
+  border-radius: 0 0 var(--ylg-radius) var(--ylg-radius);
+}
+
+/* ---- FULLSCREEN: zero glass chrome over the video ------------------------ */
+html[data-ylg-enabled="true"]:-webkit-full-screen .ylg-glass,
+html[data-ylg-enabled="true"]:-webkit-full-screen .ylg-card,
+html[data-ylg-enabled="true"] .ytd-app-fullscreen .ylg-glass,
+html[data-ylg-enabled="true"] ytd-app[fullscreen] .ylg-glass {
+  display: none; /* YouTube's own fullscreen hides the masthead; enforce ours too */
+}
+html[data-ylg-enabled="true"] #movie_player:fullscreen ~ * .ylg-glass,
+html[data-ylg-enabled="true"] .ytp-fullscreen .ylg-glass {
+  display: none;
+}
+
+/* ---- MINIPLAYER: player-adjacent glass off (adapter also guards) --------- */
+html[data-ylg-enabled="true"] ytd-miniplayer .ylg-glass,
+html[data-ylg-enabled="true"] ytd-miniplayer-active .ylg-glass {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* ---- Reduced transparency (OS-level) ------------------------------------- */
+@media (prefers-reduced-transparency: reduce) {
+  html[data-ylg-enabled="true"] .ylg-glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-image:
+      linear-gradient(165deg,
+        rgba(var(--ylg-surface-tint-light), min(1, calc(var(--ylg-opacity) * 2))) 0%,
+        rgba(var(--ylg-surface-tint-light), min(1, calc(var(--ylg-opacity) * 1.6))) 100%);
+  }
+}
+
+/* ---- NO HORIZONTAL OVERFLOW ------------------------------------------------
+   Theater / full-bleed geometry plus our absolute ambient layers can open a
+   horizontal scroll gutter (live-verified: 1684px content in a 1699px viewport
+   left a pale strip on the right). clip (not hidden) avoids creating a scroll
+   container for the player. */
+html[data-ylg-enabled="true"] body {
+  overflow-x: clip;
+}

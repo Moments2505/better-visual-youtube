@@ -1,0 +1,17 @@
+/* A tall expanded card must not magnify down into the following comments.
+   Keep the shared panel material/timing, using a small lift in this state. */
+html[data-ylg-enabled="true"][data-ylg-optics="on"][data-ylg-motion="on"] ytd-watch-metadata.ylg-glass:has(#description-inline-expander[is-expanded]):is(:hover, :focus-within) {
+  transform: translateY(-3px);
+}
+html[data-ylg-enabled="true"][data-ylg-optics-magnify="0"] ytd-watch-metadata.ylg-glass:has(#description-inline-expander[is-expanded]):is(:hover, :focus-within) {
+  transform: none;
+}
+html[data-ylg-enabled="true"] ytd-watch-metadata #description[data-ylg-description-motion="1"] {
+  overflow: hidden !important;
+  min-height: 0 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass:has(#description-inline-expander[is-expanded]):is(:hover, :focus-within) {
+    transform: none;
+  }
+}
