@@ -16,7 +16,6 @@ Liquid Glass brings transparent surfaces and light-catching edges to the header,
 
 Ambient Light extends colours beyond the player. Choose how far the light spreads and how bright it feels, with quality controls in the same settings panel.
 
-![Better visual Youtube — Ambient Light promotional artwork](https://raw.githubusercontent.com/Soul-blade-2505/better-visual-youtube/main/docs/media/ambient-light-banner.png)
 
 ## Make it yours
 
