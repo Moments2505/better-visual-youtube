@@ -19,6 +19,7 @@
   "blur": 1,
   "enabled": true,
   "highlight": 0.62,
+  "hoverEffects": true,
   "motion": true,
   "opacity": 0.001347159213591947,
   "optics": {
@@ -33,6 +34,7 @@
   },
   "radius": 14,
   "refraction": 1,
+  "respectReducedTransparency": false,
   "theme": "light",
   "tint": "media",
   "schemaVersion": 8

@@ -1,12 +1,12 @@
-![Better visual Youtube — Liquid Glass and Ambient Light](https://raw.githubusercontent.com/Soul-blade-2505/better-visual-youtube/main/docs/media/liquid-glass-banner.png)
+![Better visual Youtube — Liquid Glass and Ambient Light](https://raw.githubusercontent.com/Moments2505/better-visual-youtube/main/docs/media/liquid-glass-banner.png)
 
 # Better visual Youtube
 
 A fresh look for YouTube, with transparent glass surfaces, colour that follows your video, and animations throughout the interface.
 
-**[Download v0.4.53](https://github.com/Soul-blade-2505/better-visual-youtube/releases/tag/v0.4.53)** · [Tiếng Việt](README-VI.md) · [Report an issue](https://github.com/Soul-blade-2505/better-visual-youtube/issues)
+**[Download beta](https://github.com/Moments2505/better-visual-youtube/releases)** · [Changelog](CHANGELOG.md) · [Tiếng Việt](README-VI.md) · [Report an issue](https://github.com/Moments2505/better-visual-youtube/issues)
 
-Made for desktop Microsoft Edge and Google Chrome. This first public release is a beta, with more refinements to come.
+Made for desktop Microsoft Edge and Google Chrome. Currently in beta, with more refinements to come.
 
 ## A little more depth
 
@@ -23,14 +23,14 @@ Choose a light or dark theme, tune the glass effects, and turn interface animati
 
 ## Get started
 
-1. Download **Better-visual-Youtube-0.4.53.zip** from [Releases](https://github.com/Soul-blade-2505/better-visual-youtube/releases/tag/v0.4.53) and extract it.
+1. Download the extension ZIP from [Releases](https://github.com/Moments2505/better-visual-youtube/releases) and extract it.
 2. Open `edge://extensions` or `chrome://extensions` and turn on **Developer mode**.
 3. Select **Load unpacked**, then choose the folder containing `manifest.json`.
 4. Reload YouTube and open the extension to explore the settings.
 
 [English installation guide](INSTALL-EN.md) · [Hướng dẫn cài đặt tiếng Việt](INSTALL-VI.md)
 
-Found a bug or have an idea? [Open an issue](https://github.com/Soul-blade-2505/better-visual-youtube/issues).
+Found a bug or have an idea? [Open an issue](https://github.com/Moments2505/better-visual-youtube/issues).
 
 ## Build with us
 

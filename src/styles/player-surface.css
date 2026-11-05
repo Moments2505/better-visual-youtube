@@ -172,11 +172,21 @@ html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-lef
     transition: none !important;
   }
 }
-@media (forced-colors: active), (prefers-reduced-transparency: reduce) {
+@media (forced-colors: active) {
   html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls,
   html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > .ytp-button,
   html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display,
   html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
+    background: Canvas !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls,
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display,
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
     background: Canvas !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;

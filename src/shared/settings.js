@@ -34,6 +34,7 @@
     "blur": 1,
     "enabled": true,
     "highlight": 0.62,
+    "hoverEffects": true,
     "motion": true,
     "opacity": 0.001347159213591947,
     "optics": {
@@ -48,6 +49,7 @@
     },
     "radius": 14,
     "refraction": 1,
+    "respectReducedTransparency": false,
     "theme": "light",
     "tint": "media"
   };
@@ -438,10 +440,14 @@
     // confirmed no stylesheet consumes it (the optics layer reads the
     // data-ylg-optics-request-* attributes and its own inline props instead).
     de.setAttribute("data-ylg-enabled", s.enabled ? "true" : "false");
+    // Glass is an explicit visual preference. System mode can opt into solid
+    // surfaces; forced-colour palettes remain controlled by their own CSS.
+    de.setAttribute("data-ylg-transparency", s.respectReducedTransparency ? "system" : "glass");
     // data-ylg-render-mode is gone with the `renderMode` setting (schema 8):
     // advanced refraction is now driven by refraction > 0 in bootstrap.js.
     applyThemeToDocument(doc, s.theme);
     de.setAttribute("data-ylg-motion", s.motion ? "on" : "off");
+    de.setAttribute("data-ylg-hover", s.hoverEffects ? "on" : "off");
 
     // Ambient gate is INDEPENDENT of glass styling; master toggle gates both.
     var ambOn = !!(s.enabled && s.ambientLight && s.ambientLight.enabled);

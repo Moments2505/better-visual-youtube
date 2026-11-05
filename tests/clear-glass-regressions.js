@@ -664,7 +664,9 @@ test("every clear rule is gated on the exact attribute pair the runtime writes",
   assert.ok(clearSelectors.length >= 8);
   for (const selector of clearSelectors) {
     assert.ok(selector.startsWith(GATE), "ungated selector would paint outside clear mode: " + selector);
-    const rest = selector.slice(GATE.length);
+    // The accessibility opt-in may narrow the root gate further; it cannot
+    // replace the master/clear gate or remove the descendant target.
+    const rest = selector.slice(GATE.length).replace(/^:not\(\[data-ylg-transparency="glass"\]\)/, "");
     assert.ok(/^\s+\S/.test(rest), "the gate must be followed by a real target: " + selector);
   }
   // The gate includes data-ylg-enabled so a disabled extension can never go clear...

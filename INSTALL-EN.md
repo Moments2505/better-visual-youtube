@@ -4,7 +4,7 @@ For Microsoft Edge and Google Chrome on desktop.
 
 ## First installation
 
-1. Download **Better-visual-Youtube-0.4.53.zip** from [the release page](https://github.com/Soul-blade-2505/better-visual-youtube/releases/tag/v0.4.53).
+1. Download the extension ZIP from [Releases](https://github.com/Moments2505/better-visual-youtube/releases).
 2. Extract it into a folder you will keep on your computer.
 3. Open `edge://extensions` in Edge or `chrome://extensions` in Chrome.
 4. Turn on **Developer mode**, select **Load unpacked**, and choose the folder containing `manifest.json`.
@@ -20,4 +20,4 @@ Settings are stored in your browser. **Reset to Defaults** restores the included
 
 ## Feedback
 
-[Report a bug or suggest a feature on GitHub](https://github.com/Soul-blade-2505/better-visual-youtube/issues).
+[Report a bug or suggest a feature on GitHub](https://github.com/Moments2505/better-visual-youtube/issues).

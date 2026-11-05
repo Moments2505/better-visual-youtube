@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" dark>
+<meta charset="utf-8">
+<title>Reduced-transparency contrast regression</title>
+<style>
+  :root { color-scheme: light; --native-bg: #fff; --native-fg: #0f0f0f; --native-muted: #606060; }
+  :root[dark] { --native-bg: #0f0f0f; --native-fg: #f1f1f1; --native-muted: #aaa; }
+  ytd-app { --yt-spec-base-background: var(--native-bg); --yt-spec-text-primary: var(--native-fg); --yt-spec-text-secondary: var(--native-muted); --yt-sys-color-baseline--text-primary: var(--native-fg); --yt-sys-color-baseline--text-primary-inverse: var(--native-bg); }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px Arial, sans-serif; background: var(--native-bg); color: var(--native-fg); }
+  ytd-app { display: block; }
+  #frosted-glass { position: fixed; inset: 0 0 auto; height: 56px; }
+  #masthead-container { position: fixed; inset: 0 0 auto; z-index: 2020; }
+  ytd-masthead { display: flex; align-items: center; gap: 45px; height: 56px; padding: 12px 24px; }
+  #center { flex: 1; max-width: 520px; }
+  .ytSearchboxComponentInputBox { display: flex; padding: 6px 18px; }
+  input { min-width: 0; flex: 1; border: 0; background: transparent; }
+  .native-label, .native-icon, input { color: var(--yt-spec-text-primary); }
+  .native-icon { width: 22px; height: 22px; fill: currentColor; }
+  #guide { position: fixed; left: 0; top: 56px; bottom: 0; width: 220px; }
+  #guide-inner-content { height: 100%; padding: 24px; }
+  ytd-guide-entry-renderer { display: flex; align-items: center; gap: 16px; padding: 18px 0; }
+  main { padding: 90px 32px 30px 250px; }
+  .tile { height: 220px; border-radius: 14px; background: linear-gradient(130deg,#364469,#6f4e43); }
+  .fixture-tools { margin-top: 28px; padding: 18px; border: 1px solid #777; border-radius: 12px; }
+  .fixture-tools label { display: inline-block; margin: 8px 12px 8px 0; }
+  .fixture-tools select, .fixture-tools button { padding: 6px; }
+  pre { white-space: pre-wrap; font-size: 13px; }
+  #player { background: #151515; margin-top: 20px; height: 140px; position: relative; }
+  .ytp-chrome-bottom { position: absolute; bottom: 10px; left: 16px; right: 16px; color: white; }
+  .ytp-left-controls { display: flex; gap: 12px; align-items: center; }
+  .ytp-button { color: white; width: 40px; height: 40px; border: 0; border-radius: 50%; }
+  .ytp-time-display { color: white; padding: 10px; }
+</style>
+<ytd-app>
+  <div id="frosted-glass"></div>
+  <div id="masthead-container"><ytd-masthead class="ylg-glass" data-ylg-level="hero">
+    <span class="native-label" id="brand">YouTube</span>
+    <div id="center"><div class="ytSearchboxComponentInputBox"><input id="search" class="ytSearchboxComponentInput" placeholder="Search"><span class="native-label">⌕</span></div></div>
+    <span class="native-label" id="create">+ Create</span>
+  </ytd-masthead></div>
+  <aside id="guide"><div id="guide-inner-content" class="ylg-glass" data-ylg-level="panel">
+    <ytd-guide-entry-renderer><svg class="native-icon" viewBox="0 0 24 24"><path d="M3 11 12 3 21 11v10h-6v-7H9v7H3z"/></svg><span class="native-label" id="home">Home</span></ytd-guide-entry-renderer>
+    <ytd-guide-entry-renderer><span class="native-label">Subscriptions</span></ytd-guide-entry-renderer>
+    <ytd-guide-entry-renderer><span class="native-label">History</span></ytd-guide-entry-renderer>
+    <ytd-guide-entry-renderer><span class="native-label">Watch later</span></ytd-guide-entry-renderer>
+  </div></aside>
+  <main>
+    <div class="tile"></div><h2>Theme contrast test</h2>
+    <p>This fixture loads the extension's actual CSS and settings. Enable reduced transparency with browser emulation to reproduce the reported contrast issue.</p>
+    <div id="player"><div class="ytp-chrome-bottom"><div class="ytp-left-controls"><button id="play" class="ytp-button">▶</button><span class="ytp-time-display">0:12 / 4:53</span></div></div></div>
+    <div class="fixture-tools">
+      <label>YouTube <select id="site"><option>dark</option><option>light</option></select></label>
+      <label>System canvas <select id="system"><option>light</option><option>dark</option></select></label>
+      <label>Glass <select id="glass"><option>light</option><option>dark</option><option>auto</option></select></label>
+      <label>Opacity <select id="opacity"><option value="0.001347159213591947">Default</option><option value="0">Clear</option></select></label>
+      <label>Extension <select id="enabled"><option value="true">On</option><option value="false">Off</option></select></label>
+      <label><input type="checkbox" id="system-transparency"> Follow system transparency</label>
+      <button id="measure">Measure contrast</button><button id="matrix">Run theme matrix</button>
+      <pre id="result" aria-live="polite">Loading styles…</pre>
+    </div>
+  </main>
+</ytd-app>
+<script src="../../src/shared/settings.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const byId = id => document.getElementById(id);
+  const frames = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  function apply() {
+    document.documentElement.toggleAttribute('dark', byId('site').value === 'dark');
+    document.documentElement.style.colorScheme = byId('system').value;
+    YLG_SETTINGS.applySettingsToDocument(document, {theme: byId('glass').value, opacity: Number(byId('opacity').value), enabled: byId('enabled').value === 'true', respectReducedTransparency: byId('system-transparency').checked});
+  }
+  function rgb(value) { return value.match(/[\d.]+/g).slice(0,3).map(Number); }
+  function luminance(value) { return rgb(value).map(x => x/255).map(x => x <= .04045 ? x/12.92 : ((x+.055)/1.055)**2.4).reduce((sum,x,i) => sum+x*[.2126,.7152,.0722][i],0); }
+  function contrast(a,b) {
+    // Transparent backgrounds require compositing against actual page pixels.
+    // This fixture only asserts contrast for the solid accessibility fallback.
+    const channels=a.match(/[\d.]+/g).map(Number);
+    if(channels.length===4 && channels[3]!==1) return null;
+    const x=luminance(a),y=luminance(b); return +((Math.max(x,y)+.05)/(Math.min(x,y)+.05)).toFixed(2);
+  }
+  function measure() {
+    const header = getComputedStyle(byId('frosted-glass'),'::before');
+    const sidebar = getComputedStyle(byId('guide-inner-content'));
+    const play = getComputedStyle(byId('play'));
+    return {site:byId('site').value,system:byId('system').value,glass:byId('glass').value,opacity:byId('opacity').value,followSystem:byId('system-transparency').checked,
+      reduced:matchMedia('(prefers-reduced-transparency: reduce)').matches,forced:matchMedia('(forced-colors: active)').matches,
+      header:{background:header.backgroundColor,text:getComputedStyle(byId('brand')).color,ratio:contrast(header.backgroundColor,getComputedStyle(byId('brand')).color),filter:header.backdropFilter},
+      sidebar:{background:sidebar.backgroundColor,text:getComputedStyle(byId('home')).color,ratio:contrast(sidebar.backgroundColor,getComputedStyle(byId('home')).color),filter:sidebar.backdropFilter},
+      player:{background:play.backgroundColor,text:play.color,ratio:contrast(play.backgroundColor,play.color)}};
+  }
+  async function report() { apply(); await frames(); byId('result').textContent=JSON.stringify(measure(),null,2); }
+  async function matrix() {
+    if(!matchMedia('(prefers-reduced-transparency: reduce)').matches || matchMedia('(forced-colors: active)').matches || byId('enabled').value!=='true' || !byId('system-transparency').checked) {
+      byId('result').textContent='Enable reduced-transparency emulation, disable forced-colors emulation, enable the extension, and select Follow system transparency before running the contrast matrix.';
+      return;
+    }
+    const saved=['site','system','glass','opacity'].map(id=>[id,byId(id).value]); const cases=[];
+    for(const site of ['dark','light']) for(const system of ['dark','light']) for(const glass of ['auto','dark','light']) for(const opacity of ['0','0.001347159213591947']) {
+      for(const [id,value] of Object.entries({site,system,glass,opacity})) byId(id).value=value;
+      apply(); await frames(); cases.push(measure());
+    }
+    for(const [id,value] of saved) byId(id).value=value; apply();
+    const failures=cases.filter(x=>['header','sidebar','player'].some(key=>x[key].ratio===null || x[key].ratio<4.5));
+    byId('result').textContent=JSON.stringify({cases:cases.length,failures:failures.length,results:cases},null,2);
+  }
+  byId('measure').onclick=report; byId('matrix').onclick=matrix;
+  document.querySelectorAll('select').forEach(el=>el.onchange=report);
+  byId('system-transparency').onchange=report;
+  (async()=>{
+    const manifest=await fetch('../../manifest.json').then(r=>r.json());
+    const styles=params.has('baseline') ? ['dist/theme-baseline.css'] : manifest.content_scripts[0].css;
+    await Promise.all(styles.map(file=>new Promise((resolve,reject)=>{const link=document.createElement('link');link.rel='stylesheet';link.href='../../'+file;link.onload=resolve;link.onerror=reject;document.head.appendChild(link);}))); await report();
+  })();
+</script>
+</html>

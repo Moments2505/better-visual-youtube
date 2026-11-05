@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Optional feedback for Better visual Youtube.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>Better visual Youtube — Feedback</title>
+  <link rel="icon" href="icon128.png">
+  <link rel="stylesheet" href="survey.css">
+  <script src="survey.js" defer></script>
+</head>
+<body>
+  <main class="card">
+    <header class="brand-row">
+      <a class="brand" href="https://github.com/Moments2505/better-visual-youtube"><img src="icon128.png" width="40" height="40" alt=""><span>Better visual Youtube</span></a>
+      <div class="languages" role="group" aria-label="Language / Ngôn ngữ">
+        <button type="button" data-language="en" aria-pressed="true">EN</button>
+        <button type="button" data-language="vi" aria-pressed="false">VI</button>
+      </div>
+    </header>
+    <p class="eyebrow" data-i18n="optional">OPTIONAL FEEDBACK</p>
+    <h1 data-i18n="heading">What could be better?</h1>
+    <p class="intro" data-i18n="intro">You've removed Better visual Youtube. If you'd like, tell us what didn't work for you.</p>
+    <section aria-labelledby="reason-heading">
+      <h2 id="reason-heading" data-i18n="why">Why did you remove it?</h2>
+      <p class="hint" data-i18n="multiple">Choose any that apply. You can also leave these blank.</p>
+      <div class="reasons">
+        <label><input type="checkbox" name="reason" value="performance"><span data-i18n="performance">Lag or high resource use</span></label>
+        <label><input type="checkbox" name="reason" value="bugs"><span data-i18n="bugs">Something looked broken</span></label>
+        <label><input type="checkbox" name="reason" value="visuals"><span data-i18n="visuals">The visual effects weren't for me</span></label>
+        <label><input type="checkbox" name="reason" value="settings"><span data-i18n="settings">Settings were hard to use</span></label>
+        <label><input type="checkbox" name="reason" value="not-needed"><span data-i18n="not-needed">I no longer need it</span></label>
+        <label><input type="checkbox" name="reason" value="other"><span data-i18n="other">Something else</span></label>
+      </div>
+      <label class="detail-label" for="details" data-i18n="detailLabel">What were you unhappy with, or what would you change?</label>
+      <textarea id="details" rows="4" maxlength="2000" placeholder="A little detail helps. Please leave out private information."></textarea>
+      <p class="hint" data-i18n="detailHint">Optional. You don't need to share your name or account details.</p>
+      <div class="actions">
+        <button type="button" id="email" class="primary" disabled data-i18n="email">Open feedback email</button>
+        <button type="button" id="copy" disabled data-i18n="copy">Copy feedback</button>
+      </div>
+      <p class="hint" data-i18n="sendHint">This opens an email draft to QuanNguyen. You review it and choose whether to send.</p>
+      <p id="status" role="status" aria-live="polite"></p>
+      <textarea id="feedback-preview" rows="7" readonly hidden aria-label="Feedback text"></textarea>
+      <noscript><p>You can email feedback to <a href="mailto:quannguyenproducer2505@gmail.com">quannguyenproducer2505@gmail.com</a>.</p></noscript>
+    </section>
+    <footer>
+      <p data-i18n="privacy">Nothing you type here is automatically submitted or saved. You can close this page at any time.</p>
+      <a id="privacy-link" href="https://github.com/Moments2505/better-visual-youtube/blob/main/docs/PRIVACY-EN.md" data-i18n="privacyLink">Privacy policy</a>
+      <a href="mailto:quannguyenproducer2505@gmail.com">quannguyenproducer2505@gmail.com</a>
+    </footer>
+  </main>
+</body>
+</html>

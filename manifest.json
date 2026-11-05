@@ -2,9 +2,12 @@
   "manifest_version": 3,
   "name": "Better visual Youtube",
   "short_name": "Better visual",
-  "version": "0.4.53",
+  "version": "0.4.58",
   "description": "Give YouTube a new look with Liquid Glass, Ambient Light and customizable animations.",
   "minimum_chrome_version": "107",
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
   "icons": {
     "16": "assets/icons/icon16.png",
     "32": "assets/icons/icon32.png",
@@ -39,6 +42,7 @@
         "src/content/player-motion.js",
         "src/content/micro-interactions.js",
         "src/content/description-motion.js",
+        "src/content/panel-hover.js",
         "src/content/bootstrap.js"
       ],
       "css": [
@@ -63,7 +67,9 @@
         "src/styles/panel-refinement.css",
         "src/styles/interaction-performance.css",
         "src/styles/micro-interactions.css",
-        "src/styles/description-motion.css"
+        "src/styles/description-motion.css",
+        "src/styles/accessibility-surfaces.css",
+        "src/styles/hover-refinement.css"
       ],
       "run_at": "document_start",
       "all_frames": false

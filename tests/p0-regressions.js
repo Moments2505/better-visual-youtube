@@ -178,7 +178,7 @@ test("every popup slider commits the correct normalized setting", () => {
 });
 
 test("all popup switches commit independently and preserve the other groups", () => {
-  const cases = [["ylg-motion","motion"],["ylg-optics-enabled","optics.enabled"],
+  const cases = [["ylg-motion","motion"],["ylg-hover-effects","hoverEffects"],["ylg-optics-enabled","optics.enabled"],
     ["ylg-optics-aberration","optics.aberration"],["ylg-optics-magnify","optics.magnify"],
     ["ylg-ambient-enabled","ambientLight.enabled"],["ylg-amb-normal","ambientLight.modes.normal"],
     ["ylg-amb-theater","ambientLight.modes.theater"],["ylg-amb-fullscreen","ambientLight.modes.fullscreen"]];
@@ -188,6 +188,101 @@ test("all popup switches commit independently and preserve the other groups", ()
     const snapshot=h.writes.at(-1).settings;
     assert.equal(path.split('.').reduce((v,k)=>v[k],snapshot),false,id);
     assert.equal(snapshot.enabled,true);assert.equal(snapshot.optics.lensPx,92);
+  }
+});
+
+test("wheel adjusts every slider on its native step and coalesces saves", () => {
+  const ids = ["ylg-blur", "ylg-opacity", "ylg-refraction", "ylg-radius", "ylg-highlight", "ylg-optics-lens", "ylg-optics-ab", "ylg-optics-scale", "ylg-optics-hover", "ylg-amb-blur", "ylg-amb-spread", "ylg-amb-saturation", "ylg-amb-brightness", "ylg-amb-fps"];
+  for (const id of ids) {
+    const h = loaded(); const inp = h.$(id);
+    const min = Number(inp.getAttribute("min")), step = Number(inp.getAttribute("step"));
+    h.input(id, min); inp.emit("change");
+    const startWrites = h.writes.length;
+    assert.equal(inp.emit("wheel", { deltaY: -100 }).defaultPrevented, true, id);
+    assert.equal(Number(inp.value), min + step, id);
+    inp.emit("wheel", { deltaY: -100 });
+    assert.equal(Number(inp.value), min + 2 * step, id);
+    assert.equal(h.writes.length, startWrites, "wheel burst stays debounced");
+    h.timer.tick(150); assert.equal(h.writes.length, startWrites + 1, id);
+    const dragged = loaded(); dragged.input(id, min + 2 * step); dragged.$(id).emit("change");
+    assert.deepEqual(h.writes.at(-1).settings, dragged.writes.at(-1).settings, "wheel saves the same setting as dragging: " + id);
+  }
+});
+
+test("wheel leaves disabled sliders, zoom, horizontal scrolling and end stops alone", () => {
+  const h = loaded(); const inp = h.$("ylg-blur");
+  for (const extra of [{ctrlKey:true}, {metaKey:true}, {deltaX:200}, {deltaY:0}]) {
+    assert.equal(inp.emit("wheel", {deltaY:-100,...extra}).defaultPrevented, false);
+  }
+  h.input("ylg-blur", 40); inp.emit("change");
+  assert.equal(inp.emit("wheel", {deltaY:-100}).defaultPrevented, false);
+  h.input("ylg-blur", 0); inp.emit("change");
+  assert.equal(inp.emit("wheel", {deltaY:100}).defaultPrevented, false);
+  h.change("ylg-enabled", false);
+  assert.equal(inp.emit("wheel", {deltaY:-100}).defaultPrevented, false);
+  const loading = popup(); assert.equal(loading.$("ylg-blur").emit("wheel", {deltaY:-100}).defaultPrevented, false);
+});
+
+test("trackpad wheel accumulates small deltas and resets on direction change", () => {
+  const h = loaded(); const inp = h.$("ylg-blur");
+  h.input("ylg-blur", 10); inp.emit("change");
+  for (let i=0;i<3;i++) inp.emit("wheel", {deltaY:-6,deltaMode:0});
+  assert.equal(inp.value,"10"); inp.emit("wheel", {deltaY:-6,deltaMode:0}); assert.equal(inp.value,"11");
+  inp.emit("wheel", {deltaY:-18}); inp.emit("wheel", {deltaY:6}); assert.equal(inp.value,"11");
+  inp.emit("wheel", {deltaY:18}); assert.equal(inp.value,"10");
+  inp.emit("wheel", {deltaY:-1,deltaMode:1}); assert.equal(inp.value,"11");
+});
+
+test("hover off persists independently of motion and preserves static glass optics", () => {
+  const h = loaded(); const S = h.context.YLG_SETTINGS;
+  h.change("ylg-hover-effects", false);
+  const saved = h.writes.at(-1).settings;
+  assert.equal(saved.hoverEffects, false); assert.equal(saved.motion,true); assert.equal(saved.optics.magnify,true);
+  assert.equal(loaded(saved).$("ylg-hover-effects").checked, false);
+  let changed; const installs = [];
+  const page = sandbox(); const settings = page.context.YLG_SETTINGS;
+  page.context.YLG_OPTICS = {install:opts => installs.push(opts), teardown(){}};
+  settings.getStoredSettings = cb => cb(settings.normalizeSettings(saved));
+  settings.onSettingsChanged = cb => {changed=cb;};
+  page.load("src/content/bootstrap.js");
+  assert.equal(page.doc.documentElement.getAttribute("data-ylg-hover"),"off");
+  assert.equal(installs.at(-1).magnifyScale,0);
+  assert.equal(installs.at(-1).lensPx,saved.optics.lensPx);
+  assert.equal(installs.at(-1).aberrationPx,saved.optics.aberrationPx);
+  changed({...saved,hoverEffects:true});
+  assert.equal(installs.at(-1).magnifyScale,saved.optics.magnifyScale);
+  assert.equal(page.doc.documentElement.getAttribute("data-ylg-hover"),"on");
+});
+
+test("panel hover controller follows master, hover, motion and magnification switches", () => {
+  const h = sandbox(); const calls = []; let changed;
+  const S = h.context.YLG_SETTINGS;
+  h.context.YLG_PANEL_HOVER = {init(){calls.push("init");},teardown(){calls.push("teardown");}};
+  S.getStoredSettings = cb => cb(S.normalizeSettings({}));
+  S.onSettingsChanged = cb => {changed=cb;};
+  h.load("src/content/bootstrap.js"); assert.equal(calls.at(-1),"init");
+  for(const settings of [{enabled:false},{hoverEffects:false},{motion:false},{optics:{enabled:false}},{optics:{magnify:false}}]) {
+    changed(settings); assert.equal(calls.at(-1),"teardown");
+    changed({}); assert.equal(calls.at(-1),"init");
+  }
+});
+
+test("system transparency opt-in persists, restores and respects the master switch", () => {
+  const h = loaded();
+  assert.equal(h.$("ylg-system-transparency").checked, false);
+  h.change("ylg-system-transparency", true);
+  const saved = h.writes.at(-1).settings;
+  assert.equal(saved.respectReducedTransparency, true);
+  assert.equal(saved.opacity, h.context.YLG_SETTINGS.DEFAULT_SETTINGS.opacity);
+  const reopened = loaded(saved);
+  assert.equal(reopened.$("ylg-system-transparency").checked, true);
+  reopened.change("ylg-enabled", false);
+  assert.equal(reopened.$("ylg-system-transparency").disabled, true);
+  assert.equal(reopened.writes.at(-1).settings.respectReducedTransparency, true);
+  const S = h.context.YLG_SETTINGS;
+  for (const [raw, expected] of [[undefined, "glass"], [false, "glass"], [true, "system"], ["true", "glass"]]) {
+    S.applySettingsToDocument(h.doc, { respectReducedTransparency: raw });
+    assert.equal(h.doc.documentElement.getAttribute("data-ylg-transparency"), expected);
   }
 });
 

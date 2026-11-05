@@ -12,7 +12,11 @@ Extension không gửi lịch sử duyệt web, thông tin đăng nhập, khung 
 
 ## Kết nối mạng và bên thứ ba
 
-YouTube vẫn thực hiện các kết nối thông thường theo chính sách của họ. Ambient Light có thể yêu cầu ảnh storyboard từ YouTube để xử lý màu video. Các liên kết bên ngoài, như trang hỗ trợ và tài liệu, chỉ mở khi bạn chọn và áp dụng chính sách của từng website.
+YouTube vẫn thực hiện các kết nối thông thường theo chính sách của họ. Ambient Light có thể yêu cầu ảnh storyboard từ YouTube để xử lý màu video. Các liên kết bên ngoài, như trang hỗ trợ và tài liệu, áp dụng chính sách của từng website.
+
+Khi gỡ extension, trình duyệt mở một trang góp ý tự nguyện trên GitHub Pages. Địa chỉ cố định này không chứa mã nhận diện người dùng, lịch sử duyệt web hay cài đặt. GitHub xử lý thông tin truy cập website thông thường theo chính sách của họ. Trang không có công cụ phân tích truy cập và không tự gửi hoặc lưu câu trả lời.
+
+Bạn có thể sao chép góp ý hoặc mở bản nháp trong ứng dụng email. QuanNguyen chỉ nhận được phản hồi khi bạn tự gửi email; lúc đó nội dung và thông tin người gửi do dịch vụ email cung cấp sẽ được chia sẻ. Phản hồi đã gửi được giữ trong hộp thư hỗ trợ. Bạn có thể liên hệ địa chỉ bên dưới để yêu cầu xóa.
 
 ## Quyền truy cập
 

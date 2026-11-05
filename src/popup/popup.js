@@ -189,6 +189,8 @@
     setSlider("ylg-radius", "ylg-radius-v", s.radius, px);
     setSlider("ylg-highlight", "ylg-highlight-v", Math.round(s.highlight * 100), pct);
     setChecked("ylg-motion", s.motion);
+    setChecked("ylg-hover-effects", s.hoverEffects);
+    setChecked("ylg-system-transparency", s.respectReducedTransparency);
     var a = s.ambientLight || {};
     setChecked("ylg-ambient-enabled", a.enabled);
     setSlider("ylg-amb-blur", "ylg-amb-blur-v", a.blur, px);
@@ -263,13 +265,36 @@
   function bindSlider(id, valId, fn, fmt) {
     var inp = $(id);
     if (!inp) return;
-    inp.addEventListener("input", function () {
-      if (inp.disabled || !current) return;
-      var raw = parseFloat(inp.value);
+    function applyValue(raw) {
       var out = $(valId);
       if (out) out.textContent = fmt ? fmt(raw) : String(raw);
       fn(raw);
+    }
+    inp.addEventListener("input", function () {
+      if (inp.disabled || !current) return;
+      applyValue(parseFloat(inp.value));
     });
+    var wheelTarget = inp.closest(".ylg-slider-row") || inp;
+    var wheelPixels = 0, wheelTime = 0;
+    wheelTarget.addEventListener("wheel", function (e) {
+      if (inp.disabled || !current || e.ctrlKey || e.metaKey || !e.deltaY || Math.abs(e.deltaX || 0) > Math.abs(e.deltaY)) return;
+      var value = parseFloat(inp.value), min = Number(inp.getAttribute("min")), max = Number(inp.getAttribute("max"));
+      var step = Number(inp.getAttribute("step")) || 1;
+      var direction = e.deltaY < 0 ? 1 : -1;
+      // At an end stop, scrolling may continue through the popup normally.
+      if ((direction > 0 && value >= max) || (direction < 0 && value <= min)) { wheelPixels = 0; return; }
+      e.preventDefault();
+      var now = Date.now();
+      if (now - wheelTime > 180 || Math.sign(wheelPixels) !== Math.sign(e.deltaY)) wheelPixels = 0;
+      wheelTime = now;
+      wheelPixels += e.deltaY;
+      if (!e.deltaMode && Math.abs(wheelPixels) < 24) return;
+      wheelPixels = 0;
+      var next = Math.min(max, Math.max(min, min + (Math.round((value - min) / step) + direction) * step));
+      next = Number(next.toFixed(8));
+      inp.value = String(next);
+      applyValue(next); // Uses the same normalization and 150ms save as dragging.
+    }, { passive: false });
   }
 
   // Close/hidden flush is best-effort; committed range changes and all discrete
@@ -337,6 +362,12 @@
 
     var motion = $("ylg-motion");
     if (motion) motion.addEventListener("change", function () { update({ motion: this.checked }); });
+    var hoverEffects = $("ylg-hover-effects");
+    if (hoverEffects) hoverEffects.addEventListener("change", function () { update({ hoverEffects: this.checked }); });
+    var systemTransparency = $("ylg-system-transparency");
+    if (systemTransparency) systemTransparency.addEventListener("change", function () {
+      update({ respectReducedTransparency: this.checked });
+    });
 
     // ambient
     var ambEnabled = $("ylg-ambient-enabled");

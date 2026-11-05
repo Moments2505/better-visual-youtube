@@ -144,10 +144,17 @@ html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-watch-metadata #descript
   box-shadow: none !important;
 }
 
-/* Forced-colors / reduced-transparency: the platform asks for solid surfaces,
-   which outranks this preference. */
-@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+/* Forced colours keep the platform palette. Reduced transparency uses solid
+   surfaces only when Follow system transparency is enabled. */
+@media (forced-colors: active) {
   html[data-ylg-enabled="true"][data-ylg-fill="none"] .ylg-glass {
+    background-color: Canvas;
+    background-image: none;
+    box-shadow: none;
+  }
+}
+@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+  html[data-ylg-enabled="true"][data-ylg-fill="none"]:not([data-ylg-transparency="glass"]) .ylg-glass {
     background-color: Canvas;
     background-image: none;
     box-shadow: none;

@@ -1,0 +1,20 @@
+/* Solid accessibility surfaces must use the same palette as YouTube's text.
+   Canvas otherwise follows the browser/OS scheme, which can be light while
+   YouTube is dark (or the reverse). Keep this local to extension surfaces:
+   the saved glass theme and the page's own theme remain independent.
+   Forced colors retains the system's contrast palette. */
+@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+  html[data-ylg-enabled="true"][dark]:not([data-ylg-transparency="glass"]) :where(.ylg-glass, #frosted-glass, #masthead-container) {
+    color-scheme: dark;
+  }
+
+  html[data-ylg-enabled="true"]:not([dark]):not([data-ylg-transparency="glass"]) :where(.ylg-glass, #frosted-glass, #masthead-container) {
+    color-scheme: light;
+  }
+
+  /* YouTube's video controls have white glyphs in both site themes. */
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom,
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom .ylg-glass {
+    color-scheme: dark;
+  }
+}

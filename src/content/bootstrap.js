@@ -125,7 +125,7 @@
         if (s.enabled !== false && opt.enabled !== false) {
           OPT.install({
             aberrationPx: (opt.aberration === false) ? 0 : opt.aberrationPx,
-            magnifyScale: (opt.magnify === false) ? 0 : opt.magnifyScale,
+            magnifyScale: (s.hoverEffects === false || opt.magnify === false) ? 0 : opt.magnifyScale,
             lensPx: opt.lensPx,
             lensAberration: opt.aberration === false ? 0 : opt.lensAberration * (opt.aberrationPx / 1.6)
           });
@@ -178,6 +178,7 @@
         if (root.YLG_PLAYER_MOTION) root.YLG_PLAYER_MOTION[s.motion ? "init" : "teardown"]();
         if (root.YLG_MICRO) root.YLG_MICRO[s.motion ? "init" : "teardown"]();
         if (root.YLG_DESCRIPTION_MOTION) root.YLG_DESCRIPTION_MOTION[s.motion ? "init" : "teardown"]();
+        if (root.YLG_PANEL_HOVER) root.YLG_PANEL_HOVER[s.motion && s.hoverEffects && s.optics.enabled && s.optics.magnify ? "init" : "teardown"]();
       } catch (e) {}
       scheduleApply(0);
       scheduleChromeBlurCheck(s);
@@ -189,6 +190,7 @@
       }
     } else {
       try { root.YLG_MICRO && root.YLG_MICRO.teardown(); } catch (e) {}
+      try { root.YLG_PANEL_HOVER && root.YLG_PANEL_HOVER.teardown(); } catch (e) {}
       try { root.YLG_DESCRIPTION_MOTION && root.YLG_DESCRIPTION_MOTION.teardown(); } catch (e) {}
       try { root.YLG_PLAYER_MOTION && root.YLG_PLAYER_MOTION.teardown(); } catch (e) {}
       try { ADAPTER && ADAPTER.teardown && ADAPTER.teardown(); } catch (e) {}

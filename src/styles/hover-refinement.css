@@ -1,0 +1,67 @@
+/* The controller selects by original layout bounds, not the enlarged :hover
+   region. Only one panel is active; a departing panel remains underneath it.
+   Keep scale reversible and never animate shadows or stacking levels. */
+html[data-ylg-enabled="true"][data-ylg-hover="on"][data-ylg-optics="on"][data-ylg-panel-controller="on"] ytd-watch-flexy :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"] {
+  transform: none;
+  z-index: 3;
+  transition: transform 420ms cubic-bezier(.22,.61,.36,1);
+}
+html[data-ylg-enabled="true"][data-ylg-hover="on"][data-ylg-optics="on"][data-ylg-panel-controller="on"] ytd-watch-flexy :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"][data-ylg-panel-active="1"] {
+  transform: scale(calc(1 + (var(--ylg-hover-scale, 1.028) - 1) * .4));
+  z-index: 32;
+}
+html[data-ylg-enabled="true"][data-ylg-hover="on"][data-ylg-optics="on"][data-ylg-panel-controller="on"] ytd-watch-flexy :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"][data-ylg-panel-leaving="1"] {
+  z-index: 31;
+}
+/* Raise the owning column too; child z-index cannot escape its parent. */
+html[data-ylg-enabled="true"][data-ylg-hover="on"][data-ylg-optics="on"][data-ylg-panel-controller="on"] ytd-watch-flexy #primary {
+  z-index: 2;
+  transition: none;
+}
+html[data-ylg-enabled="true"][data-ylg-hover="on"][data-ylg-optics="on"][data-ylg-panel-controller="on"][data-ylg-panel-side="primary"] ytd-watch-flexy #primary {
+  z-index: 33;
+}
+html[data-ylg-enabled="true"][data-ylg-hover="on"][data-ylg-optics="on"][data-ylg-panel-controller="on"][data-ylg-panel-side="leaving-primary"] ytd-watch-flexy #primary {
+  z-index: 30;
+}
+/* Expanded descriptions keep their real layout rather than covering comments. */
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass:has(#description-inline-expander[is-expanded]) {
+  transform: none !important;
+}
+
+/* Hover off affects decorative feedback, while click, drag, focus rings,
+   popup entry and layout-change animations continue to use Motion effects. */
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ylg-glass,
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ylg-card {
+  transform: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ylg-card:hover {
+  box-shadow: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ylg-glass[data-ylg-interactive="1"]::before {
+  transform: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ytp-chrome-bottom .ytp-button::before,
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ytp-chrome-bottom .ytp-button::after,
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ytp-chrome-bottom .ytp-time-display::before,
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ytp-scrubber-button::after {
+  visibility: hidden !important;
+}
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ytp-scrubber-button::before {
+  opacity: 1 !important;
+}
+html[data-ylg-enabled="true"][data-ylg-hover="off"] .ytp-chrome-bottom .ytp-button:not(.ytp-play-button) svg {
+  animation: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="off"] :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"] {
+  transform: none !important;
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"] :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"] {
+    transform: none !important;
+    transition: none !important;
+  }
+}

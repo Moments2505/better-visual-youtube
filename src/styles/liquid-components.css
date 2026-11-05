@@ -124,11 +124,22 @@ html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-scrubber-button::after
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
-@media (forced-colors: active), (prefers-reduced-transparency: reduce) {
+@media (forced-colors: active) {
   html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="chip"],
   html[data-ylg-enabled="true"] :is(#guide, #guide-inner-content).ylg-glass,
   html[data-ylg-enabled="true"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
   html[data-ylg-enabled="true"] .ytp-scrubber-button::after {
+    background: Canvas !important;
+    color: CanvasText !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ylg-glass[data-ylg-level="chip"],
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) :is(#guide, #guide-inner-content).ylg-glass,
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-scrubber-button::after {
     background: Canvas !important;
     color: CanvasText !important;
     -webkit-backdrop-filter: none !important;

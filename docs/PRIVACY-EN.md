@@ -12,7 +12,11 @@ The extension does not send browsing history, account credentials, video frames 
 
 ## Network activity and third parties
 
-YouTube continues to make its normal network requests under its own policies. Ambient Light may also request storyboard images from YouTube to process video colours. External links, such as support and documentation, open when you select them and are covered by those websites' policies.
+YouTube continues to make its normal network requests under its own policies. Ambient Light may also request storyboard images from YouTube to process video colours. External links, such as support and documentation, are covered by those websites' policies.
+
+When you uninstall the extension, your browser opens an optional feedback page hosted on GitHub Pages. Its fixed URL contains no user identifier, browsing history or settings. GitHub processes normal website request information under its own privacy policy. The page has no analytics and does not automatically submit or save your answers.
+
+You may copy your feedback or open a draft in your email app. Feedback reaches QuanNguyen only if you send the email yourself; this shares the message and the sender information supplied by your email provider. Sent feedback is kept in the support mailbox. Contact the address below to request its removal.
 
 ## Permissions
 

@@ -85,7 +85,7 @@ html[data-ylg-enabled="true"] ytd-miniplayer-active .ylg-glass {
 
 /* ---- Reduced transparency (OS-level) ------------------------------------- */
 @media (prefers-reduced-transparency: reduce) {
-  html[data-ylg-enabled="true"] .ylg-glass {
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ylg-glass {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background-image:

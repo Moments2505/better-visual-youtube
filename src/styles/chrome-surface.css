@@ -137,10 +137,21 @@ html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #center .y
     outline-color: CanvasText;
   }
 }
-@media (forced-colors: active), (prefers-reduced-transparency: reduce) {
+@media (forced-colors: active) {
   html[data-ylg-enabled="true"] #frosted-glass::before,
   html[data-ylg-enabled="true"][data-ylg-chrome-lens="1"] #frosted-glass::before,
   html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass::before {
+    content: "";
+    background: Canvas;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+}
+@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) #frosted-glass::before,
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"])[data-ylg-chrome-lens="1"] #frosted-glass::before,
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"])[data-ylg-fill="none"] #frosted-glass::before {
     content: "";
     background: Canvas;
     -webkit-backdrop-filter: none;

@@ -36,6 +36,6 @@ For performance changes, compare the same video and settings before and after, a
 
 ## Share feedback
 
-[Open an issue](https://github.com/Soul-blade-2505/better-visual-youtube/issues) with what happened and how to reproduce it. Browser version and a screenshot can help. Remove private information before attaching files.
+[Open an issue](https://github.com/Moments2505/better-visual-youtube/issues) with what happened and how to reproduce it. Browser version and a screenshot can help. Remove private information before attaching files.
 
 For security issues, contact [QuanNguyen](mailto:quannguyenproducer2505@gmail.com) privately. Contributions use the project's MIT license.

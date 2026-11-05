@@ -1,12 +1,12 @@
-![Better visual Youtube — Liquid Glass và Ambient Light](https://raw.githubusercontent.com/Soul-blade-2505/better-visual-youtube/main/docs/media/liquid-glass-banner.png)
+![Better visual Youtube — Liquid Glass và Ambient Light](https://raw.githubusercontent.com/Moments2505/better-visual-youtube/main/docs/media/liquid-glass-banner.png)
 
 # Better visual Youtube
 
 Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng theo video và chuyển động trên giao diện.
 
-**[Tải v0.4.53](https://github.com/Soul-blade-2505/better-visual-youtube/releases/tag/v0.4.53)** · [English](README.md) · [Báo lỗi](https://github.com/Soul-blade-2505/better-visual-youtube/issues)
+**[Tải bản beta](https://github.com/Moments2505/better-visual-youtube/releases)** · [Changelog](CHANGELOG.md) · [English](README.md) · [Báo lỗi](https://github.com/Moments2505/better-visual-youtube/issues)
 
-Dành cho Microsoft Edge và Google Chrome trên máy tính. Đây là bản beta công khai đầu tiên và sẽ tiếp tục được hoàn thiện.
+Dành cho Microsoft Edge và Google Chrome trên máy tính. Tiện ích đang ở giai đoạn beta và sẽ tiếp tục được hoàn thiện.
 
 ## Thêm chiều sâu cho giao diện
 
@@ -16,7 +16,7 @@ Liquid Glass mang lớp kính trong và viền bắt sáng đến thanh đầu t
 
 Ambient Light mở rộng màu sắc từ video ra xung quanh trình phát. Độ lan, độ sáng và chất lượng đều có thể điều chỉnh ngay trong bảng cài đặt của tiện ích.
 
-![Better visual Youtube — hình giới thiệu Ambient Light](https://raw.githubusercontent.com/Soul-blade-2505/better-visual-youtube/main/docs/media/ambient-light-banner.png)
+![Better visual Youtube — hình giới thiệu Ambient Light](https://raw.githubusercontent.com/Moments2505/better-visual-youtube/main/docs/media/ambient-light-banner.png)
 
 ## Tuỳ chỉnh theo cách bạn thích
 
@@ -24,14 +24,14 @@ Chọn giao diện sáng hoặc tối, tinh chỉnh hiệu ứng kính và bật
 
 ## Cài đặt
 
-1. Tải **Better-visual-Youtube-0.4.53.zip** trong [Releases](https://github.com/Soul-blade-2505/better-visual-youtube/releases/tag/v0.4.53), rồi giải nén.
+1. Tải gói ZIP của tiện ích trong [Releases](https://github.com/Moments2505/better-visual-youtube/releases), rồi giải nén.
 2. Mở `edge://extensions` hoặc `chrome://extensions` và bật **Chế độ nhà phát triển**.
 3. Chọn **Tải tiện ích đã giải nén**, rồi chọn thư mục chứa `manifest.json`.
 4. Tải lại YouTube và mở tiện ích để chọn hiệu ứng bạn thích.
 
 [Hướng dẫn cài đặt](INSTALL-VI.md) · [Installation guide](INSTALL-EN.md)
 
-Nếu gặp lỗi hoặc có ý tưởng mới, bạn có thể [tạo issue](https://github.com/Soul-blade-2505/better-visual-youtube/issues).
+Nếu gặp lỗi hoặc có ý tưởng mới, bạn có thể [tạo issue](https://github.com/Moments2505/better-visual-youtube/issues).
 
 ## Cùng phát triển
 

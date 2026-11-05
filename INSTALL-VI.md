@@ -4,7 +4,7 @@ Dành cho Microsoft Edge và Google Chrome trên máy tính.
 
 ## Cài lần đầu
 
-1. Tải **Better-visual-Youtube-0.4.53.zip** từ [trang phát hành](https://github.com/Soul-blade-2505/better-visual-youtube/releases/tag/v0.4.53).
+1. Tải gói ZIP của tiện ích từ [trang phát hành](https://github.com/Moments2505/better-visual-youtube/releases).
 2. Giải nén vào một thư mục cố định trên máy.
 3. Mở `edge://extensions` trên Edge hoặc `chrome://extensions` trên Chrome.
 4. Bật **Developer mode / Chế độ nhà phát triển**, chọn **Load unpacked / Tải tiện ích đã giải nén**, rồi chọn thư mục chứa `manifest.json`.
@@ -20,4 +20,4 @@ Cài đặt được lưu trong trình duyệt. **Reset to Defaults** khôi ph�
 
 ## Góp ý
 
-[Báo lỗi hoặc đề xuất tính năng trên GitHub](https://github.com/Soul-blade-2505/better-visual-youtube/issues).
+[Báo lỗi hoặc đề xuất tính năng trên GitHub](https://github.com/Moments2505/better-visual-youtube/issues).
