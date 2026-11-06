@@ -20,6 +20,7 @@
   "daylightBackground": {
     "enabled": false,
     "animate": true,
+    "rain": false,
     "scene": "auto",
     "intensity": 0.45,
     "liveWeather": false,

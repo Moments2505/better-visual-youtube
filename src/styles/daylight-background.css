@@ -166,6 +166,7 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
 #ylg-daylight-background[data-sky-renderer="webgl"] > :is(.ylg-daylight-glow,.ylg-daylight-sun,.ylg-daylight-stars,.ylg-daylight-galaxy,.ylg-daylight-clouds) { display:none !important; animation:none !important; }
 #ylg-daylight-background .ylg-daylight-clouds,
 #ylg-daylight-background .ylg-daylight-precipitation { display:none; }
+#ylg-daylight-background .ylg-daylight-precipitation { z-index:3; }
 #ylg-daylight-background[data-live="true"] .ylg-daylight-sun {
   left:0; right:auto; top:0;
   transform:translate3d(var(--ylg-solar-x),var(--ylg-solar-y),0);
@@ -188,26 +189,93 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
 #ylg-daylight-background[data-live="true"][data-weather="fog"] .ylg-daylight-clouds {
   height:100%; background:linear-gradient(180deg,#899aa655,#a9b6bf99); opacity:.7;
 }
-#ylg-daylight-background[data-live="true"][data-weather="rain"] .ylg-daylight-precipitation,
-#ylg-daylight-background[data-live="true"][data-weather="storm"] .ylg-daylight-precipitation {
-  display:block; inset:-24px; opacity:.2;
-  background:repeating-linear-gradient(105deg,transparent 0 46px,#c5e1ff88 47px,transparent 48px 96px);
-  -webkit-mask-image:linear-gradient(transparent,#0005,transparent);
-  mask-image:linear-gradient(transparent,#0005,transparent);
-  animation:ylg-rain-fall 1.8s linear infinite paused;
-}
-#ylg-daylight-background[data-live="true"][data-weather="snow"] .ylg-daylight-precipitation {
+#ylg-daylight-background[data-live="true"][data-weather="snow"]:not([data-rain="true"]) .ylg-daylight-precipitation {
   display:block; inset:-24px; opacity:.4;
   background:radial-gradient(circle at 18px 28px,#fff 0 1px,transparent 2px) 0 0/97px 107px;
   animation:ylg-snow-fall 14s linear infinite paused;
 }
+/* Reuse one precipitation layer for manual and weather-driven rain. The two
+   tiled streak sheets use transforms only; no particles, images or JS loop.
+   Paint above the WebGL sky but remain behind YouTube's content. */
+#ylg-daylight-background[data-rain="true"] {
+  background:linear-gradient(180deg,#111c2b,#344456);
+}
+#ylg-daylight-background[data-rain="true"] > :is(.ylg-daylight-glow,.ylg-daylight-sun,.ylg-daylight-stars,.ylg-daylight-galaxy) {
+  display:none;
+  animation:none;
+}
+#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation {
+  display:block; inset:0; opacity:.96;
+  background:linear-gradient(180deg,#07111f61,#0c1b2c26 70%);
+  animation:none;
+}
+#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation::before,
+#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation::after {
+  content:""; position:absolute; inset:-300px;
+  pointer-events:none;
+  background-repeat:repeat;
+  background-size:256px 256px;
+  animation:ylg-rain-fall .86s linear infinite paused;
+}
+#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation::before {
+  opacity:.68;
+  background-image:
+    radial-gradient(ellipse .8px 15px at 14px 25px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
+    radial-gradient(ellipse .7px 11px at 53px 182px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
+    radial-gradient(ellipse .9px 19px at 86px 94px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
+    radial-gradient(ellipse .7px 13px at 113px 228px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
+    radial-gradient(ellipse .8px 16px at 141px 56px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
+    radial-gradient(ellipse .7px 12px at 165px 154px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
+    radial-gradient(ellipse .9px 17px at 193px 219px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
+    radial-gradient(ellipse .7px 14px at 218px 88px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
+    radial-gradient(ellipse .8px 20px at 242px 193px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%);
+}
+#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation::after {
+  opacity:.92;
+  background-image:
+    radial-gradient(ellipse 1.3px 27px at 30px 48px,#e0efffb8 8%,#d8ecff66 50%,transparent 100%),
+    radial-gradient(ellipse 1px 22px at 72px 182px,#e0efffb8 8%,#d8ecff66 50%,transparent 100%),
+    radial-gradient(ellipse 1.2px 32px at 104px 94px,#e0efffb8 8%,#d8ecff66 50%,transparent 100%),
+    radial-gradient(ellipse .9px 23px at 139px 232px,#e0efffb8 8%,#d8ecff66 50%,transparent 100%),
+    radial-gradient(ellipse 1.1px 28px at 178px 42px,#e0efffb8 8%,#d8ecff66 50%,transparent 100%),
+    radial-gradient(ellipse 1px 25px at 212px 166px,#e0efffb8 8%,#d8ecff66 50%,transparent 100%),
+    radial-gradient(ellipse 1.2px 34px at 247px 86px,#e0efffb8 8%,#d8ecff66 50%,transparent 100%);
+  animation-duration:.48s;
+  animation-delay:-.31s;
+}
+#ylg-daylight-background[data-rain="true"] .ylg-daylight-clouds {
+  display:block; left:-6%; top:0; width:112%; height:75%;
+  opacity:.9;
+  background:linear-gradient(180deg,#182333eb,#344353ad 62%,transparent),radial-gradient(ellipse at 76% 32%,#33455eaa,transparent 72%);
+  animation:ylg-cloud-drift 90s ease-in-out infinite alternate paused;
+}
+/* CSS fallback retains clinging beads when the procedural renderer is absent.
+   Each tile mixes different bead sizes with highlights and long water trails. */
+#ylg-daylight-background[data-rain="true"]:not([data-sky-renderer="webgl"]) .ylg-daylight-precipitation {
+  background-image:
+    radial-gradient(ellipse 2px 1px at 35px 54px,#e4f3ffad,transparent),
+    radial-gradient(ellipse 5px 9px at 38px 61px,#07152233 48%,#d2e9ff88 66%,#05102080 76%,transparent 87%),
+    radial-gradient(ellipse 1.4px 1px at 186px 174px,#e4f3ffa8,transparent),
+    radial-gradient(ellipse 4px 6px at 188px 179px,#07152233 48%,#d2e9ff88 66%,#05102080 76%,transparent 87%),
+    radial-gradient(ellipse 2px 1px at 293px 286px,#e4f3ffad,transparent),
+    radial-gradient(ellipse 6px 11px at 296px 294px,#07152233 48%,#d2e9ff88 66%,#05102080 76%,transparent 87%),
+    radial-gradient(ellipse 3px 5px at 422px 113px,#07152233 48%,#d2e9ff88 66%,#05102080 76%,transparent 87%),
+    radial-gradient(ellipse 1.2px 30px at 296px 259px,#cde8ff4d,transparent),
+    radial-gradient(ellipse 1px 21px at 38px 35px,#cde8ff4d,transparent);
+  background-color:#07111f38;
+  background-size:512px 384px;
+}
+#ylg-daylight-background[data-moving="true"][data-rain="true"] .ylg-daylight-precipitation::before,
+#ylg-daylight-background[data-moving="true"][data-rain="true"] .ylg-daylight-precipitation::after { animation-play-state:running; }
 #ylg-daylight-background[data-moving="true"] .ylg-daylight-clouds,
 #ylg-daylight-background[data-moving="true"] .ylg-daylight-precipitation { animation-play-state:running; }
 #ylg-daylight-background[data-moving="false"] .ylg-daylight-sun { transition:none; }
 @keyframes ylg-cloud-drift { from { transform:translate3d(-12px,0,0); } to { transform:translate3d(12px,5px,0); } }
 @keyframes ylg-live-stars { from { transform:translateY(0); } to { transform:translateY(-5px); } }
-@keyframes ylg-rain-fall { from { transform:translateY(-20px); } to { transform:translateY(20px); } }
+@keyframes ylg-rain-fall { from { transform:skewX(-12deg) translateY(-256px); } to { transform:skewX(-12deg) translateY(0); } }
 @keyframes ylg-snow-fall { from { transform:translateY(-24px); } to { transform:translateY(24px); } }
 @media (prefers-reduced-motion: reduce) {
   #ylg-daylight-background[data-live="true"] > span { animation:none !important; transition:none !important; }
+  #ylg-daylight-background .ylg-daylight-precipitation::before,
+  #ylg-daylight-background .ylg-daylight-precipitation::after { animation:none !important; }
 }

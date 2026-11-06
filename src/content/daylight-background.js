@@ -22,6 +22,7 @@
     return {
       enabled: !!(snapshot && snapshot.enabled && value.enabled),
       scene: scenes.indexOf(value.scene) >= 0 ? value.scene : "auto",
+      rain: value.rain === true,
       liveWeather: value.liveWeather === true && value.scene === "auto" && !!root.YLG_SKY_ENV && root.YLG_SKY_ENV.validLocation(value.location),
       location: value.location,
       intensity: Number.isFinite(strength) ? Math.max(0, Math.min(1, strength)) : 0.45
@@ -70,6 +71,12 @@
   function resetWeather() {
     weatherRevision++; weather = null; weatherKey = ""; weatherDue = 0; weatherPending = false; weatherStatus = "off";
   }
+  function weatherLayers() {
+    if (!host || host.querySelector(".ylg-daylight-precipitation")) return;
+    ["clouds", "precipitation"].forEach(function (name) {
+      var layer = document.createElement("span"); layer.className = "ylg-daylight-" + name; host.appendChild(layer);
+    });
+  }
   function loadWeather(value) {
     var key = value.location.latitude + "," + value.location.longitude;
     if (weatherKey !== key) { resetWeather(); weatherKey = key; }
@@ -105,9 +112,7 @@
     host.style.setProperty("--ylg-live-bottom", "hsl(" + (215 - 185*warm).toFixed(1) + " " + (40 + 20*warm).toFixed(1) + "% " + (17 + 30*daylight).toFixed(1) + "%)");
     loadWeather(value);
     if (weather && Math.abs(now.getTime() - weather.time) > 7200000) weather = null;
-    if (!host.querySelector(".ylg-daylight-clouds")) ["clouds", "precipitation"].forEach(function (name) {
-      var layer = document.createElement("span"); layer.className = "ylg-daylight-" + name; host.appendChild(layer);
-    });
+    weatherLayers();
     host.setAttribute("data-weather", weather ? weather.kind : "unknown");
     host.style.setProperty("--ylg-cloud-cover", weather ? weather.cloud.toFixed(3) : "0");
     host.style.setProperty("--ylg-celestial-opacity", weather ? String(Math.max(.08, 1-weather.cloud*.9)) : "1");
@@ -127,9 +132,14 @@
     else {
       resetWeather(); host.removeAttribute("data-live"); host.removeAttribute("data-weather");
     }
+    // The saved switch owns rain visuals. Weather replies still update solar
+    // lighting/clouds, but must never turn rain back on after the user stops it.
+    var raining = value.rain;
+    if (raining) weatherLayers();
+    host.setAttribute("data-rain", raining ? "true" : "false");
     var continuous = value.scene === "auto" && root.YLG_SKY_RENDERER && root.YLG_SKY_ENV && root.YLG_SKY_ENV.validLocation(value.location);
     if (continuous) currentScene=root.YLG_SKY_ENV.solarAt(now,value.location).scene;
-    moving = snapshot.daylightBackground.animate !== false && !(reduced && reduced.matches) && !document.hidden;
+    moving = snapshot.daylightBackground.animate !== false && value.intensity > 0 && !(reduced && reduced.matches) && !document.hidden;
     host.setAttribute("data-scene", currentScene);
     host.setAttribute("data-moving", moving ? "true" : "false");
     host.style.setProperty("--ylg-daylight-intensity", String(value.intensity));
@@ -138,7 +148,7 @@
       rendererTried=true; renderer=root.YLG_SKY_RENDERER.create(host);
     }
     if (renderer) renderer.update({auto:!!continuous,location:value.location,scene:currentScene,
-      weather:weather,moving:moving && value.intensity>0});
+      weather:weather,rain:value.rain,moving:moving});
     // Hidden tabs are refreshed on return and need no clock wake-up.
     if (value.scene === "auto" && !document.hidden) {
       if (value.liveWeather || continuous) {
@@ -178,7 +188,7 @@
     // Retain only owned scalar settings; callers may reuse or mutate snapshots.
     snapshot = {
       enabled: !!(fullSnapshot && fullSnapshot.enabled),
-      daylightBackground: { enabled: value.enabled === true, animate: value.animate !== false, scene: value.scene, intensity: value.intensity,
+      daylightBackground: { enabled: value.enabled === true, animate: value.animate !== false, rain: value.rain === true, scene: value.scene, intensity: value.intensity,
         liveWeather: value.liveWeather === true, location: value.location ? { name:value.location.name, latitude:value.location.latitude, longitude:value.location.longitude } : null }
     };
     if (!started) init();
@@ -203,6 +213,7 @@
       return { initialized: started, mounted: !!host, scene: currentScene,
         moving: moving, animationPaused: !moving, eligiblePage: eligiblePage(), nextChangeAt: nextChangeAt,
         liveWeather: options().liveWeather, weatherStatus: weatherStatus, weather: weather,
+        rain: options().rain,
         renderer:renderer?renderer.stats():null,
         solar: options().liveWeather ? root.YLG_SKY_ENV.solarAt(new Date(), options().location) : null };
     }

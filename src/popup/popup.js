@@ -195,6 +195,7 @@
     setChecked("ylg-system-transparency", s.respectReducedTransparency);
     setChecked("ylg-daylight-enabled", s.daylightBackground.enabled);
     setChecked("ylg-daylight-animate", s.daylightBackground.animate);
+    setChecked("ylg-daylight-rain", s.daylightBackground.rain);
     setSlider("ylg-daylight-intensity", "ylg-daylight-intensity-v", Math.round(s.daylightBackground.intensity * 100), pct);
     var a = s.ambientLight || {};
     setChecked("ylg-ambient-enabled", a.enabled);
@@ -231,7 +232,7 @@
       var ambientChild = el.id.indexOf("ylg-amb-") === 0 || !!el.closest("#ylg-ambient-quality");
       var opticsChild = el.id.indexOf("ylg-optics-") === 0 && el.id !== "ylg-optics-enabled";
       var colourChild = !!el.closest("#ylg-accent-row");
-      var daylightChild = el.id === "ylg-daylight-intensity" || el.id === "ylg-daylight-animate" || !!el.closest("#ylg-daylight-scene") || !!el.closest("#ylg-sky-live-controls");
+      var daylightChild = el.id === "ylg-daylight-intensity" || el.id === "ylg-daylight-animate" || el.id === "ylg-daylight-rain" || !!el.closest("#ylg-daylight-scene") || !!el.closest("#ylg-sky-live-controls");
       // Removed controls are gone from the markup, so this loop only ever sees
       // the ids that still exist; an absent element simply never appears here.
       el.disabled = !s.enabled ||
@@ -387,6 +388,11 @@
     var daylightAnimate = $("ylg-daylight-animate");
     if (daylightAnimate) daylightAnimate.addEventListener("change", function () {
       updateDaylight({ animate: this.checked });
+    });
+    var daylightRain = $("ylg-daylight-rain");
+    if (daylightRain) daylightRain.addEventListener("change", function () {
+      if (!current || this.disabled) return;
+      updateDaylight({ rain: this.checked });
     });
     bindSeg("ylg-daylight-scene", function (v) { updateDaylight({ scene: v }); });
     bindSlider("ylg-daylight-intensity", "ylg-daylight-intensity-v", function (v) {

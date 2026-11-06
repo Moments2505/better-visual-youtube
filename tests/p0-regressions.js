@@ -337,6 +337,68 @@ test("live weather choice survives a permission popup closing and denial can be 
   assert.equal(h.writes.at(-1).settings.daylightBackground.liveWeather,true);
 });
 
+test("RAIN persists without weather access and survives sky/master gating and popup reopen", () => {
+  const location={name:"London, UK",latitude:51.5074,longitude:-.1278};
+  const h=popup({motion:false,daylightBackground:{enabled:false,animate:false,scene:"night",intensity:.7,location}});
+  assert.equal(h.$("ylg-daylight-rain").disabled,true,"loading controls stay disabled");
+  h.context.chrome.permissions={request(){throw Error("manual rain must not request weather access");}};
+  h.context.chrome.runtime.sendMessage=()=>{throw Error("manual rain must not fetch weather");};
+  h.resolve();
+  assert.equal(h.$("ylg-daylight-rain").checked,false);
+  assert.equal(h.$("ylg-daylight-rain").disabled,true,"sky is off");
+  h.change("ylg-daylight-enabled",true);
+  assert.equal(h.$("ylg-daylight-rain").disabled,false,"Animate sky and interface Motion do not disable RAIN");
+  h.change("ylg-daylight-rain",true);
+  const saved=h.writes.at(-1).settings;
+  assert.equal(saved.daylightBackground.rain,true);
+  assert.equal(saved.daylightBackground.liveWeather,false);
+  assert.equal(saved.daylightBackground.animate,false);
+  assert.equal(saved.daylightBackground.scene,"night");
+  assert.equal(saved.daylightBackground.intensity,.7);
+  assert.deepEqual(saved.daylightBackground.location,location);
+  assert.equal(saved.motion,false);
+  assert.equal(saved.ambientLight.enabled,true);
+  const reopened=loaded(saved);
+  assert.equal(reopened.$("ylg-daylight-rain").checked,true);
+  assert.equal(reopened.$("ylg-daylight-rain").disabled,false);
+  h.change("ylg-daylight-enabled",false);
+  assert.equal(h.$("ylg-daylight-rain").disabled,true);
+  assert.equal(h.writes.at(-1).settings.daylightBackground.rain,true,"disabling sky keeps the rain preference");
+  assert.equal(loaded(h.writes.at(-1).settings).$("ylg-daylight-rain").checked,true);
+  h.change("ylg-daylight-enabled",true);
+  h.change("ylg-enabled",false);
+  assert.equal(h.$("ylg-daylight-rain").disabled,true);
+  assert.equal(h.writes.at(-1).settings.daylightBackground.rain,true);
+  h.change("ylg-enabled",true);
+  assert.equal(h.$("ylg-daylight-rain").disabled,false);
+  h.change("ylg-daylight-rain",false);
+  assert.equal(h.writes.at(-1).settings.daylightBackground.rain,false);
+  assert.equal(loaded(h.writes.at(-1).settings).$("ylg-daylight-rain").checked,false);
+  h.external(saved);
+  assert.equal(h.$("ylg-daylight-rain").checked,true,"storage changes refresh RAIN in an open popup");
+});
+
+test("RAIN defaults opt-in, rejects non-booleans and preserves existing sky preferences", () => {
+  const S=sandbox().context.YLG_SETTINGS;
+  const fixture=JSON.parse(source("default-settings.json"));
+  assert.equal(fixture.daylightBackground.rain,false);
+  assert.equal(S.DEFAULT_SETTINGS.daylightBackground.rain,false);
+  assert.equal(S.normalizeSettings({}).daylightBackground.rain,false);
+  const previous={schemaVersion:8,motion:false,opacity:.23,ambientLight:{spread:199},
+    daylightBackground:{enabled:true,animate:false,liveWeather:true,scene:"sunset",intensity:.72,
+      location:{name:"Tokyo, Japan",latitude:35.6762,longitude:139.6503}}};
+  const migrated=JSON.parse(JSON.stringify(S.normalizeSettings(previous)));
+  assert.deepEqual(migrated.daylightBackground,{...previous.daylightBackground,rain:false});
+  assert.equal(migrated.motion,false);
+  assert.equal(migrated.opacity,.23);
+  assert.equal(migrated.ambientLight.spread,199);
+  for(const [raw,expected] of [[true,true],[false,false],["true",false],[1,false],[null,false],[{},false]]) {
+    const settings=JSON.parse(JSON.stringify(S.normalizeSettings({...migrated,
+      daylightBackground:{...migrated.daylightBackground,rain:raw}})));
+    assert.deepEqual(settings,{...migrated,daylightBackground:{...migrated.daylightBackground,rain:expected}});
+  }
+});
+
 test("sky schema defaults are opt-in and validate without resetting other settings", () => {
   const h=sandbox(), S=h.context.YLG_SETTINGS;
   const old=S.normalizeSettings({motion:false,ambientLight:{spread:199}});

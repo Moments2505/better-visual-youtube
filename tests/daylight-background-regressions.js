@@ -242,6 +242,70 @@ test("snapshot mutation cannot silently enable animation or change the saved sce
   assert.equal(Number(w.host().style.getPropertyValue("--ylg-daylight-intensity")), 0.3);
 });
 
+test("manual RAIN is a local visual choice with bounded reusable layers and no weather access", () => {
+  const w = world(), messages = weatherBridge(w);
+  const choice = { enabled: true, animate: true, rain: true, scene: "night", intensity: 0.45 };
+  const settings = snapshot({ motion: false, daylightBackground: choice });
+  const saved = JSON.stringify(settings);
+  w.api.updateSettings(settings);
+  const host = w.host(), clouds = host.querySelector(".ylg-daylight-clouds"), precipitation = host.querySelector(".ylg-daylight-precipitation");
+  scene(w, "night");
+  assert.equal(host.getAttribute("data-rain"), "true");
+  assert.equal(host.hasAttribute("data-live"), false);
+  assert.equal(host.hasAttribute("data-weather"), false, "manual rain must not invent actual weather");
+  assert.equal(w.api.stats().weather, null);
+  assert.equal(w.api.stats().moving, true, "interface Motion must not disable rain animation");
+  assert.ok(clouds && precipitation);
+  for (let i = 0; i < 10; i++) {
+    w.api.updateSettings(snapshot({ daylightBackground: { ...choice, rain: false } }));
+    assert.equal(w.host().getAttribute("data-rain"), "false");
+    w.api.updateSettings(settings);
+  }
+  assert.equal(w.host(), host);
+  assert.equal(host.querySelector(".ylg-daylight-clouds"), clouds);
+  assert.equal(host.querySelector(".ylg-daylight-precipitation"), precipitation);
+  assert.equal(host.children.length, 6, "rain reuses the existing two weather layers");
+  assert.equal(messages.length, 0, "manual rain must not request location or weather");
+  assert.equal(JSON.stringify(settings), saved, "rendering must preserve the saved scene and input settings");
+  assert.deepEqual(w.work, { frames: 0, intervals: 0, observers: 0, canvases: 0 });
+});
+
+test("RAIN pauses with Animate sky, zero intensity, reduced motion and hidden pages, then restores on eligible routes", () => {
+  const w = world();
+  const settings = snapshot({ motion: false, daylightBackground: { enabled: true, animate: true, rain: true, scene: "night", intensity: 0.45 } });
+  w.api.updateSettings(settings);
+  const host = w.host();
+  const paused = () => {
+    assert.equal(w.host().getAttribute("data-rain"), "true");
+    assert.equal(w.host().getAttribute("data-moving"), "false");
+    assert.equal(w.api.stats().animationPaused, true);
+  };
+  w.api.updateSettings({ ...settings, daylightBackground: { ...settings.daylightBackground, animate: false } }); paused();
+  w.api.updateSettings(settings); assert.equal(w.api.stats().moving, true);
+  w.api.updateSettings({ ...settings, daylightBackground: { ...settings.daylightBackground, intensity: 0 } }); paused();
+  w.api.updateSettings(settings); assert.equal(w.api.stats().moving, true);
+  w.media("reduced", true); paused();
+  w.media("reduced", false); assert.equal(w.api.stats().moving, true);
+  w.hide(true); paused(); assert.equal(w.timers.size, 0);
+  w.hide(false); assert.equal(w.host(), host); assert.equal(w.api.stats().moving, true);
+  w.navigate("/results"); assert.equal(w.host(), host); assert.equal(host.getAttribute("data-rain"), "true");
+  w.navigate("/watch"); assert.equal(w.host(), null); assert.equal(w.timers.size, 0);
+  w.navigate("/"); assert.equal(w.host().getAttribute("data-rain"), "true"); scene(w, "night");
+});
+
+test("RAIN defaults off and a caller cannot enable it by mutating an earlier snapshot", () => {
+  const w = world(), settings = snapshot();
+  w.api.updateSettings(settings); assert.equal(w.host().getAttribute("data-rain"), "false");
+  assert.equal(w.host().children.length, 4, "dry default needs no precipitation layers");
+  settings.daylightBackground.rain = true;
+  w.hide(true); w.hide(false);
+  assert.equal(w.host().getAttribute("data-rain"), "false");
+  w.api.updateSettings(settings); assert.equal(w.host().getAttribute("data-rain"), "true");
+  settings.daylightBackground.rain = false;
+  w.hide(true); w.hide(false);
+  assert.equal(w.host().getAttribute("data-rain"), "true");
+});
+
 test("an opt-in scene stays decorative with bounded DOM and compositor-only animation properties", () => {
   const w = world(); w.api.updateSettings(snapshot());
   assert.equal(w.host().getAttribute("aria-hidden"), "true");
@@ -270,6 +334,73 @@ function weatherBridge(w) {
   const messages=[];w.context.chrome={runtime:{sendMessage:(message,reply)=>messages.push({message,reply})}};return messages;
 }
 function replyWeather(w,message) { message.reply({status:"current",weather:{time:w.now(),kind:"rain",cloud:.8,temperature:29,wind:10},nextRefreshAt:w.now()+900000}); }
+test("RAIN switch controls the overlay on/off/on while preserving every actual weather condition", () => {
+  for (const kind of ["clear", "snow", "rain", "storm"]) {
+    const w = world(), messages = weatherBridge(w);
+    w.api.updateSettings(liveSnapshot({ rain: true }));
+    const actual = Object.freeze({ time: w.now(), kind, cloud: kind === "clear" ? 0 : 0.8, temperature: kind === "snow" ? -2 : 24, wind: 6 });
+    const saved = JSON.stringify(actual);
+    messages[0].reply({ status: "current", weather: actual, nextRefreshAt: w.now() + 900000 });
+    const host = w.host(), clouds = host.querySelector(".ylg-daylight-clouds"), precipitation = host.querySelector(".ylg-daylight-precipitation");
+    assert.equal(host.getAttribute("data-rain"), "true", kind);
+    assert.equal(host.getAttribute("data-weather"), kind, "actual weather remains separate from the rain overlay");
+    assert.equal(JSON.stringify(w.api.stats().weather), saved);
+    w.api.updateSettings(liveSnapshot({ rain: false }));
+    assert.equal(host.getAttribute("data-rain"), "false", "RAIN off must remove rain visuals even when live weather is " + kind);
+    assert.equal(w.api.stats().rain, false);
+    assert.equal(host.getAttribute("data-weather"), kind, "turning off RAIN keeps the original weather record");
+    assert.equal(Number(host.style.getPropertyValue("--ylg-cloud-cover")), actual.cloud);
+    assert.equal(JSON.stringify(actual), saved);
+    assert.equal(JSON.stringify(w.api.stats().weather), saved);
+    assert.equal(host.querySelector(".ylg-daylight-clouds"), clouds);
+    assert.equal(host.querySelector(".ylg-daylight-precipitation"), precipitation);
+    w.api.updateSettings(liveSnapshot({ rain: true }));
+    assert.equal(host.getAttribute("data-rain"), "true", kind);
+    assert.equal(w.api.stats().rain, true);
+    assert.equal(host.getAttribute("data-weather"), kind);
+    assert.equal(JSON.stringify(w.api.stats().weather), saved);
+    assert.equal(host.children.length, 6); assert.equal(messages.length, 1);
+  }
+});
+
+test("a late rain/storm weather reply cannot re-enable RAIN after the switch is off", () => {
+  for (const kind of ["rain", "storm"]) {
+    const w = world(), calls = [], messages = weatherBridge(w);
+    w.context.YLG_SKY_RENDERER = { create() { return { update(value) { calls.push(value); }, resize() {}, teardown() {}, stats() { return { active: true }; } }; } };
+    w.api.updateSettings(liveSnapshot({ rain: true }));
+    const host = w.host(), pending = messages[0], solar = JSON.stringify(w.api.stats().solar);
+    assert.equal(host.getAttribute("data-rain"), "true");
+    w.api.updateSettings(liveSnapshot({ rain: false }));
+    assert.equal(host.getAttribute("data-rain"), "false");
+    const actual = Object.freeze({ time: w.now(), kind, cloud: .8, temperature: 24, wind: 6 });
+    pending.reply({ status: "current", weather: actual, nextRefreshAt: w.now() + 900000 });
+    assert.equal(host.getAttribute("data-rain"), "false", kind + " arriving after RAIN off must not restart the overlay");
+    assert.equal(host.getAttribute("data-weather"), kind);
+    assert.equal(w.api.stats().rain, false);
+    assert.equal(JSON.stringify(w.api.stats().solar), solar, "RAIN does not change the local solar calculation");
+    assert.equal(JSON.stringify(w.api.stats().weather), JSON.stringify(actual));
+    assert.equal(Number(host.style.getPropertyValue("--ylg-cloud-cover")), actual.cloud);
+    assert.equal(calls.at(-1).rain, false);
+    assert.equal(calls.at(-1).weather.kind, kind);
+    w.api.updateSettings(liveSnapshot({ rain: true }));
+    assert.equal(host.getAttribute("data-rain"), "true");
+    assert.equal(calls.at(-1).rain, true);
+    assert.equal(calls.at(-1).weather.kind, kind);
+    assert.equal(messages.length, 1, "switch changes reuse the same actual weather response");
+  }
+});
+
+test("manual RAIN remains available when live weather permission is denied", () => {
+  const w = world(), messages = weatherBridge(w);
+  w.api.updateSettings(liveSnapshot({ rain: true }));
+  messages[0].reply({ status: "permission" });
+  assert.equal(w.api.stats().weatherStatus, "permission");
+  assert.equal(w.api.stats().weather, null);
+  assert.equal(w.host().getAttribute("data-rain"), "true");
+  assert.equal(w.host().getAttribute("data-weather"), "unknown");
+  w.api.updateSettings(liveSnapshot({ rain: false }));
+  assert.equal(w.host().getAttribute("data-rain"), "false");
+});
 test("live sky uses six bounded layers, one minute timer, and cached weather without a frame loop",()=>{
   const w=world(),messages=weatherBridge(w);w.api.updateSettings(liveSnapshot());
   assert.equal(w.host().getAttribute("data-live"),"true");assert.equal(w.host().children.length,6);
@@ -311,5 +442,19 @@ test("procedural renderer stays independent of weather access and is released ac
   w.navigate("/watch");assert.equal(calls.at(-1),"teardown");assert.equal(w.host(),null);
   w.navigate("/");assert.equal(calls.filter(c=>c==="create").length,2);
   w.api.teardown();assert.equal(calls.at(-1),"teardown");assert.equal(w.listeners(),0);
+});
+
+test("renderer receives the manual rain flag separately from unchanged actual weather", () => {
+  const w = world(), calls = [], messages = weatherBridge(w);
+  w.context.YLG_SKY_RENDERER = { create() { return { update(value) { calls.push(value); }, resize() {}, teardown() {}, stats() { return { active: true }; } }; } };
+  w.api.updateSettings(liveSnapshot({ rain: true }));
+  const actual = Object.freeze({ time: w.now(), kind: "snow", cloud: 0.7, temperature: -2, wind: 6 });
+  messages[0].reply({ status: "current", weather: actual, nextRefreshAt: w.now() + 900000 });
+  assert.equal(calls.at(-1).rain, true);
+  assert.equal(calls.at(-1).weather.kind, "snow");
+  w.api.updateSettings(liveSnapshot({ rain: false }));
+  assert.equal(calls.at(-1).rain, false);
+  assert.equal(calls.at(-1).weather.kind, "snow");
+  assert.equal(actual.kind, "snow");
 });
 console.log("All " + count + " daylight background regressions passed (VM state/lifecycle; not a GPU benchmark).");

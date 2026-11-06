@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Made for desktop Microsoft Edge and Google Chrome. Currently in beta, with more refinements to come.
 
-**Latest beta: [0.4.63](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.63).** Adds an optional sky and city weather, keeps Ambient Light independent of interface motion, and fixes the transparent header and misaligned Home hover previews when the sky is enabled. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.63.md)
+**Latest beta: [0.4.65](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.65).** Adds RAIN: heavy rain, a gloomy sky and water on glass for Home and Search, with a switch that works independently of Live weather. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.65.md)
 
 ## A little more depth
 
@@ -26,6 +26,8 @@ Choose a light or dark theme, tune the glass effects, and turn interface animati
 The optional **Time-of-day background** adds morning sunlight, a daytime sky, sunset or a moonlit star field to Home and Search. Auto follows the sun at your chosen city, initially Hà Nội. You can also choose a scene manually. **Animate sky** controls sky movement separately from interface **Motion effects**; Ambient Light has its own switch too.
 
 The procedural sky changes sunlight, twilight colour and cloud structure over time. It pauses while the tab is hidden and falls back to a CSS scene if WebGL is unavailable. Turn **Animate sky** off for a still atmosphere; the scene can still update as the sun or weather changes. With the sky enabled, the header retains a readable glass surface even at panel Opacity 0, and Home hover previews stay aligned with their thumbnails.
+
+For a rainy mood, turn on **RAIN** inside **Time-of-day background**. It adds heavy falling rain, a gloomy overcast sky and water droplets on glass to Home and Search in any scene, without enabling Live weather or requesting access. **Animate sky** controls the rain's movement. The switch saves your preference and adds visual rain only, leaving your music/video audio unchanged. Turning RAIN off stops rain and water on the glass, even when Live weather reports rain; solar lighting and weather data continue updating.
 
 To add weather, turn on **Time-of-day background**, select **Auto**, then enable **Live sun & weather**. Use **Choose a city** to change the location. The browser asks for optional Open-Meteo access for weather and city search; use **Allow weather access** if permission is missing. Your chosen city coordinates or city-search text go to Open-Meteo; the extension does not request GPS. Solar lighting works offline. Weather normally refreshes every 15 minutes, with cached fallback for up to two hours when fetching fails. [Privacy details](docs/PRIVACY-EN.md)
 

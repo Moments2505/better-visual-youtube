@@ -1,5 +1,25 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.4.65 — 2026-11-06
+
+### English
+- Fixed Live weather keeping rain and wet-glass effects enabled after switching RAIN off. The switch now controls both visual effects directly while solar lighting and weather data continue updating.
+
+### Tiếng Việt
+- Sửa Live weather giữ mưa và nước bám kính khi đã tắt RAIN. Công tắc giờ điều khiển trực tiếp cả hai hiệu ứng, trong khi ánh sáng mặt trời và dữ liệu thời tiết vẫn cập nhật.
+
+## 0.4.64 — 2026-11-06
+
+### English
+- Added **RAIN** in Time-of-day background: turn on visual rain on Home and Search in any sky scene, even with Live weather off.
+- Heavy rain adds dense falling streaks, a gloomy overcast sky and water beads/trails on glass. The preference is saved; Animate sky controls its movement.
+- No weather permission or rain audio is added by this switch.
+
+### Tiếng Việt
+- Thêm **RAIN** trong Time-of-day background: bật mưa trên Trang chủ/Tìm kiếm ở mọi cảnh trời, kể cả khi tắt Live weather.
+- Mưa lớn có các lớp vệt rơi dày, trời âm u và giọt/vệt nước bám trên kính. Lựa chọn được lưu; Animate sky điều khiển chuyển động.
+- Công tắc này không xin quyền thời tiết hay thêm âm thanh mưa.
+
 ## 0.4.63 — 2026-11-06
 
 Public beta incorporating the local 0.4.59–0.4.62 candidates below. / Bản beta công khai tổng hợp các bản thử nội bộ 0.4.59–0.4.62 bên dưới.

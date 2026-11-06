@@ -35,6 +35,7 @@
     "daylightBackground": {
       "enabled": false,
       "animate": true,
+      "rain": false,
       "liveWeather": false,
       "location": { "name": "Hà Nội, Việt Nam", "latitude": 21.0285, "longitude": 105.8542 },
       "scene": "auto",
@@ -236,6 +237,7 @@
         out[key] = {
           enabled: typeof daylight.enabled === "boolean" ? daylight.enabled : def.enabled,
           animate: typeof daylight.animate === "boolean" ? daylight.animate : def.animate,
+          rain: typeof daylight.rain === "boolean" ? daylight.rain : def.rain,
           liveWeather: daylight.liveWeather === true,
           location: normalizeSkyLocation(daylight.location, def.location),
           scene: ["auto", "morning", "day", "sunset", "night"].indexOf(daylight.scene) !== -1 ? daylight.scene : def.scene,

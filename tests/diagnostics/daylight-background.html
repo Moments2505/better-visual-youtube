@@ -75,6 +75,7 @@
           <label><input id="enabled" type="checkbox" checked> Background</label>
           <label><input id="motion" type="checkbox" checked> Motion</label>
           <label><input id="animate" type="checkbox" checked> Animate sky</label>
+          <label><input id="rain" type="checkbox"> RAIN</label>
           <label><input id="live" type="checkbox"> Live solar (Hà Nội)</label>
           <label>Weather fixture <select id="weather"><option value="unknown">Offline / no weather</option><option value="current">Downloaded Hà Nội data</option><option value="clear">Clear</option><option value="cloudy">Cloudy</option><option value="rain">Rain</option><option value="snow">Snow</option><option value="fog">Fog</option><option value="storm">Storm (no flashes)</option></select></label>
           <label>Intensity <input id="intensity" type="range" min="0" max="1" step="0.01" value="0.45"><output id="strength">45%</output></label>
@@ -117,6 +118,8 @@
         var ambient=getComputedStyle(document.querySelector(".ambientlight__container"));
         document.getElementById("status").textContent = JSON.stringify(Object.assign({}, YLG_DAYLIGHT.stats(), {
           appFill:app.backgroundColor, residualAmbientDisplay:ambient.display,
+          rainRequested:document.getElementById("rain").checked,
+          rainVisible:document.getElementById("ylg-daylight-background")?.getAttribute("data-rain")==="true",
           fullBackgroundVisible:!!document.documentElement.getAttribute("data-ylg-daylight") && app.backgroundColor==="rgba(0, 0, 0, 0)" && ambient.display==="none"
         }), null, 2) + "\nLocal time: " + new Date().toLocaleTimeString();
       }
@@ -126,7 +129,7 @@
         document.getElementById("strength").textContent = Math.round(intensity * 100) + "%";
         var normalized = YLG_SETTINGS.normalizeSettings({
           enabled: true, theme: "auto", motion: document.getElementById("motion").checked,
-          daylightBackground: { enabled: document.getElementById("enabled").checked, animate: document.getElementById("animate").checked, scene: selectedScene, intensity: intensity,
+          daylightBackground: { enabled: document.getElementById("enabled").checked, animate: document.getElementById("animate").checked, rain: document.getElementById("rain").checked, scene: selectedScene, intensity: intensity,
             liveWeather:document.getElementById("live").checked }
         });
         YLG_SETTINGS.applySettingsToDocument(document, normalized);
@@ -148,7 +151,7 @@
       document.querySelectorAll("button[data-scene]").forEach(function (button) {
         button.addEventListener("click", function () { selectedScene = button.getAttribute("data-scene"); apply(); });
       });
-      ["enabled", "motion", "animate", "intensity", "theme", "live"].forEach(function (id) { document.getElementById(id).addEventListener("input", apply); });
+      ["enabled", "motion", "animate", "rain", "intensity", "theme", "live"].forEach(function (id) { document.getElementById(id).addEventListener("input", apply); });
       document.getElementById("weather").addEventListener("change",function(){YLG_DAYLIGHT.teardown();apply();});
       document.getElementById("route").addEventListener("change", route);
       document.getElementById("inspect").addEventListener("click", status);
