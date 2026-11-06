@@ -125,7 +125,7 @@
         if (s.enabled !== false && opt.enabled !== false) {
           OPT.install({
             aberrationPx: (opt.aberration === false) ? 0 : opt.aberrationPx,
-            magnifyScale: (s.hoverEffects === false || opt.magnify === false) ? 0 : opt.magnifyScale,
+            magnifyScale: (s.motion === false || s.hoverEffects === false || opt.magnify === false) ? 0 : opt.magnifyScale,
             lensPx: opt.lensPx,
             lensAberration: opt.aberration === false ? 0 : opt.lensAberration * (opt.aberrationPx / 1.6)
           });
@@ -199,6 +199,16 @@
       advancedOk = null;
     }
     applyAmbient(s); // runs in all four master/ambient combinations
+    // The decorative sky is independent of video ambient and UI motion.
+    // Its controller gates itself to home/search and pauses hidden pages.
+    try {
+      if (root.YLG_DAYLIGHT) {
+        if (s.enabled && s.daylightBackground.enabled) {
+          root.YLG_DAYLIGHT.init();
+          root.YLG_DAYLIGHT.updateSettings(s);
+        } else root.YLG_DAYLIGHT.teardown();
+      }
+    } catch (eDaylight) {}
   }
 
   var applyTimer = null;

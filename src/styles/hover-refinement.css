@@ -59,6 +59,19 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] :is(ytd-watch-metadata, ytd
   transform: none !important;
   transition: none !important;
 }
+/* The controller is torn down when hover/motion is off. Freeze the legacy
+   :hover/:has() stacking too, so moving across stationary panels cannot raise
+   an entire column over its neighbour. Do not change their glass material. */
+html[data-ylg-enabled="true"]:is([data-ylg-motion="off"], [data-ylg-hover="off"]) ytd-watch-flexy #primary,
+html[data-ylg-enabled="true"]:is([data-ylg-motion="off"], [data-ylg-hover="off"]) ytd-watch-flexy #below {
+  z-index: 2 !important;
+}
+html[data-ylg-enabled="true"]:is([data-ylg-motion="off"], [data-ylg-hover="off"]) ytd-watch-flexy :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"] {
+  z-index: 3 !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-chip {
+  transform: none !important;
+}
 @media (prefers-reduced-motion: reduce) {
   html[data-ylg-enabled="true"] :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"] {
     transform: none !important;

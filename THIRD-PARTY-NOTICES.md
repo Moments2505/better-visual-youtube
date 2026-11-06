@@ -1,5 +1,7 @@
 # Third-party notices — Better visual Youtube
 
+Optional live-sky data: [Open-Meteo](https://open-meteo.com/), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). City search uses GeoNames data via Open-Meteo. The extension converts weather codes/cloud cover into decorative scenes; it does not bundle Open-Meteo server code. The free hosted API is for non-commercial use under the provider's terms; commercial distribution must arrange suitable service access. Solar lighting uses independently implemented approximate equations from [NOAA General Solar Position Calculations](https://www.gml.noaa.gov/grad/solcalc/solareqns.PDF).
+
 This distribution includes locally modified code/assets from youtube-ambilight by Wessel Kroos, bundled version 2.38.17.
 
 Project: https://github.com/WesselKroos/youtube-ambilight

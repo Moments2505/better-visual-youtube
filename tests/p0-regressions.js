@@ -112,7 +112,7 @@ function popup(seed = {}, media) {
     addListener(fn) { storageListener = fn; },
     removeListener(fn) { if (fn === storageListener) removed = true; }
   };
-  h.load("src/popup/popup.js"); h.doc.emit("DOMContentLoaded");
+  h.load("src/popup/sky-controls.js"); h.load("src/popup/popup.js"); h.doc.emit("DOMContentLoaded");
   h.$ = id => h.doc.getElementById(id); h.writes = writes;
   h.resolve = () => getCallback({ ylgSettings: seed });
   h.change = (id, checked) => { h.$(id).checked = checked; h.$(id).emit("change"); };
@@ -252,6 +252,112 @@ test("hover off persists independently of motion and preserves static glass opti
   changed({...saved,hoverEffects:true});
   assert.equal(installs.at(-1).magnifyScale,saved.optics.magnifyScale);
   assert.equal(page.doc.documentElement.getAttribute("data-ylg-hover"),"on");
+});
+
+test("Motion off keeps Ambient Light on and suspends hover without losing its saved choice", () => {
+  const h = loaded(); h.change("ylg-motion", false);
+  const saved = h.writes.at(-1).settings;
+  assert.equal(saved.motion, false); assert.equal(saved.hoverEffects, true);
+  assert.equal(saved.ambientLight.enabled, true);
+  assert.equal(loaded(saved).$("ylg-motion").checked, false);
+  assert.equal(loaded(saved).$("ylg-hover-effects").checked, true);
+  const page = sandbox(), installs = [], ambient = [], movers = [];
+  const S = page.context.YLG_SETTINGS; let changed;
+  page.context.YLG_OPTICS = {install: opts => installs.push(opts), teardown(){}};
+  page.context.YLG_AMBIENT = {init(){}, updateSettings:s=>ambient.push(s), teardown(){}};
+  for (const name of ["YLG_PLAYER_MOTION", "YLG_MICRO", "YLG_DESCRIPTION_MOTION", "YLG_PANEL_HOVER"]) {
+    page.context[name] = {init(){movers.push([name,"init"]);}, teardown(){movers.push([name,"teardown"]);}};
+  }
+  S.getStoredSettings = cb => cb(S.normalizeSettings(saved));
+  S.onSettingsChanged = cb => {changed=cb;};
+  page.load("src/content/bootstrap.js");
+  assert.equal(page.doc.documentElement.getAttribute("data-ylg-motion"), "off");
+  assert.equal(page.doc.documentElement.getAttribute("data-ylg-hover"), "off");
+  assert.equal(page.doc.documentElement.getAttribute("data-ylg-ambient"), "on");
+  assert.equal(ambient.at(-1).ambientLight.enabled, true);
+  assert.equal(installs.at(-1).magnifyScale, 0);
+  assert.equal(installs.at(-1).lensPx, saved.optics.lensPx, "static glass stays intact");
+  assert.equal(installs.at(-1).aberrationPx, saved.optics.aberrationPx);
+  assert.equal(movers.length, 4); assert.ok(movers.every(c=>c[1]==="teardown"));
+  changed({...saved, motion:true});
+  assert.equal(page.doc.documentElement.getAttribute("data-ylg-hover"), "on");
+  assert.equal(installs.at(-1).magnifyScale, saved.optics.magnifyScale);
+  assert.ok(movers.slice(-4).every(c=>c[1]==="init"));
+});
+
+test("sky controls save independently, gate children and restore the selected scene", () => {
+  const h = loaded();
+  assert.equal(h.$("ylg-daylight-enabled").checked, false);
+  assert.equal(h.$("ylg-daylight-intensity").disabled, true);
+  assert.equal(h.$("ylg-daylight-animate").disabled, true);
+  selected(h,"ylg-daylight-scene","auto");
+  h.change("ylg-daylight-enabled",true);
+  h.change("ylg-daylight-animate",false);
+  assert.equal(h.$("ylg-daylight-intensity").disabled,false);
+  const button = h.$("ylg-daylight-scene").querySelectorAll("button[data-value]").find(b=>b.getAttribute("data-value")==="night");
+  button.emit("click");
+  selected(h,"ylg-daylight-scene","night");
+  const slider = h.$("ylg-daylight-intensity");
+  h.input("ylg-daylight-intensity",60); slider.emit("change");
+  slider.emit("wheel",{deltaY:-100}); h.timer.tick(150);
+  const saved = h.writes.at(-1).settings;
+  assert.equal(saved.daylightBackground.enabled,true);
+  assert.equal(saved.daylightBackground.animate,false);
+  assert.equal(saved.daylightBackground.scene,"night");
+  assert.equal(saved.daylightBackground.intensity,.61);
+  assert.equal(saved.motion,true); assert.equal(saved.ambientLight.enabled,true);
+  const reopened = loaded(saved); selected(reopened,"ylg-daylight-scene","night");
+  assert.equal(reopened.$("ylg-daylight-intensity").value,"61");
+  assert.equal(reopened.$("ylg-daylight-animate").checked,false);
+  h.change("ylg-daylight-enabled",false);
+  assert.equal(h.$("ylg-daylight-intensity").disabled,true);
+  assert.equal(h.writes.at(-1).settings.daylightBackground.scene,"night");
+  h.change("ylg-daylight-enabled",true);
+  h.change("ylg-motion",false);
+  h.change("ylg-daylight-animate",true);
+  assert.equal(h.writes.at(-1).settings.motion,false);
+  assert.equal(h.writes.at(-1).settings.daylightBackground.animate,true,"sky motion does not re-enable interface motion");
+});
+
+test("live weather choice survives a permission popup closing and denial can be retried", async () => {
+  const h=loaded({motion:false,daylightBackground:{enabled:true}});
+  let resolvePermission;
+  h.context.chrome.permissions={request:()=>new Promise(resolve=>resolvePermission=resolve)};
+  h.context.chrome.runtime.sendMessage=()=>Promise.resolve({places:[]});
+  h.change("ylg-sky-live",true);
+  assert.equal(h.writes.at(-1).settings.daylightBackground.liveWeather,true,"save before permission dialog can destroy popup");
+  resolvePermission(false);await new Promise(setImmediate);
+  assert.equal(h.$("ylg-sky-live").checked,false);assert.equal(h.writes.at(-1).settings.daylightBackground.liveWeather,false);
+  h.change("ylg-sky-live",true);resolvePermission(true);await new Promise(setImmediate);
+  assert.equal(h.writes.at(-1).settings.daylightBackground.liveWeather,true);
+  assert.equal(h.writes.at(-1).settings.motion,false);
+  const reopened=loaded(h.writes.at(-1).settings);assert.equal(reopened.$("ylg-sky-live").checked,true);
+  h.change("ylg-sky-live",false);assert.equal(h.writes.at(-1).settings.daylightBackground.liveWeather,false);
+  h.change("ylg-sky-live",true);h.fireWindow("pagehide");resolvePermission(true);await new Promise(setImmediate);
+  assert.equal(h.writes.at(-1).settings.daylightBackground.liveWeather,true);
+});
+
+test("sky schema defaults are opt-in and validate without resetting other settings", () => {
+  const h=sandbox(), S=h.context.YLG_SETTINGS;
+  const old=S.normalizeSettings({motion:false,ambientLight:{spread:199}});
+  assert.equal(old.daylightBackground.enabled,false);
+  assert.equal(old.motion,false); assert.equal(old.ambientLight.spread,199);
+  for(const [raw,expected] of [[NaN,.45],[Infinity,.45],[-1,0],[3,1],[.7,.7]]) {
+    const settings=S.normalizeSettings({...old,daylightBackground:{enabled:true,scene:"bad",intensity:raw}});
+    assert.equal(settings.daylightBackground.intensity,expected);
+    assert.equal(settings.daylightBackground.scene,"auto");
+  }
+});
+
+test("bootstrap starts sky independently of Motion and ambient, and tears down when disabled", () => {
+  const h=sandbox(), S=h.context.YLG_SETTINGS, calls=[]; let changed;
+  h.context.YLG_DAYLIGHT={init(){calls.push("init");},updateSettings(s){calls.push(s);},teardown(){calls.push("teardown");}};
+  S.getStoredSettings=cb=>cb(S.normalizeSettings({})); S.onSettingsChanged=cb=>{changed=cb;};
+  h.load("src/content/bootstrap.js"); assert.equal(calls.at(-1),"teardown");
+  changed({motion:false,ambientLight:{enabled:false},daylightBackground:{enabled:true,scene:"morning"}});
+  assert.equal(calls.at(-2),"init"); assert.equal(calls.at(-1).daylightBackground.scene,"morning");
+  assert.equal(calls.at(-1).motion,false);
+  changed({enabled:false,daylightBackground:{enabled:true}}); assert.equal(calls.at(-1),"teardown");
 });
 
 test("panel hover controller follows master, hover, motion and magnification switches", () => {

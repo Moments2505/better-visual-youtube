@@ -116,11 +116,10 @@ html[data-ylg-ambient="off"] .ylg-ambient-canvas {
    mount the engine, so the controller never marks an overlay there; the
    attribute itself is removed on every one of those transitions. */
 
-/* Motion policy stops the engine through the bridge as well; CSS closes the
-   asynchronous reconciliation interval. Native/fallback must not compete. */
-html[data-ylg-enabled="true"][data-ylg-motion="off"] .ambientlight,
-html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-ambient-host {
-  display: none !important;
+/* Motion effects freezes the interface while Ambient Light remains active.
+   Remove the native fallback's fade without hiding its backdrop. */
+html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-ambient-canvas {
+  transition: none;
 }
 
 /* FULLSCREEN / SHORTS: engine never mounts here (controller gates), but

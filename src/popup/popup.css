@@ -209,6 +209,8 @@ html[data-ylg-motion="on"] .ylg-panel { animation: ylg-popup-enter 200ms var(--e
 .ylg-check-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ylg-modes { display: flex; gap: 14px; padding: 4px 0 2px; flex-wrap: wrap; }
 .ylg-hint { color: var(--txt-dim); font-size: 11px; }
+.ylg-scene-choices { margin: 8px 0; flex-wrap: wrap; }
+.ylg-scene-choices button { min-width: 54px; }
 
 /* footer */
 .ylg-footer {
@@ -240,3 +242,12 @@ html[data-ylg-motion="on"] .ylg-panel { animation: ylg-popup-enter 200ms var(--e
   .ylg-sheen, .ylg-orb { display: none; }
   .ylg-segmented button[aria-checked="true"] { background: Highlight; color: HighlightText; }
 }
+/* City selection stays in the existing settings panel. */
+.ylg-city-row { display:flex; gap:8px; margin:8px 0; }
+.ylg-city-row input { min-width:0; flex:1; padding:8px 10px; border:1px solid var(--row-line); border-radius:10px; color:inherit; background:var(--seg-bg); font:inherit; }
+.ylg-city-row button, #ylg-sky-results button, #ylg-sky-allow { border:1px solid var(--row-line); border-radius:8px; color:var(--txt); background:var(--seg-bg); font:inherit; cursor:pointer; padding:6px 10px; }
+.ylg-city-row button:hover, #ylg-sky-results button:hover { background:var(--seg-active); }
+.ylg-city-row :focus-visible, #ylg-sky-results button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+#ylg-sky-results { display:grid; gap:6px; }
+#ylg-sky-results button { text-align:left; white-space:normal; padding:8px 10px; }
+#ylg-sky-live-controls a { color:inherit; text-decoration:underline; }

@@ -8,6 +8,8 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Dành cho Microsoft Edge và Google Chrome trên máy tính. Tiện ích đang ở giai đoạn beta và sẽ tiếp tục được hoàn thiện.
 
+**Beta mới nhất: [0.4.63](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.63).** Thêm nền trời và thời tiết theo thành phố tùy chọn, giữ Ambient Light độc lập với Motion, sửa headbar trong hẳn và preview Trang chủ bị lệch khi bật nền trời. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/v0.4.63/docs/releases/v0.4.63.md)
+
 ## Thêm chiều sâu cho giao diện
 
 Liquid Glass mang lớp kính trong và viền bắt sáng đến thanh đầu trang, ô tìm kiếm, bộ điều khiển video và các khung nội dung. Bạn có thể chỉnh màu kính, độ mờ, độ trong và phản sáng theo sở thích.
@@ -22,6 +24,14 @@ Ambient Light mở rộng màu sắc từ video ra xung quanh trình phát. Đ�
 
 Chọn giao diện sáng hoặc tối, tinh chỉnh hiệu ứng kính và bật tắt các chuyển động. Các lựa chọn được lưu ngay trong trình duyệt của bạn.
 
+Mục **Time-of-day background** thêm nắng sớm, trời ban ngày, hoàng hôn hoặc bầu trời sao có mặt trăng cho Trang chủ và Tìm kiếm. Auto theo mặt trời tại thành phố đã chọn, ban đầu là Hà Nội; bạn cũng có thể chọn cảnh thủ công. **Animate sky** điều khiển chuyển động nền riêng với **Motion effects** của giao diện; Ambient Light cũng có công tắc riêng.
+
+Nền procedural thay đổi ánh sáng, sắc hoàng hôn và cấu trúc mây theo thời gian, dừng khi tab ẩn và dùng cảnh CSS dự phòng nếu WebGL không hoạt động. Tắt **Animate sky** để giữ cảnh đứng yên; cảnh vẫn có thể cập nhật khi mặt trời hoặc thời tiết đổi. Khi bật nền trời, headbar vẫn có lớp kính dễ đọc cả khi Opacity của panel bằng 0; preview Trang chủ khớp với thumbnail.
+
+Để thêm thời tiết, bật **Time-of-day background**, chọn **Auto**, rồi bật **Live sun & weather**. Dùng **Choose a city** để đổi thành phố. Trình duyệt hỏi quyền kết nối Open-Meteo cho thời tiết và tìm thành phố; dùng **Allow weather access** nếu còn thiếu quyền. Tọa độ thành phố đã chọn hoặc nội dung tìm thành phố được gửi tới Open-Meteo; tiện ích không xin GPS. Ánh sáng mặt trời tính được khi mất mạng. Thời tiết thường cập nhật mỗi 15 phút, dùng dữ liệu đệm tối đa hai giờ khi yêu cầu mới thất bại. [Chi tiết quyền riêng tư](docs/PRIVACY-VI.md)
+
+Đây là cảnh trang trí, không phải camera trực tiếp hay bản đồ thiên văn chính xác. Nền giới hạn kích thước canvas và tối đa 20 lần cập nhật/giây; đây là giới hạn tải, không phải cam kết 120 FPS. Dữ liệu thời tiết: [Open-Meteo](https://open-meteo.com/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
 ## Cài đặt
 
 1. Tải gói ZIP của tiện ích trong [Releases](https://github.com/Moments2505/better-visual-youtube/releases), rồi giải nén.
@@ -30,6 +40,8 @@ Chọn giao diện sáng hoặc tối, tinh chỉnh hiệu ứng kính và bật
 4. Tải lại YouTube và mở tiện ích để chọn hiệu ứng bạn thích.
 
 [Hướng dẫn cài đặt](INSTALL-VI.md) · [Installation guide](INSTALL-EN.md)
+
+**Cập nhật bản đang dùng:** giải nén ZIP mới đè lên các tệp trong cùng thư mục extension, bấm **Reload / Tải lại** trên trang tiện ích rồi tải lại YouTube. Giữ bản cài hiện tại để giữ các lựa chọn đã lưu. Quyền thời tiết tùy chọn chỉ được hỏi khi bạn sử dụng thời tiết hoặc tìm thành phố.
 
 Nếu gặp lỗi hoặc có ý tưởng mới, bạn có thể [tạo issue](https://github.com/Moments2505/better-visual-youtube/issues).
 

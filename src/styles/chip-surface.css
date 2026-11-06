@@ -48,3 +48,31 @@ html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer
     transition: none;
   }
 }
+
+/* The later interface-lens rule also matches chips. Keep its tint/rim, but
+   never run SVG displacement on the chip host: the first glyph can be sampled
+   again at the sticky row's edge. Use a small, static blur instead. Both adapter
+   hooks are intentional: this must outrank the enabled+lens selector even
+   though liquid-components.css loads later. No promotion or scroll handler. */
+html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass.ylg-chip[data-ylg-level="chip"][data-ylg-tagged="1"] {
+  -webkit-backdrop-filter: blur(min(var(--ylg-blur-s, 0px), 2px)) saturate(1.1) !important;
+  backdrop-filter: blur(min(var(--ylg-blur-s, 0px), 2px)) saturate(1.1) !important;
+  filter: none !important;
+  will-change: auto;
+}
+html[data-ylg-enabled="true"]:is([data-ylg-fill="none"], [data-ylg-lowfx="true"]) :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass.ylg-chip[data-ylg-level="chip"][data-ylg-tagged="1"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+@media (prefers-reduced-transparency: reduce) {
+  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass.ylg-chip[data-ylg-level="chip"][data-ylg-tagged="1"] {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+@media (forced-colors: active) {
+  html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass.ylg-chip[data-ylg-level="chip"][data-ylg-tagged="1"] {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}

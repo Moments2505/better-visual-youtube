@@ -103,13 +103,18 @@
 
   function sample() {
     if (!active) return null;
-    // Canvas video readback may synchronize with the GPU. Retain the last
-    // surface colour during direct manipulation rather than compete with it.
-    if ((video && video.seeking) || document.querySelector('[data-ylg-dragging="1"]')) return last;
     var now = Date.now();
+    // rVFC can call this at the video's frame rate. Bound every attempt,
+    // including skipped hover/seeking samples, so direct manipulation never
+    // turns the global selector into per-frame work. The last colour remains
+    // visible; decorative tint resumes within the next sampling interval.
     if (now - lastRun < MIN_INTERVAL) return last;
     lastRun = now;
-
+    // Canvas video readback may synchronize with the GPU. Retain the last
+    // surface colour during hover previews as well as dragging. This gate is
+    // independent of Motion effects: even a stationary UI can be seeking.
+    if ((video && video.seeking) || document.querySelector(
+      '.ytp-progress-bar-container:hover, .ytp-volume-area:hover, [data-ylg-dragging="1"]')) return last;
     var color = null;
     if (video && video.readyState >= 2 && !video.paused && !video.ended) {
       color = readFrom(video, true);

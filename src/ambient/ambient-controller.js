@@ -188,7 +188,6 @@
     var de = document.documentElement;
     var amb = (st && st.ambientLight) || {};
     if (!st || st.enabled === false || amb.enabled === false) return "off";
-    if (de.getAttribute("data-ylg-motion") === "off") return "off";
     // Clear mode only. Any nonzero opacity keeps the original page-wide glow,
     // because that glow is the backdrop the glass panels refract.
     if (de.getAttribute("data-ylg-fill") !== "none") return "off";

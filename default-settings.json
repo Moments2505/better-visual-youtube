@@ -17,6 +17,18 @@
     "spread": 162
   },
   "blur": 1,
+  "daylightBackground": {
+    "enabled": false,
+    "animate": true,
+    "scene": "auto",
+    "intensity": 0.45,
+    "liveWeather": false,
+    "location": {
+      "name": "Hà Nội, Việt Nam",
+      "latitude": 21.0285,
+      "longitude": 105.8542
+    }
+  },
   "enabled": true,
   "highlight": 0.62,
   "hoverEffects": true,

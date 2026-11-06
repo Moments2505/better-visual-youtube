@@ -50,8 +50,10 @@
     return typeof value === "number" && isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
   }
   function clampSpread(value) { return Math.round(number(Number(value), 0, 200, 75)); }
-  function motionAllowed(settings) {
-    return (!settings || settings.motion !== false) && !(motionQuery && motionQuery.matches) &&
+  function ambientAllowed() {
+    // Motion effects controls UI movement, not video-driven ambient lighting.
+    // Keep the system accessibility gates independent of that UI preference.
+    return !(motionQuery && motionQuery.matches) &&
       !(colorsQuery && colorsQuery.matches);
   }
   function resolution(quality) {
@@ -64,7 +66,7 @@
   }
   function wanted(settings, currentMode) {
     var amb = settings && settings.ambientLight;
-    if (!settings || settings.enabled === false || !amb || amb.enabled === false || !motionAllowed(settings)) return false;
+    if (!settings || settings.enabled === false || !amb || amb.enabled === false || !ambientAllowed()) return false;
     if (currentMode === "shorts" || currentMode === "miniplayer") return false;
     var modes = amb.modes || {};
     if (currentMode === "fullscreen") return modes.fullscreen === true;

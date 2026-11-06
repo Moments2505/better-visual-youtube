@@ -152,7 +152,9 @@
     setSegmented("ylg-theme", s.theme);
     setSegmented("ylg-tint", uiTint(s));
     setSegmented("ylg-ambient-quality", amb.quality);
+    setSegmented("ylg-daylight-scene", s.daylightBackground.scene);
     syncColour(s);
+    if (window.YLG_SKY_UI) window.YLG_SKY_UI.render(s);
   }
 
   /* ---- render ---- */
@@ -191,6 +193,9 @@
     setChecked("ylg-motion", s.motion);
     setChecked("ylg-hover-effects", s.hoverEffects);
     setChecked("ylg-system-transparency", s.respectReducedTransparency);
+    setChecked("ylg-daylight-enabled", s.daylightBackground.enabled);
+    setChecked("ylg-daylight-animate", s.daylightBackground.animate);
+    setSlider("ylg-daylight-intensity", "ylg-daylight-intensity-v", Math.round(s.daylightBackground.intensity * 100), pct);
     var a = s.ambientLight || {};
     setChecked("ylg-ambient-enabled", a.enabled);
     setSlider("ylg-amb-blur", "ylg-amb-blur-v", a.blur, px);
@@ -226,11 +231,13 @@
       var ambientChild = el.id.indexOf("ylg-amb-") === 0 || !!el.closest("#ylg-ambient-quality");
       var opticsChild = el.id.indexOf("ylg-optics-") === 0 && el.id !== "ylg-optics-enabled";
       var colourChild = !!el.closest("#ylg-accent-row");
+      var daylightChild = el.id === "ylg-daylight-intensity" || el.id === "ylg-daylight-animate" || !!el.closest("#ylg-daylight-scene") || !!el.closest("#ylg-sky-live-controls");
       // Removed controls are gone from the markup, so this loop only ever sees
       // the ids that still exist; an absent element simply never appears here.
       el.disabled = !s.enabled ||
         (ambientChild && !amb.enabled) ||
         (opticsChild && !optics.enabled) ||
+        (daylightChild && !s.daylightBackground.enabled) ||
         (el.id === "ylg-optics-ab" && !optics.aberration) ||
         ((el.id === "ylg-optics-scale" || el.id === "ylg-optics-hover") && !optics.magnify) ||
         (colourChild && !colourOn);
@@ -368,6 +375,23 @@
     if (systemTransparency) systemTransparency.addEventListener("change", function () {
       update({ respectReducedTransparency: this.checked });
     });
+
+    var daylightEnabled = $("ylg-daylight-enabled");
+    function updateDaylight(patch) {
+      update({ daylightBackground: Object.assign({}, current.daylightBackground, patch) });
+    }
+    if (window.YLG_SKY_UI) window.YLG_SKY_UI.bind({ get: function () { return current; }, update: updateDaylight, flush: flushSave });
+    if (daylightEnabled) daylightEnabled.addEventListener("change", function () {
+      updateDaylight({ enabled: this.checked });
+    });
+    var daylightAnimate = $("ylg-daylight-animate");
+    if (daylightAnimate) daylightAnimate.addEventListener("change", function () {
+      updateDaylight({ animate: this.checked });
+    });
+    bindSeg("ylg-daylight-scene", function (v) { updateDaylight({ scene: v }); });
+    bindSlider("ylg-daylight-intensity", "ylg-daylight-intensity-v", function (v) {
+      updateDaylight({ intensity: v / 100 });
+    }, pct);
 
     // ambient
     var ambEnabled = $("ylg-ambient-enabled");

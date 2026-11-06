@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Better visual Youtube",
   "short_name": "Better visual",
-  "version": "0.4.58",
+  "version": "0.4.63",
   "description": "Give YouTube a new look with Liquid Glass, Ambient Light and customizable animations.",
   "minimum_chrome_version": "107",
   "background": {
@@ -27,6 +27,7 @@
       ],
       "js": [
         "src/shared/settings.js",
+        "src/shared/sky-environment.js",
         "src/ambient/ambient-vendor-bridge.js",
         "vendor/ambient/content.js",
         "src/glass/glass-refraction.js",
@@ -43,6 +44,8 @@
         "src/content/micro-interactions.js",
         "src/content/description-motion.js",
         "src/content/panel-hover.js",
+        "src/content/sky-renderer.js",
+        "src/content/daylight-background.js",
         "src/content/bootstrap.js"
       ],
       "css": [
@@ -69,7 +72,9 @@
         "src/styles/micro-interactions.css",
         "src/styles/description-motion.css",
         "src/styles/accessibility-surfaces.css",
-        "src/styles/hover-refinement.css"
+        "src/styles/hover-refinement.css",
+        "src/styles/daylight-background.css",
+        "src/styles/daylight-integration.css"
       ],
       "run_at": "document_start",
       "all_frames": false
@@ -97,5 +102,9 @@
         "https://www.youtube.com/*"
       ]
     }
+  ],
+  "optional_host_permissions": [
+    "https://api.open-meteo.com/*",
+    "https://geocoding-api.open-meteo.com/*"
   ]
 }

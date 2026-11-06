@@ -845,20 +845,21 @@
   }
   var interfaceSurfaces = [], interfaceKeys = {};
   function syncInterfaceLenses(px, ab) {
-    // Per geometry, not one stretched map for every chip. Bound the number of
-    // maps and leave CSS glass as fallback when the budget is exhausted.
+    // Only searchboxes consume interface displacement. Chips keep their small
+    // static CSS blur, so measuring them or encoding maps on chip-row refreshes
+    // spends layout/texture work on filters that are never painted.
     if (!document.querySelectorAll) return;
     interfaceSurfaces = interfaceSurfaces.filter(function(node) {
-      if (node.isConnected !== false) return true;
+      if (node.isConnected !== false && node.classList && node.classList.contains("ytSearchboxComponentInputBox")) return true;
       try { node.style.removeProperty("--ylg-interface-lens"); } catch (e) {}
       return false;
     });
-    var surfaces = document.querySelectorAll(".ytSearchboxComponentInputBox, yt-chip-cloud-chip-renderer.ylg-glass, ytd-chip-renderer.ylg-glass");
+    var surfaces = document.querySelectorAll(".ytSearchboxComponentInputBox");
     var k = playerLensKFor(px);
     // Batch geometry reads before SVG/style writes: alternating them forces
-    // repeated style/layout flushes across the whole chip row.
+    // repeated style/layout flushes when multiple searchboxes are present.
     var measured = [];
-    for (var i = 0; i < surfaces.length && i < 42; i++) {
+    for (var i = 0; i < surfaces.length && i < 8; i++) {
       var node = surfaces[i], r = node.getBoundingClientRect();
       if (r.width < 8 || r.height < 8) continue;
       measured.push({ node: node, w: Math.round(r.width), h: Math.round(r.height) });

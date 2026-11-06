@@ -79,6 +79,7 @@
         <label class="ylg-check-row" for="ylg-motion">
           <input type="checkbox" id="ylg-motion"> Motion effects
         </label>
+        <p class="ylg-hint">Turn off interface animations and hover movement while keeping Ambient Light on.</p>
         <label class="ylg-check-row" for="ylg-hover-effects">
           <input type="checkbox" id="ylg-hover-effects"> Hover effects
         </label>
@@ -160,6 +161,40 @@
           <label class="ylg-check-row" for="ylg-amb-fullscreen"><input type="checkbox" id="ylg-amb-fullscreen"> Fullscreen <span class="ylg-hint">(experimental)</span></label>
         </div>
       </section>
+      <section class="ylg-section" aria-labelledby="ylg-daylight-h">
+        <h2 id="ylg-daylight-h">Time-of-day background</h2>
+        <p id="ylg-sky-build" class="ylg-hint"></p>
+        <label class="ylg-check-row" for="ylg-daylight-enabled">
+          <input type="checkbox" id="ylg-daylight-enabled" role="switch"> Enable sky background
+        </label>
+        <p class="ylg-hint">Home and search only. A continuous procedural sky follows the sun at your chosen city. No fixed background images. Live weather adds local conditions.</p>
+        <div id="ylg-sky-live-controls">
+          <label class="ylg-check-row" for="ylg-sky-live"><input type="checkbox" id="ylg-sky-live"> Live sun &amp; weather</label>
+          <button type="button" id="ylg-sky-allow">Allow weather access</button>
+          <p class="ylg-hint">Location: <strong id="ylg-sky-location">Hà Nội, Việt Nam</strong></p>
+          <label for="ylg-sky-city">Choose a city</label>
+          <div class="ylg-city-row"><input type="search" id="ylg-sky-city" maxlength="100" placeholder="City, country" autocomplete="off"><button type="button" id="ylg-sky-search">Search</button></div>
+          <div id="ylg-sky-results" aria-label="Location results"></div>
+          <p id="ylg-sky-status" class="ylg-hint" role="status" aria-live="polite"></p>
+          <p class="ylg-hint">Optional connection shares the chosen city/coordinates and your IP with <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>. Weather uses periodically updated model data, not a live camera. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>; location search by GeoNames via Open-Meteo.</p>
+        </div>
+        <label class="ylg-check-row" for="ylg-daylight-animate">
+          <input type="checkbox" id="ylg-daylight-animate"> Animate sky
+        </label>
+        <p class="ylg-hint">Independent of interface Motion effects. Turn off for a still sky.</p>
+        <div class="ylg-segmented ylg-scene-choices" role="radiogroup" aria-label="Background scene" id="ylg-daylight-scene">
+          <button type="button" data-value="auto" role="radio">Auto</button>
+          <button type="button" data-value="morning" role="radio">Morning</button>
+          <button type="button" data-value="day" role="radio">Day</button>
+          <button type="button" data-value="sunset" role="radio">Sunset</button>
+          <button type="button" data-value="night" role="radio">Night</button>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-daylight-intensity">Sky intensity</label>
+          <input type="range" id="ylg-daylight-intensity" min="0" max="100" step="1" aria-label="Sky intensity percent">
+          <output id="ylg-daylight-intensity-v"></output>
+        </div>
+      </section>
     </main>
 
     <footer class="ylg-footer">
@@ -168,6 +203,7 @@
     </footer>
   </div>
   <script src="../shared/settings.js"></script>
+  <script src="sky-controls.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

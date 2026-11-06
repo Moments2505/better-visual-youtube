@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" dark data-ambientlight-enabled>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Time-of-day background — local visual fixture</title>
+  <link rel="stylesheet" href="../../src/styles/daylight-background.css">
+  <link rel="stylesheet" href="../../src/styles/daylight-integration.css">
+  <!-- Upstream is deliberately loaded LATER: reproduce its opaque page fill. -->
+  <link rel="stylesheet" href="../../vendor/ambient/content.css">
+  <style>
+    :root { color-scheme: light; --page: #fff; --fg: #101010; --muted: #555; --line: #0002; --panel: #ffffffdc; }
+    :root[dark] { color-scheme: dark; --page: #0f0f0f; --fg: #f1f1f1; --muted: #bbb; --line: #fff2; --panel: #181818dc; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.5 Arial, sans-serif; }
+    /* Native page fills below are released by the actual integration stylesheet. */
+    ytd-app, ytd-page-manager, ytd-browse { display: block; background: var(--page); }
+    #masthead-container { position: sticky; top: 0; z-index: 3; height: 64px; display: flex; gap: 32px; align-items: center; padding: 0 24px; background: var(--panel); border-bottom: 1px solid var(--line); }
+    .brand { font-size: 20px; font-weight: bold; white-space: nowrap; }
+    .logo { display: inline-block; padding: 0 8px; border-radius: 6px; background: #f03; color: white; margin-right: 4px; }
+    .search { margin: auto; width: min(42vw, 520px); border: 1px solid var(--line); border-radius: 24px; padding: 8px 20px; color: var(--muted); }
+    #guide { position: absolute; left: 0; top: 64px; width: 190px; padding: 24px 14px; }
+    #guide div { padding: 12px 16px; margin-bottom: 6px; border-radius: 12px; }
+    #guide div:first-child { border: 1px solid var(--line); background: var(--panel); }
+    main { margin-left: 190px; padding: 26px; min-height: calc(100vh - 64px); }
+    .chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 26px; }
+    .chips span { border: 1px solid var(--line); background: var(--panel); padding: 5px 13px; border-radius: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 20px; }
+    .thumb { aspect-ratio: 16 / 9; border-radius: 14px; background: linear-gradient(140deg, #263f54, #607a87 55%, #a1baad); position: relative; overflow: hidden; }
+    .thumb::before { content: ""; position: absolute; inset: 32% -10% -45%; border-radius: 45%; background: #152a35a8; transform: rotate(-13deg); }
+    .thumb::after { content: "4:20"; position: absolute; right: 9px; bottom: 8px; background: #000c; color: white; padding: 0 5px; border-radius: 4px; font-size: 12px; }
+    .card:nth-child(3n+2) .thumb { background: linear-gradient(140deg, #422c4e, #986f7a 55%, #e2b6a3); }
+    .card:nth-child(3n) .thumb { background: linear-gradient(140deg, #304c39, #82996c 55%, #bac298); }
+    h2 { font-size: 15px; line-height: 1.4; margin: 10px 0 3px; }
+    .card p { color: var(--muted); margin: 0; font-size: 12px; }
+    .fixture-tools { margin-top: 38px; border: 1px solid var(--line); background: var(--panel); border-radius: 16px; padding: 20px; }
+    .fixture-tools h1 { font-size: 18px; margin: 0 0 8px; }
+    .fixture-tools p { color: var(--muted); margin: 0 0 14px; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; }
+    .controls label { display: inline-flex; align-items: center; gap: 7px; }
+    button, select { padding: 6px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--fg); font: inherit; cursor: pointer; }
+    .scene-buttons { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px; }
+    button[aria-pressed="true"] { outline: 2px solid #568ad0; outline-offset: 1px; }
+    input[type="range"] { width: 130px; }
+    pre { font-size: 12px; white-space: pre-wrap; margin-bottom: 0; }
+    #miniplayer { position: fixed; z-index: 20; right: 18px; bottom: 18px; width: 210px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: 0 5px 20px #0002; }
+    #miniplayer strong { display: block; font-size: 12px; }
+    #miniplayer small { color: var(--muted); }
+    @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } #guide { width: 150px; } main { margin-left: 150px; } #miniplayer { display: none; } }
+    @media (max-width: 650px) { #guide { display: none; } main { margin-left: 0; padding: 16px; } #masthead-container { gap: 10px; padding: 0 16px; } .brand { font-size: 15px; } .search { width: 40vw; } .grid { gap: 18px 12px; } }
+  </style>
+</head>
+<body>
+  <ytd-app>
+    <div class="ambientlight__container" aria-hidden="true" style="position:absolute;inset:0"></div>
+    <header id="masthead-container"><span aria-hidden="true">☰</span><span class="brand"><span class="logo">▶</span>YouTube</span><div class="search">Search</div><span>＋ Create</span><span aria-hidden="true">◉</span></header>
+    <aside id="guide"><div>⌂ &nbsp; Home</div><div>▷ &nbsp; Shorts</div><div>▣ &nbsp; Subscriptions</div><div>◷ &nbsp; History</div><div>♫ &nbsp; Playlists</div><div>◉ &nbsp; Watch later</div></aside>
+    <ytd-page-manager><ytd-browse page-subtype="home"><main>
+      <div class="chips"><span>All</span><span>Music</span><span>Live</span><span>Animation</span><span>Recently uploaded</span><span>Watched</span></div>
+      <div class="grid">
+        <article class="card"><div class="thumb"></div><h2>A quiet morning above the clouds</h2><p>Visual preview · 10K views</p></article>
+        <article class="card"><div class="thumb"></div><h2>Music for the journey</h2><p>Visual preview · 2 days ago</p></article>
+        <article class="card"><div class="thumb"></div><h2>A walk through a summer forest</h2><p>Visual preview · 18K views</p></article>
+        <article class="card"><div class="thumb"></div><h2>When the evening settles in</h2><p>Visual preview · 4 days ago</p></article>
+        <article class="card"><div class="thumb"></div><h2>Finding a little inspiration</h2><p>Visual preview · 42K views</p></article>
+        <article class="card"><div class="thumb"></div><h2>Under a sky full of stars</h2><p>Visual preview · 1 week ago</p></article>
+      </div>
+      <section class="fixture-tools">
+        <h1>Time-of-day background · local preview</h1>
+        <p>Uses the extension’s actual settings, runtime and backdrop CSS. Cards and page chrome are stand-ins. This preview does not save settings, load media or measure GPU performance. Serve the repository over local HTTP; route controls change the address to exercise the real page gate.</p>
+        <div class="scene-buttons" aria-label="Background scene">
+          <button data-scene="auto">Local clock</button><button data-scene="morning">Morning</button><button data-scene="day">Day</button><button data-scene="sunset">Sunset</button><button data-scene="night">Night</button>
+        </div>
+        <div class="controls">
+          <label><input id="enabled" type="checkbox" checked> Background</label>
+          <label><input id="motion" type="checkbox" checked> Motion</label>
+          <label><input id="animate" type="checkbox" checked> Animate sky</label>
+          <label><input id="live" type="checkbox"> Live solar (Hà Nội)</label>
+          <label>Weather fixture <select id="weather"><option value="unknown">Offline / no weather</option><option value="current">Downloaded Hà Nội data</option><option value="clear">Clear</option><option value="cloudy">Cloudy</option><option value="rain">Rain</option><option value="snow">Snow</option><option value="fog">Fog</option><option value="storm">Storm (no flashes)</option></select></label>
+          <label>Intensity <input id="intensity" type="range" min="0" max="1" step="0.01" value="0.45"><output id="strength">45%</output></label>
+          <label>Native theme <select id="theme"><option value="dark">Dark</option><option value="light">Light</option></select></label>
+          <label>Page <select id="route"><option value="/">Home</option><option value="/results">Search</option><option value="/watch">Watch (no background)</option><option value="/shorts/example">Shorts (no background)</option><option value="/feed/subscriptions">Subscriptions (no background)</option></select></label>
+          <button id="inspect">Refresh status</button>
+        </div>
+        <pre id="status" aria-live="polite"></pre>
+      </section>
+    </main></ytd-browse></ytd-page-manager>
+  </ytd-app>
+  <aside id="miniplayer"><strong>Miniplayer stacking check</strong><small>Backdrop stays below this panel.</small></aside>
+  <script src="../../src/shared/settings.js"></script>
+  <script src="../../src/shared/sky-environment.js"></script>
+  <script src="../../src/content/sky-renderer.js"></script>
+  <script>
+    // Isolated fixture transport. Does not exercise installed-extension permission
+    // or service-worker caching. "current" validates an explicitly downloaded API
+    // response; all other selections are labelled synthetic scene tests.
+    var fixtureWeatherRevision=0;
+    window.chrome={runtime:{sendMessage:function(message,reply){
+      var version=++fixtureWeatherRevision,kind=document.getElementById("weather").value;
+      if(kind==="current") {
+        fetch("/dist/weather-hanoi-current.json").then(function(r){return r.json();}).then(function(payload){
+          if(version!==fixtureWeatherRevision)return;
+          var weather=YLG_SKY_ENV.parseWeather(payload,Date.now());
+          reply({status:weather?"current":"offline",weather:weather,nextRefreshAt:Date.now()+900000});
+        }).catch(function(){reply({status:"offline"});});
+      } else setTimeout(function(){if(version===fixtureWeatherRevision)reply({status:kind==="unknown"?"offline":"synthetic",
+        weather:kind==="unknown"?null:{time:Date.now(),kind:kind,cloud:kind==="clear"?0:.8,temperature:24,wind:6},nextRefreshAt:Date.now()+900000});},0);
+    }}};
+  </script>
+  <script src="../../src/content/daylight-background.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var selectedScene = "morning";
+      function status() {
+        var app=getComputedStyle(document.querySelector("ytd-app"));
+        var ambient=getComputedStyle(document.querySelector(".ambientlight__container"));
+        document.getElementById("status").textContent = JSON.stringify(Object.assign({}, YLG_DAYLIGHT.stats(), {
+          appFill:app.backgroundColor, residualAmbientDisplay:ambient.display,
+          fullBackgroundVisible:!!document.documentElement.getAttribute("data-ylg-daylight") && app.backgroundColor==="rgba(0, 0, 0, 0)" && ambient.display==="none"
+        }), null, 2) + "\nLocal time: " + new Date().toLocaleTimeString();
+      }
+      function apply() {
+        document.documentElement.toggleAttribute("dark", document.getElementById("theme").value === "dark");
+        var intensity = Number(document.getElementById("intensity").value);
+        document.getElementById("strength").textContent = Math.round(intensity * 100) + "%";
+        var normalized = YLG_SETTINGS.normalizeSettings({
+          enabled: true, theme: "auto", motion: document.getElementById("motion").checked,
+          daylightBackground: { enabled: document.getElementById("enabled").checked, animate: document.getElementById("animate").checked, scene: selectedScene, intensity: intensity,
+            liveWeather:document.getElementById("live").checked }
+        });
+        YLG_SETTINGS.applySettingsToDocument(document, normalized);
+        YLG_DAYLIGHT.updateSettings(normalized);
+        document.querySelectorAll("[data-scene]").forEach(function (button) {
+          if (button.tagName === "BUTTON") button.setAttribute("aria-pressed", button.getAttribute("data-scene") === selectedScene ? "true" : "false");
+        });
+        status();
+      }
+      function route() {
+        try {
+          history.replaceState(null, "", document.getElementById("route").value + "?daylight-preview=1");
+          document.dispatchEvent(new Event("yt-navigate-finish"));
+          apply();
+        } catch (error) {
+          document.getElementById("status").textContent = "Serve this fixture over local HTTP to exercise route changes. " + error.message;
+        }
+      }
+      document.querySelectorAll("button[data-scene]").forEach(function (button) {
+        button.addEventListener("click", function () { selectedScene = button.getAttribute("data-scene"); apply(); });
+      });
+      ["enabled", "motion", "animate", "intensity", "theme", "live"].forEach(function (id) { document.getElementById(id).addEventListener("input", apply); });
+      document.getElementById("weather").addEventListener("change",function(){YLG_DAYLIGHT.teardown();apply();});
+      document.getElementById("route").addEventListener("change", route);
+      document.getElementById("inspect").addEventListener("click", status);
+      route();
+    })();
+  </script>
+</body>
+</html>

@@ -383,7 +383,7 @@ test("applySettingsToDocument stopped writing the removed properties and attribu
   // the runtime nor the popup may read the removed settings.
   const settingsJs = source("src/shared/settings.js");
   const bootstrapJs = source("src/content/bootstrap.js");
-  const popupJs = source("src/popup/popup.js");
+  const popupJs = source("src/popup/popup.js") + "\n" + source("src/popup/sky-controls.js");
   for (const [name, text] of [["settings.js", settingsJs], ["bootstrap.js", bootstrapJs]]) {
     assert.ok(!/setAttribute\(\s*["']data-ylg-render-mode["']/.test(text), name + " must not write data-ylg-render-mode");
     assert.ok(!/setProperty\(\s*["']--ylg-accent-soft["']/.test(text), name + " must not write --ylg-accent-soft");
@@ -455,7 +455,7 @@ test("manifest loads glass-ramp.css exactly once, after the engine files it mirr
 
 test("popup.js has no dangling ids and popup.html has no orphans", () => {
   const popupHtml = source("src/popup/popup.html");
-  const popupJs = source("src/popup/popup.js");
+  const popupJs = source("src/popup/popup.js") + "\n" + source("src/popup/sky-controls.js");
   const htmlIds = new Set([...popupHtml.matchAll(/\sid="([^"]+)"/g)].map(m => m[1]));
   // Every control id in popup.js is a string literal (passed to $(id), setSlider,
   // setChecked, bindSeg, ...) or an id inside a selector literal such as

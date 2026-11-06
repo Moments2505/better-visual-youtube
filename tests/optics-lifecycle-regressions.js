@@ -14,9 +14,9 @@ const DEFAULTS = { aberrationPx: 1.6, magnifyScale: 18, lensPx: 26, lensAberrati
 const FLAGS = ["data-ylg-optics", "data-ylg-optics-aberration", "data-ylg-optics-magnify",
   "data-ylg-lens", "data-ylg-lens-hover", "data-ylg-lens-split", "data-ylg-chrome-lens", "data-ylg-control-lens"];
 
-function world({ boxes = true, resizeObserver = true, chromeBox = false, controlBox = false, interfaceBox = false } = {}) {
+function world({ boxes = true, resizeObserver = true, chromeBox = false, controlBox = false, interfaceBox = false, chipCount = 0 } = {}) {
   const counts = { nodes: 0, canvases: 0, imageData: 0, png: 0, mutations: 0,
-    queries: 0, measurements: 0, timers: 0, observers: 0, observe: 0, unobserve: 0, disconnect: 0 };
+    queries: 0, measurements: 0, chipMeasurements: 0, timers: 0, observers: 0, observe: 0, unobserve: 0, disconnect: 0 };
   function element(tag) {
     counts.nodes++;
     const el = makeEl(tag);
@@ -29,7 +29,11 @@ function world({ boxes = true, resizeObserver = true, chromeBox = false, control
       el.style[method] = function (...args) { counts.mutations++; return original.apply(this, args); };
     }
     const rect = el.getBoundingClientRect;
-    el.getBoundingClientRect = function () { counts.measurements++; return rect.call(this); };
+    el.getBoundingClientRect = function () {
+      counts.measurements++;
+      if (tag === "yt-chip-cloud-chip-renderer" || tag === "ytd-chip-renderer") counts.chipMeasurements++;
+      return rect.call(this);
+    };
     if (tag === "canvas") {
       counts.canvases++;
       el.getContext = () => ({
@@ -76,13 +80,23 @@ function world({ boxes = true, resizeObserver = true, chromeBox = false, control
   };
   if (interfaceBox) {
     targets.interfaces = [];
-    for (const [cls, width] of [["ytSearchboxComponentInputBox", 600], ["ylg-glass", 100], ["ylg-glass", 100]]) {
+    for (const [cls, width] of [["ytSearchboxComponentInputBox", 600], ["ytSearchboxComponentInputBox", 300], ["ytSearchboxComponentInputBox", 300]]) {
       const node = element("div"); node.className = cls;
       node.rect = { left: 0, top: 0, width, height: 40 };
       body.appendChild(node); targets.interfaces.push(node);
     }
-    document.querySelectorAll = () => targets.interfaces;
   }
+  targets.chips = [];
+  for (let i = 0; i < chipCount; i++) {
+    const chip = element(i % 2 ? "yt-chip-cloud-chip-renderer" : "ytd-chip-renderer");
+    chip.className = "ylg-glass ylg-chip";
+    chip.rect = { left: i * 20, top: 56, width: 50 + i, height: 32 };
+    body.appendChild(chip); targets.chips.push(chip);
+  }
+  if (interfaceBox || chipCount) document.querySelectorAll = sel => {
+    counts.queries++;
+    return queryAll({ children: [html] }, sel);
+  };
   let now = 0, serial = 0;
   const active = new Map(), history = [];
   function schedule(kind, fn, delay) {
@@ -362,6 +376,42 @@ test("UI geometry lenses are reused, refreshed and removed on teardown", () => {
   assert.equal(w.filter("ylg-lens-ui-2").getAttribute("data-ylg-lens-w"), "700");
   w.api.teardown(); assertClean(w);
   for (const node of nodes) assert.equal(node.style.getPropertyValue("--ylg-interface-lens"), "");
+});
+
+test("500 chips trigger no geometry reads, inline lens styles or extra map allocations", () => {
+  const baseline = world({ interfaceBox: true }), w = world({ interfaceBox: true, chipCount: 500 });
+  baseline.api.install({ ...DEFAULTS, lensPx: 92 });
+  w.api.install({ ...DEFAULTS, lensPx: 92 });
+  assert.equal(w.counts.chipMeasurements, 0, "neither chip renderer family is measured");
+  for (const key of ["canvases", "imageData", "png", "measurements"]) {
+    assert.equal(w.counts[key], baseline.counts[key], "chip count adds no " + key);
+  }
+  assert.equal(w.html.querySelectorAll('filter').length, baseline.html.querySelectorAll('filter').length,
+    "no unused per-chip filter definitions");
+  const before = w.snapshot(), originalSearch = w.filter("ylg-lens-ui-0");
+  for (let i = 0; i < 100; i++) {
+    w.targets.chips[i].rect.width += 40;
+    w.api.refreshInterface();
+  }
+  assert.equal(w.counts.chipMeasurements, 0, "repeated chip-row refreshes do not read chip geometry");
+  assert.equal(w.counts.png, before.png, "no PNG encoding during unchanged search refresh");
+  assert.equal(w.counts.canvases, before.canvases, "no texture map canvases during refresh");
+  assert.equal(w.filter("ylg-lens-ui-0"), originalSearch, "search lens identity survives chip changes");
+  for (const chip of w.targets.chips) assert.equal(chip.style.getPropertyValue("--ylg-interface-lens"), "");
+  assert.equal(w.filter("ylg-lens-seek").getAttribute("data-ylg-lens-w"), "44", "seek lens retained");
+  baseline.api.teardown(); w.api.teardown(); assertClean(baseline); assertClean(w);
+});
+
+test("a tracked searchbox recycled as a chip releases its obsolete inline lens", () => {
+  const w = world({ interfaceBox: true }); w.api.install(DEFAULTS);
+  const recycled = w.targets.interfaces[0];
+  assert.ok(recycled.style.getPropertyValue("--ylg-interface-lens"));
+  recycled.className = "ylg-glass ylg-chip";
+  const before = w.counts.measurements;
+  w.api.refreshInterface();
+  assert.equal(recycled.style.getPropertyValue("--ylg-interface-lens"), "");
+  assert.equal(w.counts.measurements - before, 2, "only the two remaining searchboxes are measured");
+  w.api.teardown(); assertClean(w);
 });
 test("single controls use their own40px lens when volume expands", () => {
   const w = world({ controlBox: true });

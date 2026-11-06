@@ -1,0 +1,63 @@
+/* Only the controller's home/search flag reveals the optional scene. Keep
+   native card, menu and text colours; do not override YouTube colour tokens. */
+/* The extra body ancestor outranks upstream's dark-theme !important fill even
+   when its stylesheet is injected after ours. */
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-app {
+  /* Native hover previews use document coordinates. A positioned app becomes
+     their containing block and adds the app's 56px masthead offset. Isolation
+     keeps a paint stack without changing absolute-position geometry. */
+  position: static;
+  z-index: auto;
+  isolation: isolate;
+  background-color: transparent !important;
+}
+html[data-ylg-enabled="true"][data-ylg-daylight] #ylg-daylight-background {
+  /* The scene is appended after the app; keep it behind the isolated app even
+     though neither app nor preview should acquire a new containing block. */
+  z-index: -1;
+}
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-page-manager,
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-browse[page-subtype="home"],
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-search {
+  background-color: transparent !important;
+}
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-mini-guide-renderer {
+  background-color: transparent !important;
+}
+/* A vendor container can survive watch -> home and paints an opaque page fill
+   inside ytd-app's stacking context. The sky owns the backdrop on these two
+   routes; removing the controller flag restores the video renderer untouched. */
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-app .ambientlight__container {
+  display: none !important;
+}
+/* Clear panels may reveal the sky, but fixed navigation still needs its own
+   bounded glass sheet over scrolling thumbnails. Clear mode normally removes
+   this pseudo entirely; restore only the existing masthead painter here. Use
+   YouTube's native dark state because its navigation glyphs follow that state,
+   independently of the extension's panel theme. */
+@media (forced-colors: none) {
+  html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"] #frosted-glass::before {
+    content: "";
+    background: rgba(248, 250, 252, .72);
+    -webkit-backdrop-filter: blur(var(--ylg-blur, 40px)) saturate(1);
+    backdrop-filter: blur(var(--ylg-blur, 40px)) saturate(1);
+  }
+  html[dark][data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"] #frosted-glass::before {
+    background: rgba(15, 23, 42, .38);
+  }
+  html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"][data-ylg-lowfx="true"] #frosted-glass::before {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: rgba(248, 250, 252, .94);
+  }
+  html[dark][data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"][data-ylg-lowfx="true"] #frosted-glass::before {
+    background: rgba(15, 23, 42, .94);
+  }
+}
+@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+  html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"]:not([data-ylg-transparency="glass"]) #frosted-glass::before {
+    background: Canvas;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

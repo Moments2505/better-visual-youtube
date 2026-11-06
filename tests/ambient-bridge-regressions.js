@@ -31,7 +31,7 @@ const settings = (ambient = {}, enabled = true) => ({ enabled, ambientLight: {
   modes: { normal: true, theater: true, fullscreen: false }, ...ambient
 } });
 function harness({ manual = false, initial = settings(), stored = {} } = {}) {
-  const events = [], pending = [], attrs = {}, data = plain(stored);
+  const events = [], pending = [], attrs = {}, data = plain(stored), queries = new Map();
   const runtime = {};
   const failures = {};
   function operation(kind, payload, callback) {
@@ -51,6 +51,12 @@ function harness({ manual = false, initial = settings(), stored = {} } = {}) {
   }
   const context = vm.createContext({ console,
     navigator: { hardwareConcurrency: 8, deviceMemory: 8 },
+    matchMedia(query) {
+      if (!queries.has(query)) queries.set(query, { matches: false, listeners: [],
+        addEventListener(type, fn) { if (type === "change") this.listeners.push(fn); }
+      });
+      return queries.get(query);
+    },
     document: { documentElement: { setAttribute(key, value) { attrs[key] = value; } } },
     chrome: { runtime, storage: { local: {
       get: (keys, cb) => operation("get", keys, cb),
@@ -63,6 +69,10 @@ function harness({ manual = false, initial = settings(), stored = {} } = {}) {
   vm.runInContext(bridgeSource, context, { filename: bridgeFile });
   return { bridge: context.YLG_AMBIENT_VENDOR, context, events, pending, attrs, data, failures,
     writes: () => events.filter(e => e.kind === "set").map(e => e.payload),
+    media(query, matches) {
+      const item = queries.get(query); item.matches = matches;
+      item.listeners.forEach(fn => fn({ matches }));
+    },
     async finish(kind, error = false) {
       await settle();
       const item = pending.shift();
@@ -227,6 +237,44 @@ test("master disable hides even during pendingStart; re-enable reuses attached r
   assert.equal(h.bridge.stats().attached, true); assert.equal(h.data["setting-enabled"], true);
   await h.bridge.push(settings({ enabled: false })); assert.equal(r.engine.settings.enabled, false);
   assert.equal(await h.bridge.push(settings()), true);
+});
+
+test("Motion effects off keeps Ambient Light running, including cold startup and rapid toggles", async () => {
+  const h = harness(); const r = renderer(h);
+  const still = { ...settings(), motion: false, radius: 28 };
+  let released = false;
+  h.bridge.waitUntilEnabled().then(() => { released = true; });
+  await h.bridge.push(still); await settle();
+  assert.equal(released, true, "motion-off startup releases the ambient loader");
+  assert.equal(await h.bridge.attach(r.engine), true);
+  const starts = r.calls.filter(c => c[0] === "start").length;
+  for (let i = 0; i < 4; i++) {
+    assert.equal(await h.bridge.push({ ...still, motion: i % 2 === 0 }), true);
+    assert.equal(r.engine.isHidden, false);
+  }
+  await Promise.all([true, false, true, false].map(motion => h.bridge.push({ ...still, motion })));
+  assert.equal(h.bridge.stats().state, "upstream");
+  assert.equal(r.engine.settings.enabled, true);
+  assert.equal(r.calls.some(c => c[0] === "hide"), false);
+  assert.equal(r.calls.filter(c => c[0] === "start").length, starts, "no renderer restart on a motion toggle");
+  assert.equal(h.data["setting-enabled"], true);
+  await h.bridge.push({ ...still, ambientLight: { ...still.ambientLight, enabled: false } });
+  assert.equal(r.engine.isHidden, true, "Ambient Light's own switch still stops the renderer");
+  assert.equal(await h.bridge.push(still), true);
+  assert.equal(r.engine.isHidden, false);
+});
+
+test("system reduced motion and forced colours still gate Ambient independently of UI motion", async () => {
+  const h = harness(); const r = renderer(h);
+  const still = { ...settings(), motion: false };
+  await h.bridge.push(still); assert.equal(await h.bridge.attach(r.engine), true);
+  for (const query of ["(prefers-reduced-motion: reduce)", "(forced-colors: active)"]) {
+    h.media(query, true); await settle();
+    assert.equal(r.engine.isHidden, true); assert.equal(h.bridge.stats().state, "off");
+    assert.equal(h.data["setting-enabled"], true, "system gate must not reset the saved ambient switch");
+    h.media(query, false); await settle();
+    assert.equal(r.engine.isHidden, false); assert.equal(h.bridge.stats().state, "upstream");
+  }
 });
 
 test("per-tab layout gates hide live renderer without persisting master=false", async () => {

@@ -13,6 +13,7 @@ manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
 assert len(manifest["description"]) <= 132, "Manifest description exceeds 132 characters"
 assert manifest["permissions"] == ["storage"]
 assert manifest["host_permissions"] == ["https://www.youtube.com/*"]
+assert manifest["optional_host_permissions"] == ["https://api.open-meteo.com/*", "https://geocoding-api.open-meteo.com/*"]
 files = [root / name for name in ("manifest.json", "LICENSE", "README.md", "README-VI.md", "INSTALL-EN.md", "INSTALL-VI.md", "CHANGELOG.md", "default-settings.json", "THIRD-PARTY-NOTICES.md", "CONTRIBUTING.md", "docs/PRIVACY-EN.md", "docs/PRIVACY-VI.md")]
 for folder in ("assets", "src", "vendor"):
     files.extend(p for p in (root / folder).rglob("*") if p.is_file())

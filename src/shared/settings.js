@@ -32,6 +32,14 @@
       "spread": 162
     },
     "blur": 1,
+    "daylightBackground": {
+      "enabled": false,
+      "animate": true,
+      "liveWeather": false,
+      "location": { "name": "Hà Nội, Việt Nam", "latitude": 21.0285, "longitude": 105.8542 },
+      "scene": "auto",
+      "intensity": 0.45
+    },
     "enabled": true,
     "highlight": 0.62,
     "hoverEffects": true,
@@ -207,6 +215,14 @@
     return out;
   }
 
+  function normalizeSkyLocation(value, fallback) {
+    var v = value && typeof value === "object" ? value : fallback;
+    if (typeof v.latitude !== "number" || !Number.isFinite(v.latitude) || Math.abs(v.latitude) > 90 ||
+        typeof v.longitude !== "number" || !Number.isFinite(v.longitude) || Math.abs(v.longitude) > 180) v = fallback;
+    return { name: typeof v.name === "string" && v.name.trim() ? v.name.trim().slice(0,160) : fallback.name,
+      latitude: v.latitude, longitude: v.longitude };
+  }
+
   function normalizeSettings(raw) {
     var src = (raw && typeof raw === "object") ? raw : {};
     var out = {};
@@ -215,6 +231,18 @@
       var v = src[key];
       if (key === "ambientLight") { out[key] = normalizeAmbient(v); return; }
       if (key === "optics") { out[key] = normalizeOptics(v); return; }
+      if (key === "daylightBackground") {
+        var daylight = v && typeof v === "object" ? v : {};
+        out[key] = {
+          enabled: typeof daylight.enabled === "boolean" ? daylight.enabled : def.enabled,
+          animate: typeof daylight.animate === "boolean" ? daylight.animate : def.animate,
+          liveWeather: daylight.liveWeather === true,
+          location: normalizeSkyLocation(daylight.location, def.location),
+          scene: ["auto", "morning", "day", "sunset", "night"].indexOf(daylight.scene) !== -1 ? daylight.scene : def.scene,
+          intensity: typeof daylight.intensity === "number" && isFinite(daylight.intensity) ? clamp(daylight.intensity, 0, 1) : def.intensity
+        };
+        return;
+      }
       switch (typeof def) {
         case "boolean": out[key] = (typeof v === "boolean") ? v : def; break;
         case "number":
@@ -447,7 +475,9 @@
     // advanced refraction is now driven by refraction > 0 in bootstrap.js.
     applyThemeToDocument(doc, s.theme);
     de.setAttribute("data-ylg-motion", s.motion ? "on" : "off");
-    de.setAttribute("data-ylg-hover", s.hoverEffects ? "on" : "off");
+    // Preserve the saved hover choice, but keep all hover movement dormant
+    // while interface motion is off. Re-enabling motion restores that choice.
+    de.setAttribute("data-ylg-hover", s.motion && s.hoverEffects ? "on" : "off");
 
     // Ambient gate is INDEPENDENT of glass styling; master toggle gates both.
     var ambOn = !!(s.enabled && s.ambientLight && s.ambientLight.enabled);

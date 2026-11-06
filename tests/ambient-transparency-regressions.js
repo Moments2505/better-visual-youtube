@@ -61,6 +61,18 @@ test("bridge does not reintroduce local backdrop geometry or intensity writes", 
   assert.doesNotMatch(source, /--ylg-local-|data-ylg-local-glow|getBoundingClientRect|ResizeObserver/);
   assert.doesNotMatch(source, /(?:setProperty\(\s*["']opacity|\.style\.opacity\s*=)/);
 });
+test("Motion effects cannot hide the ambient backdrop or disable its clear-mode envelope", () => {
+  const css = read("src/ambient/ambient.css").replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const match of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!/data-ylg-motion/.test(match[1])) continue;
+    assert.doesNotMatch(match[2], /display|visibility|opacity|mask/, "UI motion must not hide the backdrop");
+  }
+  const controller = read("src/ambient/ambient-controller.js");
+  const resolve = controller.slice(controller.indexOf("  function envResolve()"), controller.indexOf("  function envNodesAlive()"));
+  assert.doesNotMatch(resolve, /data-ylg-motion|\.motion\b/);
+  assert.match(resolve, /amb\.enabled === false/, "Ambient Light's own gate remains");
+});
+
 let passed = 0;
 for (const { name, fn } of cases) {
   try { fn(); passed++; console.log("PASS " + name); }

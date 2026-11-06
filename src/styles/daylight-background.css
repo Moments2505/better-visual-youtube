@@ -1,0 +1,213 @@
+/* One optional backdrop and four decorative layers. The YouTube integration
+   owns page transparency; this file never changes native content backgrounds. */
+#ylg-daylight-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+  isolation: isolate;
+  opacity: var(--ylg-daylight-intensity, .45);
+  --ylg-sky-top: #101c2c;
+  --ylg-sky-bottom: #283c49;
+  --ylg-sun: #ffe8a5;
+  --ylg-ray: #efbc70;
+  --ylg-stars: #dbeaff;
+  background: linear-gradient(180deg, var(--ylg-sky-top), var(--ylg-sky-bottom));
+}
+#ylg-daylight-background > span { position: absolute; display: block; pointer-events: none; }
+#ylg-daylight-background[data-scene="morning"] {
+  --ylg-sky-top: #233b54; --ylg-sky-bottom: #5d4a34;
+}
+#ylg-daylight-background[data-scene="day"] {
+  --ylg-sky-top: #163954; --ylg-sky-bottom: #274349;
+  --ylg-ray: #8ed5ed;
+}
+#ylg-daylight-background[data-scene="sunset"] {
+  --ylg-sky-top: #29233e; --ylg-sky-bottom: #744337;
+  --ylg-sun: #ffd0a0; --ylg-ray: #eab087;
+}
+#ylg-daylight-background[data-scene="night"] {
+  --ylg-sky-top: #09152e; --ylg-sky-bottom: #193856;
+  --ylg-ray: #556fb0;
+}
+html:not([dark]) #ylg-daylight-background[data-scene="morning"] {
+  --ylg-sky-top: #bfe1f0; --ylg-sky-bottom: #ffe5bb;
+}
+html:not([dark]) #ylg-daylight-background[data-scene="day"] {
+  --ylg-sky-top: #b9e0f3; --ylg-sky-bottom: #e3f1eb;
+}
+html:not([dark]) #ylg-daylight-background[data-scene="sunset"] {
+  --ylg-sky-top: #e4d8ed; --ylg-sky-bottom: #ffd9bc;
+}
+html:not([dark]) #ylg-daylight-background[data-scene="night"] {
+  --ylg-sky-top: #d0d8ed; --ylg-sky-bottom: #e3e9f6;
+  --ylg-stars: #6073a5; --ylg-ray: #9daed5;
+}
+#ylg-daylight-background .ylg-daylight-glow {
+  width: min(90vw, 960px);
+  height: min(90vw, 960px);
+  top: -28%; right: -8%;
+  opacity: .35;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, var(--ylg-ray), transparent 67%);
+}
+#ylg-daylight-background[data-scene="morning"] .ylg-daylight-glow {
+  opacity: .24;
+  background: conic-gradient(from 172deg,
+    transparent 0deg 28deg, var(--ylg-ray) 30deg 34deg,
+    transparent 37deg 49deg, var(--ylg-ray) 51deg 56deg,
+    transparent 59deg 74deg, var(--ylg-ray) 76deg 80deg,
+    transparent 83deg 360deg);
+  -webkit-mask-image: radial-gradient(circle, #000 8%, transparent 68%);
+  mask-image: radial-gradient(circle, #000 8%, transparent 68%);
+}
+#ylg-daylight-background .ylg-daylight-sun {
+  z-index: 2;
+  top: 11vh; right: 13vw;
+  width: clamp(76px, 10vw, 138px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: .62;
+  background: radial-gradient(circle, var(--ylg-sun) 0 35%, transparent 71%);
+}
+#ylg-daylight-background[data-scene="day"] .ylg-daylight-sun { opacity: .22; }
+#ylg-daylight-background[data-scene="sunset"] .ylg-daylight-sun { top: 65vh; right: 20vw; }
+/* Reuse the sun's small layer as the moon: no extra scene tree or video layer.
+   Place it in the navigation gutter rather than behind the thumbnail grid. */
+#ylg-daylight-background[data-scene="night"] .ylg-daylight-sun {
+  display: block;
+  left: 12px; right: auto; top: 67vh;
+  width: clamp(48px, 4.2vw, 70px);
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at 34% 29%, #9caec67a 0 8%, transparent 10%),
+    radial-gradient(ellipse at 64% 58%, #8298b65c 0 13%, transparent 16%),
+    radial-gradient(circle at 36% 68%, #9caec64a 0 6%, transparent 8%),
+    radial-gradient(circle at 42% 38%, #fffef0 0 28%, #e2eaf5 62%, #9baed0 100%);
+  box-shadow: inset -8px -5px 12px #25406a61, 0 0 24px 8px #b7d4ff33;
+}
+#ylg-daylight-background .ylg-daylight-stars {
+  z-index: 2;
+  inset: 0;
+  display: none;
+  opacity: 1;
+  background-image:
+    radial-gradient(circle at 20px 31px, var(--ylg-stars) 0 .7px, transparent 1.3px),
+    radial-gradient(circle at 67px 78px, var(--ylg-stars) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 41px 14px, var(--ylg-stars) 0 .6px, transparent 1.2px),
+    radial-gradient(circle at 107px 53px, #f4e2ff 0 1.1px, transparent 1.9px),
+    radial-gradient(circle at 56px 112px, var(--ylg-stars) 0 .5px, transparent 1.1px);
+  background-size: 173px 137px, 263px 211px, 347px 293px, 419px 331px, 113px 157px;
+}
+#ylg-daylight-background[data-scene="night"] .ylg-daylight-stars { display: block; }
+/* A static, bounded nebula texture moves as one compositor layer. No animated
+   filters, blend modes, image decoding, per-star elements or per-frame JS. */
+#ylg-daylight-background .ylg-daylight-galaxy {
+  display: none;
+  width: min(138vw, 1700px); height: min(74vh, 640px);
+  left: -12vw; top: 14vh;
+  opacity: .92;
+  background:
+    radial-gradient(ellipse at 52% 45%, #e2eaffad 0 2%, transparent 18%),
+    radial-gradient(ellipse at 36% 56%, #86d7ff99 0 3%, transparent 30%),
+    radial-gradient(ellipse at 68% 40%, #bc9fffb3 0 4%, transparent 29%),
+    radial-gradient(ellipse at 25% 60%, #477fd47a 0 3%, transparent 27%),
+    radial-gradient(ellipse at 76% 34%, #b04e9b80 0 4%, transparent 24%),
+    linear-gradient(168deg, transparent 30%, #415d9e40 39%, #71acd580 45%, #d9e1efb3 49%, #7488c299 52%, #8265a361 57%, transparent 68%);
+  transform: rotate(-20deg);
+}
+#ylg-daylight-background .ylg-daylight-galaxy::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 17px 29px, #fff 0 .8px, transparent 1.4px),
+    radial-gradient(circle at 58px 9px, #d7ebff 0 .5px, transparent 1px);
+  background-size: 83px 67px, 137px 109px;
+  -webkit-mask-image: radial-gradient(ellipse, #000 12%, transparent 62%);
+  mask-image: radial-gradient(ellipse, #000 12%, transparent 62%);
+}
+#ylg-daylight-background[data-scene="night"] .ylg-daylight-galaxy { display: block; }
+#ylg-daylight-background .ylg-daylight-glow {
+  animation: ylg-daylight-drift 38s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+#ylg-daylight-background .ylg-daylight-stars {
+  animation: ylg-daylight-twinkle 14s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+#ylg-daylight-background .ylg-daylight-galaxy {
+  animation: ylg-daylight-galaxy 64s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+#ylg-daylight-background[data-moving="true"] .ylg-daylight-glow,
+#ylg-daylight-background[data-moving="true"] .ylg-daylight-stars,
+#ylg-daylight-background[data-moving="true"] .ylg-daylight-galaxy {
+  animation-play-state: running;
+}
+@keyframes ylg-daylight-drift { from { transform: translate3d(0, 0, 0) rotate(-3deg); } to { transform: translate3d(-14px, 8px, 0) rotate(3deg); } }
+@keyframes ylg-daylight-twinkle { from { opacity: .72; transform: translateY(0); } to { opacity: 1; transform: translateY(-5px); } }
+@keyframes ylg-daylight-galaxy { from { transform: rotate(-20deg) translate3d(-8px, 0, 0); } to { transform: rotate(-18deg) translate3d(10px, 6px, 0); } }
+@media (prefers-reduced-motion: reduce) {
+  #ylg-daylight-background > span { animation: none !important; }
+}
+@media (forced-colors: active) {
+  #ylg-daylight-background { display: none !important; }
+}
+
+/* Live mode updates solar geometry once a minute. Only decorative transforms
+   animate; no live blur/filter, canvas, per-particle nodes or JS frame work. */
+#ylg-daylight-background[data-live="true"] {
+  background: linear-gradient(180deg, var(--ylg-live-top), var(--ylg-live-bottom));
+}
+
+#ylg-daylight-background > canvas.ylg-sky-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+#ylg-daylight-background[data-sky-renderer="webgl"] > :is(.ylg-daylight-glow,.ylg-daylight-sun,.ylg-daylight-stars,.ylg-daylight-galaxy,.ylg-daylight-clouds) { display:none !important; animation:none !important; }
+#ylg-daylight-background .ylg-daylight-clouds,
+#ylg-daylight-background .ylg-daylight-precipitation { display:none; }
+#ylg-daylight-background[data-live="true"] .ylg-daylight-sun {
+  left:0; right:auto; top:0;
+  transform:translate3d(var(--ylg-solar-x),var(--ylg-solar-y),0);
+  opacity:var(--ylg-celestial-opacity,1);
+  transition:transform 60s linear;
+}
+#ylg-daylight-background[data-live="true"][data-scene="night"] .ylg-daylight-sun { left:12px; top:67vh; transform:none; transition:none; }
+#ylg-daylight-background[data-live="true"] .ylg-daylight-stars,
+#ylg-daylight-background[data-live="true"] .ylg-daylight-galaxy {
+  display:block;
+  opacity:calc(var(--ylg-solar-stars,0) * var(--ylg-celestial-opacity,1));
+}
+#ylg-daylight-background[data-live="true"] .ylg-daylight-stars { animation-name:ylg-live-stars; }
+#ylg-daylight-background[data-live="true"] .ylg-daylight-clouds {
+  display:block; left:-6%; top:0; width:112%; height:65%;
+  opacity:var(--ylg-cloud-cover,0);
+  background:radial-gradient(ellipse at 15% 30%,#9eaeb755,transparent 42%), radial-gradient(ellipse at 67% 15%,#a2b5c86b,transparent 49%), radial-gradient(ellipse at 90% 65%,#72849a66,transparent 45%);
+  animation:ylg-cloud-drift 90s ease-in-out infinite alternate paused;
+}
+#ylg-daylight-background[data-live="true"][data-weather="fog"] .ylg-daylight-clouds {
+  height:100%; background:linear-gradient(180deg,#899aa655,#a9b6bf99); opacity:.7;
+}
+#ylg-daylight-background[data-live="true"][data-weather="rain"] .ylg-daylight-precipitation,
+#ylg-daylight-background[data-live="true"][data-weather="storm"] .ylg-daylight-precipitation {
+  display:block; inset:-24px; opacity:.2;
+  background:repeating-linear-gradient(105deg,transparent 0 46px,#c5e1ff88 47px,transparent 48px 96px);
+  -webkit-mask-image:linear-gradient(transparent,#0005,transparent);
+  mask-image:linear-gradient(transparent,#0005,transparent);
+  animation:ylg-rain-fall 1.8s linear infinite paused;
+}
+#ylg-daylight-background[data-live="true"][data-weather="snow"] .ylg-daylight-precipitation {
+  display:block; inset:-24px; opacity:.4;
+  background:radial-gradient(circle at 18px 28px,#fff 0 1px,transparent 2px) 0 0/97px 107px;
+  animation:ylg-snow-fall 14s linear infinite paused;
+}
+#ylg-daylight-background[data-moving="true"] .ylg-daylight-clouds,
+#ylg-daylight-background[data-moving="true"] .ylg-daylight-precipitation { animation-play-state:running; }
+#ylg-daylight-background[data-moving="false"] .ylg-daylight-sun { transition:none; }
+@keyframes ylg-cloud-drift { from { transform:translate3d(-12px,0,0); } to { transform:translate3d(12px,5px,0); } }
+@keyframes ylg-live-stars { from { transform:translateY(0); } to { transform:translateY(-5px); } }
+@keyframes ylg-rain-fall { from { transform:translateY(-20px); } to { transform:translateY(20px); } }
+@keyframes ylg-snow-fall { from { transform:translateY(-24px); } to { transform:translateY(24px); } }
+@media (prefers-reduced-motion: reduce) {
+  #ylg-daylight-background[data-live="true"] > span { animation:none !important; transition:none !important; }
+}

@@ -13,3 +13,6 @@ function registerUninstallSurvey() {
 chrome.runtime.onInstalled.addListener(registerUninstallSurvey);
 chrome.runtime.onStartup.addListener(registerUninstallSurvey);
 registerUninstallSurvey();
+if (typeof importScripts === "function") {
+  importScripts("../shared/settings.js", "../shared/sky-environment.js", "weather-service.js");
+}
