@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Made for desktop Microsoft Edge and Google Chrome. Currently in beta, with more refinements to come.
 
-**Latest beta: [0.4.63](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.63).** Adds an optional sky and city weather, keeps Ambient Light independent of interface motion, and fixes the transparent header and misaligned Home hover previews when the sky is enabled. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/v0.4.63/docs/releases/v0.4.63.md)
+**Latest beta: [0.4.63](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.63).** Adds an optional sky and city weather, keeps Ambient Light independent of interface motion, and fixes the transparent header and misaligned Home hover previews when the sky is enabled. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.63.md)
 
 ## A little more depth
 
@@ -29,7 +29,7 @@ The procedural sky changes sunlight, twilight colour and cloud structure over ti
 
 To add weather, turn on **Time-of-day background**, select **Auto**, then enable **Live sun & weather**. Use **Choose a city** to change the location. The browser asks for optional Open-Meteo access for weather and city search; use **Allow weather access** if permission is missing. Your chosen city coordinates or city-search text go to Open-Meteo; the extension does not request GPS. Solar lighting works offline. Weather normally refreshes every 15 minutes, with cached fallback for up to two hours when fetching fails. [Privacy details](docs/PRIVACY-EN.md)
 
-These are decorative scenes, not a live camera or a precise astronomical map. The sky uses a bounded canvas and at most 20 background updates per second; this is a workload limit, not a 120 FPS claim. Weather data: [Open-Meteo](https://open-meteo.com/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Weather data: [Open-Meteo](https://open-meteo.com/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Get started
 
@@ -59,7 +59,7 @@ See [Contributing](CONTRIBUTING.md) for the source layout and development notes.
 
 ## Credits
 
-Created by **QuanNguyen**. Ambient Light includes modified code from [youtube-ambilight](https://github.com/WesselKroos/youtube-ambilight) by Wessel Kroos, used under MIT. The glass effects draw on [this CSS/SVG refraction article](https://kube.io/blog/liquid-glass-css-svg/). See [Third-party notices](THIRD-PARTY-NOTICES.md) for details.
+Created by **Team Visualism**. Ambient Light includes modified code from [youtube-ambilight](https://github.com/WesselKroos/youtube-ambilight) by Wessel Kroos, used under MIT. The glass effects draw on [this CSS/SVG refraction article](https://kube.io/blog/liquid-glass-css-svg/). See [Third-party notices](THIRD-PARTY-NOTICES.md) for details.
 
 [Privacy policy](docs/PRIVACY-EN.md) · [Chính sách quyền riêng tư](docs/PRIVACY-VI.md) · [Contact](mailto:quannguyenproducer2505@gmail.com)
 

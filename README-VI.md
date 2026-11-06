@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Dành cho Microsoft Edge và Google Chrome trên máy tính. Tiện ích đang ở giai đoạn beta và sẽ tiếp tục được hoàn thiện.
 
-**Beta mới nhất: [0.4.63](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.63).** Thêm nền trời và thời tiết theo thành phố tùy chọn, giữ Ambient Light độc lập với Motion, sửa headbar trong hẳn và preview Trang chủ bị lệch khi bật nền trời. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/v0.4.63/docs/releases/v0.4.63.md)
+**Beta mới nhất: [0.4.63](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.63).** Thêm nền trời và thời tiết theo thành phố tùy chọn, giữ Ambient Light độc lập với Motion, sửa headbar trong hẳn và preview Trang chủ bị lệch khi bật nền trời. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.63.md)
 
 ## Thêm chiều sâu cho giao diện
 
@@ -30,7 +30,7 @@ Nền procedural thay đổi ánh sáng, sắc hoàng hôn và cấu trúc mây 
 
 Để thêm thời tiết, bật **Time-of-day background**, chọn **Auto**, rồi bật **Live sun & weather**. Dùng **Choose a city** để đổi thành phố. Trình duyệt hỏi quyền kết nối Open-Meteo cho thời tiết và tìm thành phố; dùng **Allow weather access** nếu còn thiếu quyền. Tọa độ thành phố đã chọn hoặc nội dung tìm thành phố được gửi tới Open-Meteo; tiện ích không xin GPS. Ánh sáng mặt trời tính được khi mất mạng. Thời tiết thường cập nhật mỗi 15 phút, dùng dữ liệu đệm tối đa hai giờ khi yêu cầu mới thất bại. [Chi tiết quyền riêng tư](docs/PRIVACY-VI.md)
 
-Đây là cảnh trang trí, không phải camera trực tiếp hay bản đồ thiên văn chính xác. Nền giới hạn kích thước canvas và tối đa 20 lần cập nhật/giây; đây là giới hạn tải, không phải cam kết 120 FPS. Dữ liệu thời tiết: [Open-Meteo](https://open-meteo.com/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Dữ liệu thời tiết: [Open-Meteo](https://open-meteo.com/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Cài đặt
 
@@ -60,7 +60,7 @@ Xem [hướng dẫn đóng góp](CONTRIBUTING.md) để tìm hiểu cấu trúc 
 
 ## Ghi nhận
 
-Phát triển bởi **QuanNguyen**. Ambient Light sử dụng mã đã chỉnh sửa từ [youtube-ambilight](https://github.com/WesselKroos/youtube-ambilight) của Wessel Kroos, theo giấy phép MIT. Hiệu ứng kính tham khảo [bài viết về khúc xạ bằng CSS/SVG](https://kube.io/blog/liquid-glass-css-svg/). Thông tin chi tiết có trong [ghi nhận bên thứ ba](THIRD-PARTY-NOTICES.md).
+Phát triển bởi **Team Visualism**. Ambient Light sử dụng mã đã chỉnh sửa từ [youtube-ambilight](https://github.com/WesselKroos/youtube-ambilight) của Wessel Kroos, theo giấy phép MIT. Hiệu ứng kính tham khảo [bài viết về khúc xạ bằng CSS/SVG](https://kube.io/blog/liquid-glass-css-svg/). Thông tin chi tiết có trong [ghi nhận bên thứ ba](THIRD-PARTY-NOTICES.md).
 
 [Chính sách quyền riêng tư](docs/PRIVACY-VI.md) · [Privacy policy](docs/PRIVACY-EN.md) · [Liên hệ](mailto:quannguyenproducer2505@gmail.com)
 
