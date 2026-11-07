@@ -176,7 +176,7 @@
       try { NAV && NAV.init && NAV.init(); } catch (e) {}
       try {
         if (root.YLG_PLAYER_MOTION) root.YLG_PLAYER_MOTION[s.motion ? "init" : "teardown"]();
-        if (root.YLG_MICRO) root.YLG_MICRO[s.motion ? "init" : "teardown"]();
+        if (root.YLG_MICRO) root.YLG_MICRO.init();
         if (root.YLG_DESCRIPTION_MOTION) root.YLG_DESCRIPTION_MOTION[s.motion ? "init" : "teardown"]();
         if (root.YLG_PANEL_HOVER) root.YLG_PANEL_HOVER[s.motion && s.hoverEffects && s.optics.enabled && s.optics.magnify ? "init" : "teardown"]();
       } catch (e) {}

@@ -1,5 +1,25 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.4.69 — 2026-11-07
+
+- Make the channel tab toolbar transparent independently of the masthead glass.
+- Tách hàng tab kênh thành nền trong suốt, giữ lớp kính của thanh đầu trang.
+
+## 0.4.68 — 2026-11-07
+
+- Restore the masthead glass above scrolling channel headers, keep a readable minimum sky-navigation fill, and style the sticky channel tab toolbar consistently.
+- Sửa lớp kính đầu trang bị ẩn hoặc nằm dưới nội dung kênh khi cuộn; giữ nền điều hướng dễ đọc và đồng bộ kính cho hàng tab kênh.
+
+## 0.4.67 — 2026-11-06
+
+- Suspend live-video glass sampling across player controls while dragging the seek bar; keep drag tracking active with Motion effects off or reduced motion enabled.
+- Giảm tải lọc kính trên bộ điều khiển khi kéo thanh tua; nhận diện kéo hoạt động cả khi tắt Motion effects hoặc bật giảm chuyển động.
+
+## 0.4.66 — 2026-11-06
+
+- Keep sky, Live weather and RAIN backgrounds on channel pages and channel tabs, including direct links and navigation from Home/Search.
+- Giữ nền trời, Live weather và RAIN trên trang kênh và các tab của kênh, cả khi mở trực tiếp hoặc chuyển từ Trang chủ/Tìm kiếm.
+
 ## 0.4.65 — 2026-11-06
 
 ### English

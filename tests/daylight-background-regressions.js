@@ -143,15 +143,27 @@ test("explicit scenes and live intensity apply without polling or replacing the 
   w.setClock(21); w.api.updateSettings(snapshot()); scene(w, "night"); assert.equal(w.timers.size, 1);
 });
 
-test("only home and search mount; SPA route exits unmount and later entries restore", () => {
+test("home, search and channel pages mount; SPA route exits unmount and later entries restore", () => {
   const w = world(); w.api.updateSettings(snapshot());
-  for (const pathname of ["/watch", "/shorts/123", "/@channel", "/channel/id", "/feed/subscriptions", "/playlist", "/results-other"]) {
+  for (const pathname of ["/watch", "/shorts/123", "/channel/", "/c/", "/user/", "/@", "/feed/subscriptions", "/playlist", "/results-other"]) {
     w.navigate(pathname); assert.equal(w.host(), null, pathname); assert.equal(w.timers.size, 0, pathname);
     assert.equal(w.api.stats().eligiblePage, false, pathname);
     assert.equal(w.html.hasAttribute("data-ylg-daylight"), false, pathname);
     w.navigate("/results"); scene(w, "day"); assert.equal(w.api.stats().eligiblePage, true);
   }
   w.context.location.pathname = "/"; w.context.emit("popstate"); scene(w, "day");
+});
+
+test("channel URLs restore sky and rain after SPA navigation and direct entry", () => {
+  for (const route of ["/@lolesports_vn/videos", "/@channel", "/@channel/shorts", "/channel/UC123/videos", "/c/example", "/user/example/playlists"]) {
+    const w = world(); w.api.updateSettings(snapshot({ daylightBackground: { enabled: true, scene: "auto", intensity: 0.45, rain: true } }));
+    w.doc.emit("yt-navigate-start"); w.navigate(route);
+    scene(w, "day"); assert.equal(w.api.stats().eligiblePage, true, route);
+    assert.equal(w.host().getAttribute("data-rain"), "true", route);
+    w.navigate("/watch"); assert.equal(w.host(), null);
+    w.navigate(route); scene(w, "day");
+    const direct = world({ route }); direct.api.updateSettings(snapshot()); scene(direct, "day");
+  }
 });
 
 test("a pending SPA navigation removes the scene before the next player/page can paint", () => {

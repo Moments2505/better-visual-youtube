@@ -278,7 +278,7 @@ test("Motion off keeps Ambient Light on and suspends hover without losing its sa
   assert.equal(installs.at(-1).magnifyScale, 0);
   assert.equal(installs.at(-1).lensPx, saved.optics.lensPx, "static glass stays intact");
   assert.equal(installs.at(-1).aberrationPx, saved.optics.aberrationPx);
-  assert.equal(movers.length, 4); assert.ok(movers.every(c=>c[1]==="teardown"));
+  assert.equal(movers.length, 4); assert.ok(movers.every(c=>c[1]===(c[0]==="YLG_MICRO"?"init":"teardown")), "drag tracking remains active without animations");
   changed({...saved, motion:true});
   assert.equal(page.doc.documentElement.getAttribute("data-ylg-hover"), "on");
   assert.equal(installs.at(-1).magnifyScale, saved.optics.magnifyScale);

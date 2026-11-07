@@ -14,7 +14,8 @@
 
   function eligiblePage() {
     var path = root.location && root.location.pathname;
-    return path === "/" || path === "/results";
+    return path === "/" || path === "/results" ||
+      /^\/(?:@[^/]+|(?:channel|c|user)\/[^/]+)(?:\/|$)/.test(path || "");
   }
   function options() {
     var value = snapshot && snapshot.daylightBackground || {};

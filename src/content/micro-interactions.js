@@ -13,12 +13,14 @@
   function release() {
     if (dragging) dragging.removeAttribute("data-ylg-dragging");
     dragging = null;
+    document.documentElement.removeAttribute("data-ylg-scrubbing");
   }
   function down(e) {
-    if (!allowed() || (e.button !== undefined && e.button !== 0)) return;
+    if (document.documentElement.getAttribute("data-ylg-enabled") !== "true" || (e.button !== undefined && e.button !== 0)) return;
     var node = e.target && e.target.closest && e.target.closest(".ytp-progress-bar-container, .ytp-volume-panel");
     if (!node) return;
     release(); dragging = node; node.setAttribute("data-ylg-dragging", "1");
+    if (e.target.closest(".ytp-progress-bar-container")) document.documentElement.setAttribute("data-ylg-scrubbing", "1");
   }
   function click(e) {
     if (!allowed()) return;

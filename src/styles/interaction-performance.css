@@ -1,5 +1,15 @@
 /* Move the native controls as one unit, including the seek rail. Keep opacity
 */
+/* During direct seeking, keep fills/rims but release live-video backdrop
+   sampling across the control strip. Never change native seek geometry. */
+html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom,
+html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom *,
+html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom *::before,
+html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom *::after,
+html[data-ylg-enabled="true"] .html5-video-player .ytp-tooltip.ytp-preview.ytp-preview {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
 /* Native guide injects 200ms inline on all three layers. Keep its native
    transform/visibility behavior, synchronizing duration and easing only. */
 html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide,

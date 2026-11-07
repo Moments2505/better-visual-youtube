@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Dành cho Microsoft Edge và Google Chrome trên máy tính. Tiện ích đang ở giai đoạn beta và sẽ tiếp tục được hoàn thiện.
 
-**Beta mới nhất: [0.4.65](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.65).** Thêm RAIN: mưa lớn, trời âm u và nước bám kính trên Trang chủ/Tìm kiếm, với công tắc hoạt động độc lập Live weather. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.65.md)
+**Beta mới nhất: [0.4.69](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.69).** Thêm nền trang kênh, tab kênh trong suốt, sửa kính đầu trang và giảm tải khi kéo thanh tua. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.69.md)
 
 ## Thêm chiều sâu cho giao diện
 
@@ -24,11 +24,11 @@ Ambient Light mở rộng màu sắc từ video ra xung quanh trình phát. Đ�
 
 Chọn giao diện sáng hoặc tối, tinh chỉnh hiệu ứng kính và bật tắt các chuyển động. Các lựa chọn được lưu ngay trong trình duyệt của bạn.
 
-Mục **Time-of-day background** thêm nắng sớm, trời ban ngày, hoàng hôn hoặc bầu trời sao có mặt trăng cho Trang chủ và Tìm kiếm. Auto theo mặt trời tại thành phố đã chọn, ban đầu là Hà Nội; bạn cũng có thể chọn cảnh thủ công. **Animate sky** điều khiển chuyển động nền riêng với **Motion effects** của giao diện; Ambient Light cũng có công tắc riêng.
+Mục **Time-of-day background** thêm nắng sớm, trời ban ngày, hoàng hôn hoặc bầu trời sao có mặt trăng cho Trang chủ, Tìm kiếm và trang kênh. Auto theo mặt trời tại thành phố đã chọn, ban đầu là Hà Nội; bạn cũng có thể chọn cảnh thủ công. **Animate sky** điều khiển chuyển động nền riêng với **Motion effects** của giao diện; Ambient Light cũng có công tắc riêng.
 
 Nền procedural thay đổi ánh sáng, sắc hoàng hôn và cấu trúc mây theo thời gian, dừng khi tab ẩn và dùng cảnh CSS dự phòng nếu WebGL không hoạt động. Tắt **Animate sky** để giữ cảnh đứng yên; cảnh vẫn có thể cập nhật khi mặt trời hoặc thời tiết đổi. Khi bật nền trời, headbar vẫn có lớp kính dễ đọc cả khi Opacity của panel bằng 0; preview Trang chủ khớp với thumbnail.
 
-Muốn có không khí trời mưa, bật **RAIN** trong **Time-of-day background**. Mưa lớn, trời âm u và giọt nước bám trên kính xuất hiện ở Trang chủ/Tìm kiếm trong mọi cảnh, không cần bật Live weather hay cấp quyền kết nối. **Animate sky** điều khiển chuyển động mưa. Lựa chọn được lưu; hiệu ứng chỉ có hình ảnh, giữ nguyên âm thanh nhạc/video. Tắt RAIN sẽ dừng mưa và nước bám kính, cả khi Live weather báo mưa; ánh sáng mặt trời và dữ liệu thời tiết vẫn cập nhật.
+Muốn có không khí trời mưa, bật **RAIN** trong **Time-of-day background**. Mưa lớn, trời âm u và giọt nước bám trên kính xuất hiện ở Trang chủ/Tìm kiếm/trang kênh trong mọi cảnh, không cần bật Live weather hay cấp quyền kết nối. **Animate sky** điều khiển chuyển động mưa. Lựa chọn được lưu; hiệu ứng chỉ có hình ảnh, giữ nguyên âm thanh nhạc/video. Tắt RAIN sẽ dừng mưa và nước bám kính, cả khi Live weather báo mưa; ánh sáng mặt trời và dữ liệu thời tiết vẫn cập nhật.
 
 Để thêm thời tiết, bật **Time-of-day background**, chọn **Auto**, rồi bật **Live sun & weather**. Dùng **Choose a city** để đổi thành phố. Trình duyệt hỏi quyền kết nối Open-Meteo cho thời tiết và tìm thành phố; dùng **Allow weather access** nếu còn thiếu quyền. Tọa độ thành phố đã chọn hoặc nội dung tìm thành phố được gửi tới Open-Meteo; tiện ích không xin GPS. Ánh sáng mặt trời tính được khi mất mạng. Thời tiết thường cập nhật mỗi 15 phút, dùng dữ liệu đệm tối đa hai giờ khi yêu cầu mới thất bại. [Chi tiết quyền riêng tư](docs/PRIVACY-VI.md)
 

@@ -1,4 +1,21 @@
-/* Only the controller's home/search flag reveals the optional scene. Keep
+/* Channel routes hide the native sheet with .none, even though our masthead
+   child surfaces still delegate their material to it. Restore that painter. */
+html[data-ylg-enabled="true"][data-ylg-daylight]:not(:fullscreen):not(:has(:fullscreen)) #frosted-glass {
+  display: block !important;
+  /* Channel header is a flex item at 2000; masthead controls remain at 2020. */
+  z-index: 2018 !important;
+}
+/* Channel tabs have their own transparent surface, independent of masthead. */
+@media (forced-colors: none) {
+  html[data-ylg-enabled="true"][data-ylg-daylight] ytd-browse[page-subtype="channels"] tp-yt-app-toolbar:has(#tabs-container),
+  html[dark][data-ylg-enabled="true"][data-ylg-daylight] ytd-browse[page-subtype="channels"] tp-yt-app-toolbar:has(#tabs-container) {
+    background: transparent !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none !important;
+  }
+}
+/* Only the controller's eligible-page flag reveals the optional scene. Keep
    native card, menu and text colours; do not override YouTube colour tokens. */
 /* The extra body ancestor outranks upstream's dark-theme !important fill even
    when its stylesheet is injected after ours. */
@@ -18,6 +35,8 @@ html[data-ylg-enabled="true"][data-ylg-daylight] #ylg-daylight-background {
 }
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-page-manager,
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-browse[page-subtype="home"],
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-browse[page-subtype="channels"],
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-browse[page-subtype="channels"] :is(ytd-two-column-browse-results-renderer, ytd-c4-tabbed-header-renderer, yt-page-header-renderer, #channel-header-container, #tabs-container),
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-search {
   background-color: transparent !important;
 }
@@ -25,7 +44,7 @@ html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-mini-guide-renderer {
   background-color: transparent !important;
 }
 /* A vendor container can survive watch -> home and paints an opaque page fill
-   inside ytd-app's stacking context. The sky owns the backdrop on these two
+   inside ytd-app's stacking context. The sky owns the backdrop on eligible
    routes; removing the controller flag restores the video renderer untouched. */
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-app .ambientlight__container {
   display: none !important;
@@ -36,26 +55,26 @@ html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-app .ambientlight__con
    YouTube's native dark state because its navigation glyphs follow that state,
    independently of the extension's panel theme. */
 @media (forced-colors: none) {
-  html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"] #frosted-glass::before {
+  html[data-ylg-enabled="true"][data-ylg-daylight] #frosted-glass::before {
     content: "";
     background: rgba(248, 250, 252, .72);
-    -webkit-backdrop-filter: blur(var(--ylg-blur, 40px)) saturate(1);
-    backdrop-filter: blur(var(--ylg-blur, 40px)) saturate(1);
+    -webkit-backdrop-filter: blur(clamp(12px, var(--ylg-blur, 40px), 24px)) saturate(1);
+    backdrop-filter: blur(clamp(12px, var(--ylg-blur, 40px), 24px)) saturate(1);
   }
-  html[dark][data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"] #frosted-glass::before {
-    background: rgba(15, 23, 42, .38);
+  html[dark][data-ylg-enabled="true"][data-ylg-daylight] #frosted-glass::before {
+    background: rgba(15, 23, 42, .78);
   }
-  html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"][data-ylg-lowfx="true"] #frosted-glass::before {
+  html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-lowfx="true"] #frosted-glass::before {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     background: rgba(248, 250, 252, .94);
   }
-  html[dark][data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"][data-ylg-lowfx="true"] #frosted-glass::before {
+  html[dark][data-ylg-enabled="true"][data-ylg-daylight][data-ylg-lowfx="true"] #frosted-glass::before {
     background: rgba(15, 23, 42, .94);
   }
 }
 @media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
-  html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-fill="none"]:not([data-ylg-transparency="glass"]) #frosted-glass::before {
+  html[data-ylg-enabled="true"][data-ylg-daylight]:not([data-ylg-transparency="glass"]) #frosted-glass::before {
     background: Canvas;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
