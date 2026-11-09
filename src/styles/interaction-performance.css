@@ -1,5 +1,13 @@
 /* Move the native controls as one unit, including the seek rail. Keep opacity
 */
+/* Explicit user opt-out from the system motion gate. Keep the pinned engine
+   styles untouched; restore bounded surface timing only while Motion is on. */
+html[data-ylg-enabled="true"][data-ylg-motion="on"][data-ylg-system-motion="ignore"] :is(.ylg-glass, .ylg-card, .ylg-chip) {
+  transition-duration: var(--ylg-dur-base) !important;
+}
+html[data-ylg-enabled="true"][data-ylg-motion="on"][data-ylg-system-motion="ignore"]:not([data-ylg-lowfx="true"]) .ylg-glass[data-ylg-level="floating"] {
+  animation: ylg-settle var(--ylg-dur-base) var(--ylg-ease-glass) both !important;
+}
 /* During direct seeking, keep fills/rims but release live-video backdrop
    sampling across the control strip. Never change native seek geometry. */
 html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom,
@@ -24,9 +32,9 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide > #s
   transition-duration: 0s !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide,
-  html[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #contentContainer,
-  html[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #scrim {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #contentContainer,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #scrim {
     transition-duration: 0s !important;
   }
 }
@@ -85,17 +93,17 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
   transition: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom,
-  html[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-button::before,
-  html[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-time-display::before {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-button::before,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-time-display::before {
     will-change: auto;
   }
-  html[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.html5-video-player .ytp-chrome-bottom {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.html5-video-player .ytp-chrome-bottom {
     translate: none;
     transition: none !important;
   }
-  html[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom,
-  html[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom .ytp-chrome-controls {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom .ytp-chrome-controls {
     opacity: 0 !important;
     visibility: hidden !important;
   }

@@ -80,9 +80,9 @@
    * shared contract may expose opacityToSlider/sliderToOpacity; those are
    * feature-detected here and never assumed: if they are missing (or return
    * something unusable) this popup falls back to the alpha range it has always
-   * written, 0..0.85, i.e. percent * 0.85.
+   * written, 0..1, i.e. percent / 100.
    * ---------------------------------------------------------------------- */
-  var ALPHA_MAX = 0.85;
+  var ALPHA_MAX = 1;
 
   function opacityToSlider(alpha) {
     var a = (typeof alpha === "number" && isFinite(alpha)) ? alpha : 0;
@@ -145,6 +145,7 @@
 
   // State-only synchronization never replaces controls or rewrites a focused range.
   function syncState(s) {
+    document.documentElement.setAttribute("data-ylg-system-motion", s.respectReducedMotion ? "follow" : "ignore");
     document.documentElement.setAttribute("data-ylg-motion", s.motion ? "on" : "off");
     var amb = s.ambientLight || {};
     syncPopupTheme(s.theme);
@@ -191,6 +192,7 @@
     setSlider("ylg-radius", "ylg-radius-v", s.radius, px);
     setSlider("ylg-highlight", "ylg-highlight-v", Math.round(s.highlight * 100), pct);
     setChecked("ylg-motion", s.motion);
+    setChecked("ylg-system-motion", s.respectReducedMotion);
     setChecked("ylg-hover-effects", s.hoverEffects);
     setChecked("ylg-system-transparency", s.respectReducedTransparency);
     setChecked("ylg-daylight-enabled", s.daylightBackground.enabled);
@@ -370,6 +372,8 @@
 
     var motion = $("ylg-motion");
     if (motion) motion.addEventListener("change", function () { update({ motion: this.checked }); });
+    var systemMotion = $("ylg-system-motion");
+    if (systemMotion) systemMotion.addEventListener("change", function () { update({ respectReducedMotion: this.checked }); });
     var hoverEffects = $("ylg-hover-effects");
     if (hoverEffects) hoverEffects.addEventListener("change", function () { update({ hoverEffects: this.checked }); });
     var systemTransparency = $("ylg-system-transparency");

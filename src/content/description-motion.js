@@ -8,7 +8,7 @@
   function eligible() {
     var de = document.documentElement;
     return de.getAttribute("data-ylg-enabled") === "true" && de.getAttribute("data-ylg-motion") === "on" &&
-      !(root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      (de.getAttribute("data-ylg-system-motion") === "ignore" || !(root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches));
   }
   function clear() {
     if (frame) root.cancelAnimationFrame(frame);

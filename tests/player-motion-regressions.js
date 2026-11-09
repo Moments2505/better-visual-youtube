@@ -73,6 +73,12 @@ test("editing, modified/repeat keys, reduced motion, Motion off and fullscreen s
   const b=world();b.attrs.set("data-ylg-motion","off");b.event();assert.equal(b.raf.size,0);
   const c=world();c.root.document.fullscreenElement={};c.event();assert.equal(c.raf.size,0);
 });
+test("explicit system-motion opt-out permits player motion without bypassing Motion off",()=>{
+  const w=world();w.reduce();w.attrs.set("data-ylg-system-motion","ignore");
+  w.event();w.toggle();w.frame();assert.equal(w.runs.length,1);
+  w.attrs.set("data-ylg-motion","off");w.event();assert.equal(w.raf.size,0);
+});
+
 test("teardown cancels frames/animations, removes listeners and guards queued callbacks",()=>{
   const w=world();w.event();const queued=[...w.raf.values()][0];w.root.YLG_PLAYER_MOTION.teardown();w.toggle();queued();
   assert.equal(w.runs.length,0);assert.equal(w.listeners.size,0);assert.equal(w.attrs.has("data-ylg-player-transition"),false);

@@ -82,7 +82,7 @@ html[data-ylg-enabled="true"][data-ylg-fill="none"] .ytp-chrome-bottom.ytp-chrom
   content: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::after {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::after {
     transition: none;
   }
 }
@@ -166,9 +166,9 @@ html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-lef
 
 /* Preserve the original accessibility fallback after the late material rules. */
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-button::before,
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-button::after,
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::before {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-button::before,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-button::after,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::before {
     transition: none !important;
   }
 }

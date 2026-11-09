@@ -58,12 +58,12 @@ html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-tooltip:not([aria-hidde
   animation: ylg-tip-enter 140ms ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"][data-ylg-motion="on"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
-  html[data-ylg-enabled="true"][data-ylg-motion="on"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion="on"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion="on"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
     transition: none !important;
   }
-  html[data-ylg-enabled="true"][data-ylg-motion="on"] :is(.ytp-button, .ytp-button svg, .ytp-volume-slider-handle, .ytp-settings-menu, .ytp-tooltip, .ylg-glass[data-ylg-level="floating"]),
-  html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-scrubber-button::after {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion="on"] :is(.ytp-button, .ytp-button svg, .ytp-volume-slider-handle, .ytp-settings-menu, .ytp-tooltip, .ylg-glass[data-ylg-level="floating"]),
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-scrubber-button::after {
     animation: none !important;
     transition: none !important;
     scale: 1 !important;

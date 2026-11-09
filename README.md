@@ -4,11 +4,11 @@
 
 A fresh look for YouTube, with transparent glass surfaces, colour that follows your video, and animations throughout the interface.
 
-**[Download beta](https://github.com/Moments2505/better-visual-youtube/releases)** · [Changelog](CHANGELOG.md) · [Tiếng Việt](README-VI.md) · [Report an issue](https://github.com/Moments2505/better-visual-youtube/issues)
+**[Download latest release](https://github.com/Moments2505/better-visual-youtube/releases/latest)** · [Changelog](CHANGELOG.md) · [Tiếng Việt](README-VI.md) · [Report an issue](https://github.com/Moments2505/better-visual-youtube/issues)
 
-Made for desktop Microsoft Edge and Google Chrome. Currently in beta, with more refinements to come.
+Free and open source, made for desktop Microsoft Edge and Google Chrome.
 
-**Latest beta: [0.4.69](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.69).** Adds channel backgrounds and transparent channel tabs, restores readable masthead glass, and reduces glass sampling during seek dragging. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.69.md)
+**Latest release: [0.4.80](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.80).** Improves light-mode readability, synchronizes headbar and panel opacity, adds a smooth transition to opaque white, and makes following system reduced motion optional. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.80.md)
 
 ## A little more depth
 
@@ -21,11 +21,15 @@ Ambient Light extends colours beyond the player. Choose how far the light spread
 
 ## Make it yours
 
+**Follow system reduced motion** is enabled by default. If the browser reports reduced motion unexpectedly, uncheck it in the popup, then enable **Motion effects** and **Ambient Light** as desired. **Animate sky** remains a separate switch. This setting does not change Windows or browser preferences.
+
 Choose a light or dark theme, tune the glass effects, and turn interface animations on or off. Your preferences are saved in your browser.
 
-The optional **Time-of-day background** adds morning sunlight, a daytime sky, sunset or a moonlit star field to Home and Search. Auto follows the sun at your chosen city, initially Hà Nội. You can also choose a scene manually. **Animate sky** controls sky movement separately from interface **Motion effects**; Ambient Light has its own switch too.
+**Opacity** controls the headbar and reading panels together. At 0% they are clear; the upper range (about 70–100%) gradually blends the selected tint toward white, reaching solid white at 100% with dark reading text. Moving between 99% and 100% keeps the transition gentle.
 
-The procedural sky changes sunlight, twilight colour and cloud structure over time. It pauses while the tab is hidden and falls back to a CSS scene if WebGL is unavailable. Turn **Animate sky** off for a still atmosphere; the scene can still update as the sun or weather changes. With the sky enabled, the header retains a readable glass surface even at panel Opacity 0, and Home hover previews stay aligned with their thumbnails.
+The optional **Time-of-day background** adds morning sunlight, a daytime sky, sunset or a moonlit star field to Home, Search and channel pages. Auto follows the sun at your chosen city, initially Hà Nội. You can also choose a scene manually. **Animate sky** controls sky movement separately from interface **Motion effects**; Ambient Light has its own switch too.
+
+The procedural sky changes sunlight, twilight colour and cloud structure over time. It pauses while the tab is hidden and falls back to a CSS scene if WebGL is unavailable. Turn **Animate sky** off for a still atmosphere; the scene can still update as the sun or weather changes. The header follows the shared Opacity setting, and Home hover previews stay aligned with their thumbnails.
 
 For a rainy mood, turn on **RAIN** inside **Time-of-day background**. It adds heavy falling rain, a gloomy overcast sky and water droplets on glass to Home, Search and channel pages in any scene, without enabling Live weather or requesting access. **Animate sky** controls the rain's movement. The switch saves your preference and adds visual rain only, leaving your music/video audio unchanged. Turning RAIN off stops rain and water on the glass, even when Live weather reports rain; solar lighting and weather data continue updating.
 

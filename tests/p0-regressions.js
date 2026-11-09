@@ -254,6 +254,16 @@ test("hover off persists independently of motion and preserves static glass opti
   assert.equal(page.doc.documentElement.getAttribute("data-ylg-hover"),"on");
 });
 
+test("system motion preference defaults to follow, persists opt-out and follows external updates", () => {
+  const h = loaded();
+  assert.equal(h.$("ylg-system-motion").checked, true);
+  h.change("ylg-system-motion", false);
+  const saved = h.writes.at(-1).settings;
+  assert.equal(saved.respectReducedMotion, false);
+  assert.equal(loaded(saved).$("ylg-system-motion").checked, false);
+  assert.equal(loaded().$("ylg-system-motion").checked, true);
+});
+
 test("Motion off keeps Ambient Light on and suspends hover without losing its saved choice", () => {
   const h = loaded(); h.change("ylg-motion", false);
   const saved = h.writes.at(-1).settings;

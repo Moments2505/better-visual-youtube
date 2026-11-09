@@ -11,7 +11,7 @@ html[data-ylg-enabled="true"] ytd-watch-metadata #description[data-ylg-descripti
   min-height: 0 !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass:has(#description-inline-expander[is-expanded]):is(:hover, :focus-within) {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass:has(#description-inline-expander[is-expanded]):is(:hover, :focus-within) {
     transform: none;
   }
 }

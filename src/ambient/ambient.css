@@ -152,9 +152,9 @@ html[data-ylg-ambient="on"] ytd-app[ambient] #cine-data {
 /* Reduced motion: disable decorative ambient and its fades. The bridge stops
    upstream through its existing hide/start lifecycle without storing mode state. */
 @media (prefers-reduced-motion: reduce) {
-  .ylg-ambient-canvas { transition: none; }
-  html[data-ylg-enabled="true"] .ambientlight,
-  html[data-ylg-enabled="true"] .ylg-ambient-host { display: none !important; }
+  html:not([data-ylg-system-motion="ignore"]) .ylg-ambient-canvas { transition: none; }
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ambientlight,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ylg-ambient-host { display: none !important; }
 }
 
 /* forced colors: ambient is decorative - disable entirely */

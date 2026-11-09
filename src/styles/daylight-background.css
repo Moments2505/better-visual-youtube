@@ -17,6 +17,29 @@
   background: linear-gradient(180deg, var(--ylg-sky-top), var(--ylg-sky-bottom));
 }
 #ylg-daylight-background > span { position: absolute; display: block; pointer-events: none; }
+/* Keep the night atmosphere visible at moderate intensity over YouTube's
+   near-black page. Screen blending lifts the sky without dimming its stars;
+   rain keeps its separate overcast treatment. No additional animation/filter. */
+#ylg-daylight-background[data-scene="night"][data-rain="false"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(45, 76, 128, .72), rgba(69, 100, 142, .65));
+  mix-blend-mode: screen;
+}
+/* Rain renders a dark overcast scene. Keep native light-theme text readable
+   without switching YouTube's palette or recolouring individual cards/menus.
+   This veil is inside the decorative host and never covers page content. */
+html:not([dark]) #ylg-daylight-background[data-rain="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: rgba(240, 244, 248, .80);
+}
 #ylg-daylight-background[data-scene="morning"] {
   --ylg-sky-top: #233b54; --ylg-sky-bottom: #5d4a34;
 }
@@ -150,7 +173,7 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
 @keyframes ylg-daylight-twinkle { from { opacity: .72; transform: translateY(0); } to { opacity: 1; transform: translateY(-5px); } }
 @keyframes ylg-daylight-galaxy { from { transform: rotate(-20deg) translate3d(-8px, 0, 0); } to { transform: rotate(-18deg) translate3d(10px, 6px, 0); } }
 @media (prefers-reduced-motion: reduce) {
-  #ylg-daylight-background > span { animation: none !important; }
+  html:not([data-ylg-system-motion="ignore"]) #ylg-daylight-background > span { animation: none !important; }
 }
 @media (forced-colors: active) {
   #ylg-daylight-background { display: none !important; }
@@ -275,7 +298,7 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
 @keyframes ylg-rain-fall { from { transform:skewX(-12deg) translateY(-256px); } to { transform:skewX(-12deg) translateY(0); } }
 @keyframes ylg-snow-fall { from { transform:translateY(-24px); } to { transform:translateY(24px); } }
 @media (prefers-reduced-motion: reduce) {
-  #ylg-daylight-background[data-live="true"] > span { animation:none !important; transition:none !important; }
-  #ylg-daylight-background .ylg-daylight-precipitation::before,
-  #ylg-daylight-background .ylg-daylight-precipitation::after { animation:none !important; }
+  html:not([data-ylg-system-motion="ignore"]) #ylg-daylight-background[data-live="true"] > span { animation:none !important; transition:none !important; }
+  html:not([data-ylg-system-motion="ignore"]) #ylg-daylight-background .ylg-daylight-precipitation::before,
+  html:not([data-ylg-system-motion="ignore"]) #ylg-daylight-background .ylg-daylight-precipitation::after { animation:none !important; }
 }

@@ -147,6 +147,6 @@ html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-scrubber-button::after
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] .ytp-scrubber-button::after { transition: none; }
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-scrubber-button::after { transition: none; }
 }
 html[data-ylg-enabled="true"][data-ylg-motion="off"] .ytp-scrubber-button::after { transition: none; }

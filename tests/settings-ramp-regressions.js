@@ -43,6 +43,76 @@ let passed = 0;
 const cases = [];
 function test(name, fn) { cases.push({ name, fn }); }
 
+test("100% opacity reaches alpha one, releases solid material below maximum and preserves saved alpha", () => {
+  const { el } = applyOn({ opacity: 0.85, schemaVersion: 8 });
+  assert.equal(el.props["--ylg-opacity"], "0.85");
+  assert.equal(el.getAttribute("data-ylg-opacity-solid"), "false");
+  S.applySettingsToDocument({ documentElement: el }, { opacity: S.sliderToOpacity(100) });
+  assert.equal(el.props["--ylg-opacity"], "1");
+  assert.equal(el.getAttribute("data-ylg-opacity-solid"), "true");
+  S.applySettingsToDocument({ documentElement: el }, { opacity: S.sliderToOpacity(99) });
+  assert.equal(el.getAttribute("data-ylg-opacity-solid"), "false");
+});
+
+test("maximum opacity stays white across themes, tint choices and late media samples", () => {
+  for (const theme of ["light", "dark", "auto"]) {
+    for (const tint of ["auto", "black", "white", "custom", "media"]) {
+      const { el, normalized } = applyOn({ theme, tint, accent: "#123456", opacity: 1 });
+      const doc = { documentElement: el };
+      assert.equal(normalized.tint, tint, "do not overwrite the saved tint");
+      for (const prop of ["--ylg-chrome-scrim", "--ylg-search-scrim"]) {
+        assert.deepEqual(scrim(el.props[prop]), { rgb: "255, 255, 255", alpha: 1 });
+      }
+      S.setMediaTint(doc, { r: 7, g: 20, b: 39 });
+      S.applyThemeToDocument(doc, "dark");
+      assert.deepEqual(scrim(el.props["--ylg-chrome-scrim"]), { rgb: "255, 255, 255", alpha: 1 });
+      S.applySettingsToDocument(doc, { theme: "dark", tint, accent: "#123456", opacity: 0.5 });
+      const expected = { auto: DARK_AUTO_RGB, black: "0, 0, 0", white: "255, 255, 255", custom: "18, 52, 86", media: "7, 20, 39" }[tint];
+      assert.deepEqual(scrim(el.props["--ylg-chrome-scrim"]), { rgb: expected, alpha: expectedAlpha(0.5) });
+      S.setMediaTint(doc, null);
+    }
+  }
+});
+
+test("upper slider range whitens gradually without a 99-to-100 colour or reading-palette jump", () => {
+  for (const tint of ["black", "auto", "custom", "media"]) {
+    const { el } = applyOn({ tint, theme: "dark", accent: "#123456", opacity: 0.5 });
+    const doc = { documentElement: el };
+    S.setMediaTint(doc, { r: 4, g: 20, b: 35 });
+    let previous;
+    let penultimate;
+    for (let percent = 60; percent <= 100; percent++) {
+      S.applySettingsToDocument(doc, { tint, theme: "dark", accent: "#123456", opacity: S.sliderToOpacity(percent) });
+      const channels = scrim(el.props["--ylg-chrome-scrim"]).rgb.split(", ").map(Number);
+      assert.equal(el.props["--ylg-chrome-scrim"], el.props["--ylg-search-scrim"]);
+      if (previous) channels.forEach((v, i) => {
+        assert.ok(v >= previous[i], "whitening must be monotonic");
+        assert.ok(v - previous[i] <= 15, "one slider stop must not swap materials");
+      });
+      if (percent === 99) penultimate = { channels, ink: el.getAttribute("data-ylg-opacity-pale") };
+      if (percent === 100) {
+        channels.forEach((v, i) => assert.ok(v - penultimate.channels[i] <= 1));
+        assert.equal(el.getAttribute("data-ylg-opacity-pale"), penultimate.ink);
+        assert.deepEqual(channels, [255, 255, 255]);
+      }
+      previous = channels;
+    }
+    S.applySettingsToDocument(doc, { tint: "black", opacity: 0.5 });
+    assert.equal(el.getAttribute("data-ylg-opacity-pale"), "false", "lowering opacity releases the pale palette");
+    assert.equal(scrim(el.props["--ylg-chrome-scrim"]).rgb, "0, 0, 0");
+    S.setMediaTint(doc, null);
+  }
+});
+
+test("light-mode reading ink follows opacity across the threshold and updates on the same document", () => {
+  const { el } = applyOn({ opacity: 0.3 });
+  assert.equal(el.getAttribute("data-ylg-light-ink"), "light");
+  for (const opacity of [0, 0.3, 0.599, 0.6, 0.85, 0.2]) {
+    S.applySettingsToDocument({ documentElement: el }, { opacity });
+    assert.equal(el.getAttribute("data-ylg-light-ink"), opacity < 0.6 ? "light" : "dark");
+  }
+});
+
 /* ---------------- shared contract, loaded once ---------------- */
 function contract() {
   const context = vm.createContext({ console });
@@ -52,7 +122,7 @@ function contract() {
   return context.YLG_SETTINGS;
 }
 const S = contract();
-const ALPHA_MAX = 0.85;
+const ALPHA_MAX = 1;
 
 /* ---------------- minimal documentElement (style + attributes) ------------ */
 function newRootElement() {
@@ -128,18 +198,18 @@ test("opacityToSlider and sliderToOpacity are exact inverses at every documented
   }
   // Endpoints are exact by construction, never by rounding.
   assert.equal(S.sliderToOpacity(0), 0);
-  assert.equal(S.sliderToOpacity(100), 0.85);
+  assert.equal(S.sliderToOpacity(100), 1);
   assert.equal(S.opacityToSlider(0), 0);
-  assert.equal(S.opacityToSlider(0.85), 100);
+  assert.equal(S.opacityToSlider(1), 100);
   // The documented gamma curve: alpha = 0.85 * (p/100) ^ 1.4.
   for (const p of [1, 5, 10, 25, 50, 75, 99]) {
-    assert.ok(Math.abs(S.sliderToOpacity(p) - 0.85 * Math.pow(p / 100, 1.4)) < 1e-15, "curve at slider " + p);
+    assert.ok(Math.abs(S.sliderToOpacity(p) - Math.pow(p / 100, 1.4)) < 1e-15, "curve at slider " + p);
   }
 });
 
 test("the opacity curve is strictly monotonic and stays inside RANGES.opacity", () => {
   assert.ok(S.sliderToOpacity(1) < 0.002, "first notch stays below 0.2% actual alpha");
-  assert.ok(S.sliderToOpacity(2) - S.sliderToOpacity(1) < 0.0025, "second notch remains gradual");
+  assert.ok(S.sliderToOpacity(2) - S.sliderToOpacity(1) < 0.003, "second notch remains gradual");
   const alphas = [];
   for (let p = 0; p <= 100; p++) alphas.push(S.sliderToOpacity(p));
   for (let i = 1; i < alphas.length; i++) {
@@ -184,7 +254,7 @@ test("--ylg-fill-strength is 0 at alpha 0, 1 at 0.85 and monotonic in between", 
   }
   // The contract value: pow(alpha / 0.85, 1), rounded to four decimals as written.
   for (const a of samples) {
-    const expected = Math.round(Math.pow(a / ALPHA_MAX, 1) * 10000) / 10000;
+    const expected = Math.round(Math.min(1, Math.pow(a / 0.85, 1)) * 10000) / 10000;
     assert.equal(Number(fill(a)), expected, "fill strength at alpha " + a);
   }
   // Out of range clamps to the endpoints rather than overshooting.

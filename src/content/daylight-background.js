@@ -140,7 +140,7 @@
     host.setAttribute("data-rain", raining ? "true" : "false");
     var continuous = value.scene === "auto" && root.YLG_SKY_RENDERER && root.YLG_SKY_ENV && root.YLG_SKY_ENV.validLocation(value.location);
     if (continuous) currentScene=root.YLG_SKY_ENV.solarAt(now,value.location).scene;
-    moving = snapshot.daylightBackground.animate !== false && value.intensity > 0 && !(reduced && reduced.matches) && !document.hidden;
+    moving = snapshot.daylightBackground.animate !== false && value.intensity > 0 && (snapshot.respectReducedMotion === false || !(reduced && reduced.matches)) && !document.hidden;
     host.setAttribute("data-scene", currentScene);
     host.setAttribute("data-moving", moving ? "true" : "false");
     host.style.setProperty("--ylg-daylight-intensity", String(value.intensity));
@@ -189,6 +189,7 @@
     // Retain only owned scalar settings; callers may reuse or mutate snapshots.
     snapshot = {
       enabled: !!(fullSnapshot && fullSnapshot.enabled),
+      respectReducedMotion: !(fullSnapshot && fullSnapshot.respectReducedMotion === false),
       daylightBackground: { enabled: value.enabled === true, animate: value.animate !== false, rain: value.rain === true, scene: value.scene, intensity: value.intensity,
         liveWeather: value.liveWeather === true, location: value.location ? { name:value.location.name, latitude:value.location.latitude, longitude:value.location.longitude } : null }
     };

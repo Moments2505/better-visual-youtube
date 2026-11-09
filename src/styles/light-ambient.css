@@ -1,0 +1,26 @@
+/* Light-theme reading surfaces follow the shared glass opacity. Reading ink
+   becomes light at low opacity over Ambient; player controls keep their palette. */
+@media (forced-colors: none) {
+  html:not([dark])[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ambientlight-enabled] ytd-watch-flexy :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"] {
+
+    --yt-spec-text-primary: #111827;
+    --yt-spec-text-secondary: #4b5563;
+    --yt-spec-icon-inactive: #374151;
+    --yt-sys-color-baseline--text-primary: #111827;
+    --yt-sys-color-baseline--text-secondary: #4b5563;
+  }
+  /* A low-opacity white material cannot support dark reading text over dark
+     Ambient. Switch only the reading content, not native button/logo palettes.
+     This is opacity-based, not an estimate of every video pixel's luminance. */
+  html:not([dark])[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ambientlight-enabled][data-ylg-light-ink="light"] ytd-watch-flexy :where(h1, #video-title, #content-text, #author-text, #channel-name, #owner-name, #count, #simplebox-placeholder, .ytd-channel-name#text, .yt-lockup-metadata-view-model__title, .yt-lockup-metadata-view-model__metadata, #description, #byline, #metadata-line, #owner-sub-count, #publisher-container, .ytd-playlist-panel-renderer#title) {
+    color: #f8fafc !important;
+    --yt-spec-text-primary: #f8fafc;
+    --yt-spec-text-secondary: #e2e8f0;
+    --yt-sys-color-baseline--text-primary: #f8fafc;
+    --yt-sys-color-baseline--text-secondary: #e2e8f0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .8), 0 0 4px rgba(0, 0, 0, .35);
+  }
+  html:not([dark])[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ambientlight-enabled][data-ylg-light-ink="light"] ytd-watch-flexy :where(#byline, #metadata-line, #owner-sub-count, #publisher-container) {
+    color: #e2e8f0 !important;
+  }
+}

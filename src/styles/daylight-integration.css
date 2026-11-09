@@ -57,20 +57,20 @@ html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-app .ambientlight__con
 @media (forced-colors: none) {
   html[data-ylg-enabled="true"][data-ylg-daylight] #frosted-glass::before {
     content: "";
-    background: rgba(248, 250, 252, .72);
+    background: var(--ylg-chrome-scrim);
     -webkit-backdrop-filter: blur(clamp(12px, var(--ylg-blur, 40px), 24px)) saturate(1);
     backdrop-filter: blur(clamp(12px, var(--ylg-blur, 40px), 24px)) saturate(1);
   }
   html[dark][data-ylg-enabled="true"][data-ylg-daylight] #frosted-glass::before {
-    background: rgba(15, 23, 42, .78);
+    background: var(--ylg-chrome-scrim);
   }
   html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-lowfx="true"] #frosted-glass::before {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
-    background: rgba(248, 250, 252, .94);
+    background: var(--ylg-chrome-scrim);
   }
   html[dark][data-ylg-enabled="true"][data-ylg-daylight][data-ylg-lowfx="true"] #frosted-glass::before {
-    background: rgba(15, 23, 42, .94);
+    background: var(--ylg-chrome-scrim);
   }
 }
 @media (prefers-reduced-transparency: reduce) and (forced-colors: none) {

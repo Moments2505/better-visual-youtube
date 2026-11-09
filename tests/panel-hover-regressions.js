@@ -110,12 +110,20 @@ test("expanded description, motion/hover disable, fullscreen and reduced motion 
   w.metadata.expanded=false;w.move(w.metadata,500,200);w.flush();w.reduce(true);assert.equal(w.active().length,0);
   w.reduce(false);w.doc.fullscreenElement={};w.move(w.metadata,500,200);w.flush();assert.equal(w.active().length,0);
 });
+test("system-motion opt-out restores hover; returning to follow releases active panels",()=>{
+  const w=world();w.reduce(true);w.move(w.secondary,800,200);w.flush();assert.equal(w.active().length,0);
+  w.de.setAttribute("data-ylg-system-motion","ignore");w.mos[0].fn();
+  w.move(w.secondary,800,200);w.flush();assert.deepEqual(w.active(),[w.secondary]);
+  w.de.setAttribute("data-ylg-system-motion","follow");w.mos[0].fn();
+  assert.equal(w.active().length,0);
+});
+
 test("theater motion suspends hover and resumes after the layout settles",()=>{
   const w=world();w.move(w.metadata,500,200);w.flush();
   w.de.setAttribute("data-ylg-player-transition","1");w.mos[0].fn();assert.equal(w.active().length,0);
   w.move(w.secondary,800,200);w.flush();assert.equal(w.active().length,0);
   w.de.removeAttribute("data-ylg-player-transition");w.mos[0].fn();w.flush();assert.deepEqual(w.active(),[w.secondary]);
-  assert.deepEqual(Array.from(w.mos[0].opts.attributeFilter),["data-ylg-player-transition"]);
+  assert.deepEqual(Array.from(w.mos[0].opts.attributeFilter),["data-ylg-player-transition","data-ylg-system-motion"]);
 });
 test("navigation clears detached panels and discovers replacement nodes without a global observer",()=>{
   const w=world();w.move(w.metadata,500,200);w.flush();w.move(w.comments,500,500);w.flush();

@@ -1,5 +1,62 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.4.80 — 2026-11-10
+
+- Official release, including the light-mode, sky visibility, opacity and optional system-motion fixes developed in 0.4.70–0.4.79.
+- Phát hành chính thức, tổng hợp các sửa lỗi light mode, độ rõ nền trời, Opacity và tùy chọn giảm chuyển động từ 0.4.70–0.4.79.
+- Glass tint gradually eases into opaque white across the upper opacity range. The 99–100% step no longer swaps the surface colour or reading palette abruptly.
+- Kính chuyển dần từ màu tint sang trắng đục ở vùng Opacity cao; bỏ bước đổi màu nền và màu chữ đột ngột giữa 99–100%.
+
+## 0.4.79 — 2026-11-08
+
+- Opacity 100% now uses solid white for the masthead and glass panels, independent of tint or sampled video colour. Reading text uses dark ink without Ambient text glow; lowering opacity restores the selected tint.
+- Opacity 100% dùng nền trắng đặc cho headbar và panel kính, không bị màu tint hoặc video làm tối nền. Chữ nội dung dùng màu tối, bỏ bóng sáng của Ambient; giảm Opacity sẽ khôi phục màu tint đã chọn.
+
+## 0.4.78 — 2026-11-08
+
+- Headbar and panel fills now use the same opacity/tint scrim throughout the slider range. Removed independent light-mode and sky-headbar opacity floors and additive panel fill gradients; retained separate reading-text and accessibility rules.
+- Headbar và panel dùng chung lớp màu/Opacity trên toàn thanh kéo. Bỏ mức đục riêng của light mode, headbar nền trời và gradient nền panel chồng lớp; giữ xử lý màu chữ và khả năng tiếp cận riêng.
+
+## 0.4.77 — 2026-11-08
+
+- Opacity 100% now reaches alpha 1 instead of 0.85. Panel, hero and floating glass surfaces receive a solid tint at the maximum; existing saved alpha values remain unchanged.
+- Opacity 100% đạt alpha 1 thay vì 0.85; panel và cửa sổ kính có nền đặc ở mức tối đa. Giữ nguyên giá trị alpha đã lưu trước đó.
+
+## 0.4.76 — 2026-11-08
+
+- Light-mode video reading content uses bright text with a restrained shadow when glass opacity is below 0.6; at higher opacity it returns to native dark text. The glass opacity remains unchanged, and masthead/player/button palettes remain independent.
+- Vùng chữ nội dung video trong light mode chuyển sang chữ sáng có bóng nhẹ khi alpha kính dưới 0.6, trở lại chữ tối khi alpha cao hơn. Giữ nguyên Opacity kính và màu riêng của thanh đầu trang, nút, bộ điều khiển video.
+
+## 0.4.75 — 2026-11-07
+
+- Light-mode Ambient surfaces now share the glass Opacity value across panels, masthead and unselected chips. Removed fixed opaque fills; Opacity zero keeps the clear-material state.
+- Đồng bộ Opacity của panel, thanh đầu trang và chip chưa chọn trong light mode với kính; bỏ nền đục cố định, Opacity bằng 0 giữ chế độ trong suốt.
+
+## 0.4.74 — 2026-11-07
+
+- Light YouTube appearance now keeps neutral pale reading surfaces behind metadata, comments, recommendations and the masthead when Ambient Light is active; unselected topic chips also retain dark readable text on a pale surface.
+- Hiệu chỉnh giao diện YouTube sáng khi bật Ambient: thêm nền sáng trung tính sau vùng thông tin video, bình luận, gợi ý và thanh đầu trang; chip chủ đề giữ chữ tối dễ đọc trên nền sáng.
+
+## 0.4.73 — 2026-11-07
+
+- Fixed the ambient CSS still hiding a running engine after turning off Follow system reduced motion. Forced-colour suppression remains active.
+- Sửa CSS vẫn ẩn Ambient dù engine đã chạy sau khi bỏ chọn Follow system reduced motion. Chế độ tương phản cao vẫn tắt hiệu ứng trang trí.
+
+## 0.4.72 — 2026-11-07
+
+- Added **Follow system reduced motion**, enabled by default. Turn it off to use Motion effects, Animate sky and Ambient Light independently of the browser's reduced-motion signal. Each effect keeps its own switch.
+- Thêm **Follow system reduced motion**, mặc định bật. Bỏ chọn để Motion effects, Animate sky và Ambient Light hoạt động độc lập với tín hiệu giảm chuyển động của trình duyệt; từng hiệu ứng vẫn có công tắc riêng.
+
+## 0.4.71 — 2026-11-07
+
+- Lift the night sky's blue atmosphere at moderate background intensity while preserving star highlights and the separate rain treatment.
+- Tăng độ rõ của sắc trời đêm khi cường độ nền ở mức vừa; giữ sao sáng và xử lý nền mưa riêng.
+
+## 0.4.70 — 2026-11-07
+
+- Light-theme RAIN uses a pale overcast veil so native dark text and navigation icons remain readable over the sky.
+- Nâng sáng nền mưa trong giao diện sáng để chữ đen và biểu tượng điều hướng dễ đọc.
+
 ## 0.4.69 — 2026-11-07
 
 - Make the channel tab toolbar transparent independently of the masthead glass.

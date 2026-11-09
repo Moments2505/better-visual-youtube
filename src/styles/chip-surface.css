@@ -44,7 +44,7 @@ html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
     transition: none;
   }
 }

@@ -277,6 +277,21 @@ test("system reduced motion and forced colours still gate Ambient independently 
   }
 });
 
+test("explicit system-motion opt-out restores ambient but preserves forced-colour and master gates", async () => {
+  const h = harness(); const r = renderer(h);
+  h.media("(prefers-reduced-motion: reduce)", true);
+  await h.bridge.push(settings()); await h.bridge.attach(r.engine);
+  assert.equal(r.engine.isHidden, true);
+  await h.bridge.push({ ...settings(), respectReducedMotion: false });
+  assert.equal(h.bridge.stats().state, "upstream");
+  h.media("(forced-colors: active)", true); await settle();
+  assert.equal(h.bridge.stats().state, "off");
+  h.media("(forced-colors: active)", false); await settle();
+  assert.equal(h.bridge.stats().state, "upstream");
+  await h.bridge.push({ ...settings({}, false), respectReducedMotion: false });
+  assert.equal(h.bridge.stats().state, "off");
+});
+
 test("per-tab layout gates hide live renderer without persisting master=false", async () => {
   const h = harness(); const r = renderer(h); await h.bridge.push(settings()); await h.bridge.attach(r.engine);
   for (const mode of ["shorts", "miniplayer", "fullscreen", "normal", "theater"]) {

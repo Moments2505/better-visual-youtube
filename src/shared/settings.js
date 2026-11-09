@@ -59,6 +59,7 @@
     "radius": 14,
     "refraction": 1,
     "respectReducedTransparency": false,
+    "respectReducedMotion": true,
     "theme": "light",
     "tint": "media"
   };
@@ -68,7 +69,7 @@
        written verbatim (blur(0px) is a valid filter function and renders as a
        plain transparent surface), so the slider may start at zero. */
     blur: [0, 40],
-    opacity: [0, 0.85],
+    opacity: [0, 1],
     refraction: [0, 1],
     radius: [6, 28],
     highlight: [0, 1]
@@ -100,13 +101,13 @@
 
   /* Slider density is deliberately gentle near zero. Stored opacity remains
      raw alpha, so existing saved settings keep their actual transparency.
-     alpha = .85 * (slider/100)^1.4; the inverse preserves all integer stops.
+     alpha = (slider/100)^1.4; the inverse preserves all integer stops.
      Decorations follow raw normalized alpha instead of boosting low values. */
-  var OPACITY_MAX = 0.85;
+  var OPACITY_MAX = 1;
   var OPACITY_GAMMA = 1.4;
   var FILL_GAMMA = 1;
 
-  /** Stored alpha (0..0.85) -> integer slider position 0..100. */
+  /** Stored alpha (0..1) -> integer slider position 0..100. */
   function opacityToSlider(alpha01) {
     var a = (typeof alpha01 === "number" && isFinite(alpha01)) ? alpha01 : 0;
     a = clamp(a, 0, OPACITY_MAX);
@@ -116,7 +117,7 @@
     return Math.round(clamp(p, 0, 1) * 100);
   }
 
-  /** Integer slider position 0..100 -> stored alpha (0..0.85). */
+  /** Integer slider position 0..100 -> stored alpha (0..1). */
   function sliderToOpacity(sliderPercent) {
     var v = (typeof sliderPercent === "number" && isFinite(sliderPercent)) ? sliderPercent : 0;
     var p = clamp(v, 0, 100) / 100;
@@ -126,10 +127,10 @@
   /** Normalized alpha drives rim, sheen and scatter continuously, without
    * amplifying the first slider step. Exact endpoints remain 0 and 1. */
   function fillStrength(alpha01) {
-    var a = (typeof alpha01 === "number" && isFinite(alpha01)) ? clamp(alpha01, 0, OPACITY_MAX) : 0;
+    var a = (typeof alpha01 === "number" && isFinite(alpha01)) ? clamp(alpha01, 0, 0.85) : 0;
     if (a <= 0) return 0;
-    if (a >= OPACITY_MAX) return 1;
-    return Math.pow(a / OPACITY_MAX, FILL_GAMMA);
+    if (a >= 0.85) return 1;
+    return Math.pow(a / 0.85, FILL_GAMMA);
   }
 
   /* Parse the accent setting into an opaque "r, g, b" channel triplet. Accepts
@@ -426,6 +427,16 @@
     // Media tint with no colour yet: fall back to the theme tone rather than
     // painting nothing while the first frame is being sampled.
     if (!rgb) rgb = theme === "light" ? "248, 250, 252" : "22, 28, 38";
+    // Ease the upper slider range into white instead of changing material at
+    // exactly 100%. Smoothstep has a flat slope at both ends, so 99 -> 100
+    // differs by at most one channel level even for a black starting tint.
+    var whiteT = Math.max(0, Math.min(1, (chromeState.opacity - 0.6) / 0.4));
+    var whiteMix = whiteT * whiteT * (3 - 2 * whiteT);
+    rgb = rgb.split(",").map(function (channel) {
+      return Math.round(Number(channel) + (255 - Number(channel)) * whiteMix);
+    }).join(", ");
+    // The reading palette is already settled before the final slider stops.
+    de.setAttribute("data-ylg-opacity-pale", whiteMix >= 0.5 ? "true" : "false");
     var alpha = Math.round(Math.min(1, chromeState.opacity * 1.15) * 1000) / 1000;
     de.style.setProperty("--ylg-chrome-scrim", "rgba(" + rgb + ", " + alpha + ")");
     de.style.setProperty("--ylg-search-scrim", "rgba(" + rgb + ", " + alpha + ")");
@@ -472,6 +483,7 @@
     de.setAttribute("data-ylg-enabled", s.enabled ? "true" : "false");
     // Glass is an explicit visual preference. System mode can opt into solid
     // surfaces; forced-colour palettes remain controlled by their own CSS.
+    de.setAttribute("data-ylg-system-motion", s.respectReducedMotion ? "follow" : "ignore");
     de.setAttribute("data-ylg-transparency", s.respectReducedTransparency ? "system" : "glass");
     // data-ylg-render-mode is gone with the `renderMode` setting (schema 8):
     // advanced refraction is now driven by refraction > 0 in bootstrap.js.
@@ -494,6 +506,9 @@
     setProp("--ylg-blur-s", px(blurS));
     setProp("--ylg-blur-l", px(Math.min(48, s.blur * 1.5)));
     setProp("--ylg-opacity", String(s.opacity));
+    de.setAttribute("data-ylg-opacity-solid", s.opacity === 1 ? "true" : "false");
+    // Low-opacity light glass can reveal a dark video-driven ambient field.
+    de.setAttribute("data-ylg-light-ink", s.opacity < 0.6 ? "light" : "dark");
     // Perceptual companion of the raw alpha (see fillStrength): the additive
     // glass layer multiplies rims/sheen/scatter by this, so the surface GROWS
     // out of nothing between slider 0 and 1 instead of switching on with the
@@ -580,8 +595,8 @@
     AMBIENT_QUALITY: AMBIENT_QUALITY,
     /* Opacity slider <-> stored alpha. Exported so the popup (and any test)
        uses this one curve instead of re-deriving the mapping. */
-    opacityToSlider: opacityToSlider,   // 0..0.85 -> integer 0..100
-    sliderToOpacity: sliderToOpacity,   // integer 0..100 -> 0..0.85
+    opacityToSlider: opacityToSlider,   // 0..1 -> integer 0..100
+    sliderToOpacity: sliderToOpacity,   // integer 0..100 -> 0..1
     normalizeSettings: normalizeSettings,
     normalizeAmbient: normalizeAmbient,
     applySettingsToDocument: applySettingsToDocument,

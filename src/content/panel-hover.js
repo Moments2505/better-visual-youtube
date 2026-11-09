@@ -17,7 +17,7 @@
       de.getAttribute("data-ylg-enabled") === "true" && de.getAttribute("data-ylg-motion") === "on" &&
       de.getAttribute("data-ylg-hover") === "on" && de.getAttribute("data-ylg-optics") === "on" &&
       de.getAttribute("data-ylg-optics-magnify") !== "0" && de.getAttribute("data-ylg-player-transition") !== "1" &&
-      !(reduced && reduced.matches);
+      (de.getAttribute("data-ylg-system-motion") === "ignore" || !(reduced && reduced.matches));
   }
   function side() {
     var value = selected ? (selected.id === "secondary" ? "secondary" : "primary") : "none";
@@ -163,7 +163,7 @@
     if (typeof root.ResizeObserver === "function") resizeObserver = new root.ResizeObserver(schedule);
     if (typeof root.MutationObserver === "function") {
       modeObserver = new root.MutationObserver(modeChanged);
-      modeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-ylg-player-transition"] });
+      modeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-ylg-player-transition", "data-ylg-system-motion"] });
     }
     schedule();
   }

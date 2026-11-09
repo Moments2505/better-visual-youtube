@@ -166,6 +166,14 @@ test("channel URLs restore sky and rain after SPA navigation and direct entry", 
   }
 });
 
+test("explicit system-motion opt-out permits sky movement and restores the system gate", () => {
+  const w = world(); w.media("reduced", true);
+  w.api.updateSettings(snapshot()); assert.equal(w.host().getAttribute("data-moving"), "false");
+  w.api.updateSettings(snapshot({ respectReducedMotion: false }));
+  assert.equal(w.host().getAttribute("data-moving"), "true");
+  w.api.updateSettings(snapshot()); assert.equal(w.host().getAttribute("data-moving"), "false");
+});
+
 test("a pending SPA navigation removes the scene before the next player/page can paint", () => {
   const w=world(); w.api.updateSettings(snapshot()); scene(w,"day");
   const cancelled=[...w.timers.values()][0].fn;

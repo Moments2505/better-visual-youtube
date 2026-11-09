@@ -73,7 +73,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-chip {
   transform: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"] {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] :is(ytd-watch-metadata, ytd-comments, #secondary).ylg-glass[data-ylg-level="panel"] {
     transform: none !important;
     transition: none !important;
   }

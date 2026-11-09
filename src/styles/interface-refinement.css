@@ -36,7 +36,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .ytp-chrome-bottom .ytp-tim
   transition: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="panel"] {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="panel"] {
     transition: none !important;
     transform: none !important;
   }

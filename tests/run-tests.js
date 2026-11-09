@@ -102,7 +102,7 @@ const ALL = ["src/shared/settings.js", "src/glass/glass-refraction.js",
   const S = w.sandbox.YLG_SETTINGS;
   const n = S.normalizeSettings({ blur: 999, opacity: 5, renderMode: "nope", tint: "nope", accent: "javascript:alert(1)" });
   check("settings clamps blur to range", n.blur === 40, "got " + n.blur);
-  check("settings clamps opacity", n.opacity === 0.85, "got " + n.opacity);
+  check("settings clamps opacity", n.opacity === 1, "got " + n.opacity);
   // schema 8 has no `preset` and no `renderMode`: the enum that still exists is tint.
   check("settings rejects bad enum", n.tint === S.DEFAULT_SETTINGS.tint, "got " + n.tint);
   check("settings drops the schema-8 removed keys",

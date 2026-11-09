@@ -91,7 +91,7 @@ test("schema 8 ships the documented defaults and ranges", () => {
   assert.equal(S.DEFAULT_SETTINGS.tint, "media");
   assert.equal(S.DEFAULT_SETTINGS.opacity, 0.001347159213591947);
   assert.deepEqual([...S.ENUMS.tint], ["auto", "black", "white", "media", "custom"]);
-  assert.deepEqual([...S.RANGES.opacity], [0, 0.85]);
+  assert.deepEqual([...S.RANGES.opacity], [0, 1]);
   // Blur 0 is a real state ("no backdrop blur"), so the range starts at zero.
   assert.deepEqual([...S.RANGES.blur], [0, 40]);
   // The schema-8 removals: no preset / renderMode setting and no PRESETS table.
@@ -116,7 +116,7 @@ test("opacity 0 is legal and is never clamped up", () => {
   // The floor and the ceiling still hold on both sides of 0.
   assert.equal(S.normalizeSettings({ opacity: -0.01 }).opacity, 0);
   assert.equal(S.normalizeSettings({ opacity: -50 }).opacity, 0);
-  assert.equal(S.normalizeSettings({ opacity: 1 }).opacity, 0.85);
+  assert.equal(S.normalizeSettings({ opacity: 1 }).opacity, 1);
   assert.equal(S.normalizeSettings({ opacity: 0.001 }).opacity, 0.001);
   // A non-number never becomes 0 by accident - it becomes the default, which now IS 0.
   assert.equal(S.normalizeSettings({ opacity: "0" }).opacity, S.DEFAULT_SETTINGS.opacity);
@@ -213,11 +213,12 @@ test("chrome and search scrims share one alpha driven by the opacity slider", ()
     assert.equal(el.props["--ylg-chrome-scrim"], el.props["--ylg-search-scrim"], "header and search must share the slider");
     assert.equal(chrome.alpha, expectedAlpha(opacity), "alpha at opacity " + opacity);
     assert.ok(chrome.alpha <= 1, "alpha is capped at 1");
-    assert.equal(chrome.rgb, DARK_AUTO_RGB);
+    assert.equal(chrome.rgb, opacity === 0.85 ? "181, 183, 186" : DARK_AUTO_RGB);
   }
   // 0 really is fully see-through, not a floor value.
   assert.equal(scrim(applyOn({ schemaVersion: 8, opacity: 0 }).el.props["--ylg-chrome-scrim"]).alpha, 0);
-  // ...and the maximum the UI can send is still below an opaque bar.
+  // A saved 0.85 alpha keeps its transparency; the new maximum is solid white.
+  assert.deepEqual(scrim(applyOn({ schemaVersion: 8, opacity: 1 }).el.props["--ylg-chrome-scrim"]), { rgb: "255, 255, 255", alpha: 1 });
   assert.equal(scrim(applyOn({ schemaVersion: 8, opacity: 0.85 }).el.props["--ylg-chrome-scrim"]).alpha, 0.977);
 });
 
@@ -535,7 +536,7 @@ test("legacy 0.45 opens the popup at the default opacity, and the percent slider
   assert.notEqual(at, "45", "the old percent/100 mapping is gone");
   assert.equal(S.opacityToSlider(S.sliderToOpacity(Number(at))), Number(at), "the slider position round-trips");
   // The maximum is reachable as 100%, and alpha 0 is still 0%.
-  const top = loaded({ schemaVersion: 8, opacity: 0.85 });
+  const top = loaded({ schemaVersion: 8, opacity: 1 });
   assert.equal(top.$("ylg-opacity").value, "100");
   assert.equal(top.$("ylg-opacity-v").textContent, "100%");
   const zero = loaded({ schemaVersion: 8, opacity: 0 });

@@ -1,0 +1,46 @@
+/* One opacity/tint authority for masthead and reading panels. Gradients must
+   not add a second translucent fill or dilute the opaque slider endpoint. */
+@media (forced-colors: none) {
+  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid] .ylg-glass:is([data-ylg-level="panel"], [data-ylg-level="hero"], [data-ylg-level="floating"]) {
+    background-color: var(--ylg-chrome-scrim) !important;
+    background-image: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid] #frosted-glass::before {
+    background: var(--ylg-chrome-scrim) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid][data-ylg-fill="none"] #frosted-glass::before {
+    content: none !important;
+    background: none !important;
+  }
+  /* Pale and solid white need a dark reading palette even when the saved glass theme
+     is dark. Scope it to material surfaces; retain native inverse button and
+     player-control colours. Suppress Ambient's decorative text glow here. */
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"] :is(.ylg-glass[data-ylg-level="panel"], .ylg-glass[data-ylg-level="hero"], .ylg-glass[data-ylg-level="floating"], #masthead-container) {
+    --yt-spec-text-primary: #111827;
+    --yt-spec-text-secondary: #4b5563;
+    --yt-spec-icon-inactive: #374151;
+    --yt-spec-icon-active-other: #111827;
+    --yt-sys-color-baseline--text-primary: #111827;
+    --yt-sys-color-baseline--text-secondary: #4b5563;
+    --ylg-chrome-text: #111827;
+    --ylg-chrome-muted: #4b5563;
+    --ytal-text-shadow: none;
+    --ytal-text-shadow-inverted: none;
+    color: #111827;
+    text-shadow: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"] .ylg-glass :where(h1, #video-title, #content-text, #author-text, #channel-name, #owner-name, #count, #simplebox-placeholder, .ytd-channel-name#text, .yt-lockup-metadata-view-model__title, .yt-lockup-metadata-view-model-wiz__title, #description, .ytd-playlist-panel-renderer#title) {
+    color: #111827 !important;
+    text-shadow: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"] .ylg-glass :where(#byline, #metadata-line, #owner-sub-count, #publisher-container, .yt-lockup-metadata-view-model__metadata) {
+    color: #4b5563 !important;
+    text-shadow: none !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid]:not([data-ylg-transparency="glass"]) .ylg-glass:is([data-ylg-level="panel"], [data-ylg-level="hero"], [data-ylg-level="floating"]),
+  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid]:not([data-ylg-transparency="glass"]) #frosted-glass::before {
+    background: Canvas !important;
+  }
+}

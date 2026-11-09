@@ -58,7 +58,7 @@
     var de = document.documentElement;
     return de.getAttribute("data-ylg-enabled") === "true" &&
       de.getAttribute("data-ylg-motion") === "on" && !document.fullscreenElement &&
-      !(root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      (de.getAttribute("data-ylg-system-motion") === "ignore" || !(root.matchMedia && root.matchMedia("(prefers-reduced-motion: reduce)").matches));
   }
   function cancel() {
     if (frame) root.cancelAnimationFrame(frame);
