@@ -6,21 +6,32 @@
  * the ambient sliders. chrome.storage persistence + live content-script sync
  * happen inside settings.js / storage.onChanged.
  *
- * Control inventory: master switch, Theme, Blur strength, Opacity, Colour
- * (Auto | Black | White | Thumbnail | Custom + inline colour input/swatches),
- * Refraction, Corner radius, Highlight, Motion effects, Optics, Ambient Light,
- * Reset to Defaults, status line.
+ * Control inventory: master switch, Style Profiles, Theme, Blur strength,
+ * Opacity, Colour (Auto | Black | White | Thumbnail | Custom + inline colour
+ * input/swatches), Refraction, Corner radius, Highlight, Motion effects,
+ * Optics, Ambient Light, Reset / Export / Import, status line.
  */
 (function () {
   "use strict";
   var S = window.YLG_SETTINGS;
   if (!S) return;
 
+  function t(key, fallback) {
+    return (typeof S.t === "function") ? S.t(key, fallback) : fallback;
+  }
+
   var $ = function (id) { return document.getElementById(id); };
   var current = null;
   var saveTimer = null;
   var statusTimer = null;
   var systemTheme = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+
+  var PROFILE_BUTTONS = [
+    ["crystal", "ylg-profile-crystal"],
+    ["frosted", "ylg-profile-frosted"],
+    ["cinema", "ylg-profile-cinema"],
+    ["eco", "ylg-profile-eco"]
+  ];
 
   function syncPopupTheme(preference) {
     var theme = preference === "dark" || preference === "light" ? preference :
@@ -58,7 +69,7 @@
       // An older callback must not replace newer controls or status (notably reset).
       if (savedRevision !== revision) return;
       if (err) dirty = true;
-      status(err ? "Save failed" : (successMessage || "Saved"));
+      status(err ? t("statusSaveFailed", "Save failed") : (successMessage || t("statusSaved", "Saved")));
     });
   }
 
@@ -115,10 +126,10 @@
   var customIntent = false;
 
   function uiTint(s) {
-    var t = (s && typeof s.tint === "string" && s.tint) ? s.tint : "auto";
-    if (t === "custom") return "custom";
+    var tn = (s && typeof s.tint === "string" && s.tint) ? s.tint : "auto";
+    if (tn === "custom") return "custom";
     if (!TINT_CUSTOM_SUPPORTED && customIntent) return "custom";
-    return t;
+    return tn;
   }
 
   function accentHex(s) {
@@ -143,6 +154,18 @@
     if (acc && acc.value !== hex) acc.value = hex;
   }
 
+  function syncProfiles(s) {
+    var activeKey = (typeof S.matchStyleProfile === "function") ? S.matchStyleProfile(s) : null;
+    for (var i = 0; i < PROFILE_BUTTONS.length; i++) {
+      var key = PROFILE_BUTTONS[i][0];
+      var btn = $(PROFILE_BUTTONS[i][1]);
+      if (!btn) continue;
+      var active = (activeKey === key);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.classList.toggle("is-active", active);
+    }
+  }
+
   // State-only synchronization never replaces controls or rewrites a focused range.
   function syncState(s) {
     document.documentElement.setAttribute("data-ylg-system-motion", s.respectReducedMotion ? "follow" : "ignore");
@@ -155,6 +178,7 @@
     setSegmented("ylg-ambient-quality", amb.quality);
     setSegmented("ylg-daylight-scene", s.daylightBackground.scene);
     syncColour(s);
+    syncProfiles(s);
     if (window.YLG_SKY_UI) window.YLG_SKY_UI.render(s);
   }
 
@@ -181,6 +205,9 @@
   }
   function px(v) { return v + "px"; }
   function pct(v) { return v + "%"; }
+  function fmtLens(v) {
+    return v === 0 ? t("valueOff", "Off") : (1 / (1 - v / 400 * ((1 - 1 / 1.15) / 0.23))).toFixed(2) + "×";
+  }
 
   function render(s) {
     current = s;
@@ -208,7 +235,7 @@
     setSlider("ylg-amb-fps", "ylg-amb-fps-v", a.fpsLimit, function (v) { return v + "fps"; });
     var o = s.optics || {};
     setChecked("ylg-optics-enabled", o.enabled !== false);
-    setSlider("ylg-optics-lens", "ylg-optics-lens-v", o.lensPx, function(v) { return v === 0 ? "Off" : (1 / (1 - v / 400 * ((1 - 1/1.15)/0.23))).toFixed(2) + "×"; });
+    setSlider("ylg-optics-lens", "ylg-optics-lens-v", o.lensPx, fmtLens);
     setChecked("ylg-optics-aberration", o.aberration !== false);
     setSlider("ylg-optics-ab", "ylg-optics-ab-v", Math.round((o.aberrationPx === undefined ? 1.6 : o.aberrationPx) * 10), function (v) { return (v / 10).toFixed(1) + "px"; });
     setChecked("ylg-optics-magnify", o.magnify !== false);
@@ -315,12 +342,23 @@
   });
 
   document.addEventListener("DOMContentLoaded", function () {
+    if (typeof S.hydrateI18n === "function") {
+      S.hydrateI18n(document);
+    }
     var loadingControls = document.querySelectorAll("input, button");
     for (var i = 0; i < loadingControls.length; i++) loadingControls[i].disabled = true;
     S.getStoredSettings(function (s) {
       var master = $("ylg-enabled"), reset = $("ylg-reset");
+      var exportBtn = $("ylg-export"), importBtn = $("ylg-import"), importFile = $("ylg-import-file");
       if (master) master.disabled = false;
       if (reset) reset.disabled = false;
+      if (exportBtn) exportBtn.disabled = false;
+      if (importBtn) importBtn.disabled = false;
+      if (importFile) importFile.disabled = false;
+      for (var p = 0; p < PROFILE_BUTTONS.length; p++) {
+        var profBtn = $(PROFILE_BUTTONS[p][1]);
+        if (profBtn) profBtn.disabled = false;
+      }
       render(s);
     });
     // Reflect changes from other open popups/tabs. Uncommitted local edits keep
@@ -333,7 +371,27 @@
     }
     // Bubbles after the individual control updates, including native range
     // keyboard/pointer commits and toggles. No second debounce survives change.
-    document.addEventListener("change", function () { flushSave(); });
+    document.addEventListener("change", function (e) {
+      if (e && e.target && e.target.id === "ylg-import-file") return;
+      flushSave();
+    });
+
+    var profilesBar = $("ylg-style-profiles");
+    if (profilesBar) {
+      for (var pIdx = 0; pIdx < PROFILE_BUTTONS.length; pIdx++) {
+        (function (profileKey, domId) {
+          var btn = $(domId);
+          if (!btn) return;
+          btn.addEventListener("click", function () {
+            if (btn.disabled || !current || typeof S.applyStyleProfile !== "function") return;
+            var next = S.applyStyleProfile(current, profileKey);
+            render(next);
+            scheduleSave();
+            flushSave(t("statusProfileApplied", "Profile applied"));
+          });
+        })(PROFILE_BUTTONS[pIdx][0], PROFILE_BUTTONS[pIdx][1]);
+      }
+    }
 
     var master = $("ylg-enabled");
     if (master) master.addEventListener("change", function () { update({ enabled: this.checked }); });
@@ -359,8 +417,8 @@
       });
     }
     var swatches = document.querySelectorAll(".ylg-swatch");
-    for (var i = 0; i < swatches.length; i++) {
-      swatches[i].addEventListener("click", function () {
+    for (var sIdx = 0; sIdx < swatches.length; sIdx++) {
+      swatches[sIdx].addEventListener("click", function () {
         var colour = this.getAttribute("data-color");
         var acc = $("ylg-accent");
         if (acc) acc.value = colour;
@@ -433,7 +491,7 @@
       var next = Object.assign({}, current.optics || {}, patch);
       update({ optics: next });
     }
-    bindSlider("ylg-optics-lens", "ylg-optics-lens-v", function(v) { updateOptics({ lensPx: v }); }, function(v) { return v === 0 ? "Off" : (1 / (1 - v / 400 * ((1 - 1/1.15)/0.23))).toFixed(2) + "×"; });
+    bindSlider("ylg-optics-lens", "ylg-optics-lens-v", function (v) { updateOptics({ lensPx: v }); }, fmtLens);
     var opticsEnabled = $("ylg-optics-enabled");
     if (opticsEnabled) opticsEnabled.addEventListener("change", function () { updateOptics({ enabled: this.checked }); });
     var aberration = $("ylg-optics-aberration");
@@ -469,7 +527,104 @@
         var d = S.normalizeSettings(JSON.parse(JSON.stringify(S.DEFAULT_SETTINGS)));
         render(d);
         scheduleSave();
-        flushSave("Defaults restored");
+        try {
+          if (S.VENDOR_RESET_KEYS && typeof chrome !== "undefined" &&
+              chrome.storage && chrome.storage.local &&
+              typeof chrome.storage.local.remove === "function") {
+            chrome.storage.local.remove(S.VENDOR_RESET_KEYS.slice(), function () {});
+          }
+        } catch (eReset) {}
+        flushSave(t("statusDefaultsRestored", "Defaults restored"));
+      });
+    }
+
+    var exportBtn = $("ylg-export");
+    if (exportBtn) {
+      exportBtn.addEventListener("click", function () {
+        if (exportBtn.disabled || !current || typeof S.exportSettingsPayload !== "function") return;
+        var json = S.exportSettingsPayload(current);
+        var href = "";
+        var createdObjectUrl = false;
+        try {
+          if (typeof Blob === "function" && typeof URL !== "undefined" && URL && typeof URL.createObjectURL === "function") {
+            var blob = new Blob([json], { type: "application/json" });
+            href = URL.createObjectURL(blob);
+            createdObjectUrl = true;
+          }
+        } catch (eBlob) {
+          href = "";
+        }
+        if (!href) {
+          href = "data:application/json;charset=utf-8," + encodeURIComponent(json);
+        }
+        if (document && typeof document.createElement === "function") {
+          var link = document.createElement("a");
+          if (link) {
+            if (link.setAttribute) {
+              link.setAttribute("href", href);
+              link.setAttribute("download", "better-visual-youtube-settings.json");
+            }
+            link.href = href;
+            link.download = "better-visual-youtube-settings.json";
+            if (document.body && document.body.appendChild) document.body.appendChild(link);
+            if (typeof link.click === "function") link.click();
+            if (link.remove) link.remove();
+            else if (link.parentNode && link.parentNode.removeChild) link.parentNode.removeChild(link);
+          }
+        }
+        if (createdObjectUrl && typeof URL !== "undefined" && URL && typeof URL.revokeObjectURL === "function") {
+          setTimeout(function () {
+            try { URL.revokeObjectURL(href); } catch (eRevoke) {}
+          }, 0);
+        }
+        status(t("statusExported", "Settings exported"));
+      });
+    }
+
+    var importBtn = $("ylg-import");
+    var importFile = $("ylg-import-file");
+    if (importBtn && importFile) {
+      importBtn.addEventListener("click", function () {
+        if (importBtn.disabled) return;
+        importFile.value = "";
+        importFile.click();
+      });
+      importFile.addEventListener("change", function () {
+        var file = importFile.files && importFile.files[0];
+        if (!file) return;
+        function applyImportedText(rawText) {
+          var imported;
+          try {
+            imported = S.parseImportedSettingsPayload(rawText);
+          } catch (eParse) {
+            status(t("statusImportInvalid", "Invalid settings file"));
+            importFile.value = "";
+            return;
+          }
+          render(imported);
+          scheduleSave();
+          flushSave(t("statusImported", "Settings imported"));
+          importFile.value = "";
+        }
+        if (typeof file.text === "function") {
+          Promise.resolve(file.text()).then(applyImportedText, function () {
+            status(t("statusImportInvalid", "Invalid settings file"));
+            importFile.value = "";
+          });
+        } else if (typeof FileReader === "function") {
+          var reader = new FileReader();
+          reader.onload = function () {
+            applyImportedText(typeof reader.result === "string" ? reader.result : "");
+          };
+          reader.onerror = function () {
+            status(t("statusImportInvalid", "Invalid settings file"));
+            importFile.value = "";
+          };
+          reader.readAsText(file);
+        } else {
+          status(t("statusImportInvalid", "Invalid settings file"));
+          importFile.value = "";
+        }
       });
     }
   });

@@ -5,6 +5,12 @@ const captured=JSON.parse(fs.readFileSync(path.join(base,"default-settings.json"
 const w={};w.window=w;
 vm.runInNewContext(fs.readFileSync(path.join(base,"src/shared/settings.js"),"utf8"),w);
 const plain=v=>JSON.parse(JSON.stringify(v));
+assert.equal(w.YLG_SETTINGS.DEFAULT_SETTINGS.theme,"auto");
+assert.equal(w.YLG_SETTINGS.DEFAULT_SETTINGS.blur,14);
+assert.equal(w.YLG_SETTINGS.DEFAULT_SETTINGS.tint,"auto");
+assert.equal(w.YLG_SETTINGS.opacityToSlider(w.YLG_SETTINGS.DEFAULT_SETTINGS.opacity),37);
+assert.equal(w.YLG_SETTINGS.DEFAULT_SETTINGS.opacity,w.YLG_SETTINGS.sliderToOpacity(37));
+assert.equal(w.YLG_SETTINGS.DEFAULT_SETTINGS.daylightBackground.location.name,"London, United Kingdom");
 assert.deepEqual(plain(w.YLG_SETTINGS.normalizeSettings({})),captured);
 assert.deepEqual(plain(w.YLG_SETTINGS.normalizeSettings(captured)),captured);
 w.YLG_SETTINGS.getStoredSettings(s=>assert.deepEqual(plain(s),captured));

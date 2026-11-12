@@ -16,7 +16,7 @@
     "saturation": 1.1,
     "spread": 162
   },
-  "blur": 1,
+  "blur": 14,
   "daylightBackground": {
     "enabled": false,
     "animate": true,
@@ -25,16 +25,16 @@
     "intensity": 0.45,
     "liveWeather": false,
     "location": {
-      "name": "Hà Nội, Việt Nam",
-      "latitude": 21.0285,
-      "longitude": 105.8542
+      "name": "London, United Kingdom",
+      "latitude": 51.5074,
+      "longitude": -0.1278
     }
   },
   "enabled": true,
   "highlight": 0.62,
   "hoverEffects": true,
   "motion": true,
-  "opacity": 0.001347159213591947,
+  "opacity": 0.24858928985262752,
   "optics": {
     "aberration": true,
     "aberrationPx": 4,
@@ -49,7 +49,7 @@
   "refraction": 1,
   "respectReducedTransparency": false,
   "respectReducedMotion": true,
-  "theme": "light",
-  "tint": "media",
+  "theme": "auto",
+  "tint": "auto",
   "schemaVersion": 8
 }

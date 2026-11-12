@@ -88,8 +88,9 @@ const LIGHT_AUTO_RGB = "248, 250, 252";
 /* ---------------- schema 8 contract ---------------- */
 test("schema 8 ships the documented defaults and ranges", () => {
   assert.equal(S.SCHEMA_VERSION, 8);
-  assert.equal(S.DEFAULT_SETTINGS.tint, "media");
-  assert.equal(S.DEFAULT_SETTINGS.opacity, 0.001347159213591947);
+  assert.equal(S.DEFAULT_SETTINGS.tint, "auto");
+  assert.equal(S.DEFAULT_SETTINGS.opacity, S.sliderToOpacity(37));
+  assert.equal(S.opacityToSlider(S.DEFAULT_SETTINGS.opacity), 37);
   assert.deepEqual([...S.ENUMS.tint], ["auto", "black", "white", "media", "custom"]);
   assert.deepEqual([...S.RANGES.opacity], [0, 1]);
   // Blur 0 is a real state ("no backdrop blur"), so the range starts at zero.

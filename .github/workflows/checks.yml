@@ -1,20 +1,117 @@
 name: Source checks
+
 on:
   push:
+    branches:
+      - main
+    tags:
+      - "v*"
   pull_request:
+  workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   regression-and-package:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - uses: actions/setup-python@v5
+          node-version: "22"
+
+      - name: Run manifest, syntax & regression checks
+        run: node scripts/check.js
+
+      - name: Build deterministic release package
+        run: node scripts/package-release.js
+
+      - name: Verify release bundle integrity and size budget
+        id: verify-bundle
+        env:
+          MAX_BUNDLE_BYTES: "600000"
+        run: |
+          node - <<'EOF'
+          "use strict";
+          const crypto = require("node:crypto");
+          const fs = require("node:fs");
+          const path = require("node:path");
+
+          const manifestPath = process.env.MANIFEST_PATH || "manifest.json";
+          const releaseDir = process.env.RELEASE_DIR || path.join("dist", "releases");
+          const maxBytes = Number(process.env.MAX_BUNDLE_BYTES || "600000");
+          if (!Number.isFinite(maxBytes) || maxBytes <= 0) {
+            throw new Error(`Invalid MAX_BUNDLE_BYTES: ${process.env.MAX_BUNDLE_BYTES}`);
+          }
+
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+          const version = String(manifest.version || "").trim();
+          if (!/^\d+\.\d+\.\d+$/.test(version)) {
+            throw new Error(`Invalid manifest.json version: "${version}"`);
+          }
+
+          const zipName = `Better-visual-Youtube-${version}.zip`;
+          const shaName = `${zipName}.sha256`;
+          const zipPath = path.join(releaseDir, zipName);
+          const shaPath = path.join(releaseDir, shaName);
+
+          if (!fs.existsSync(zipPath)) {
+            throw new Error(`Missing release archive: ${zipPath}`);
+          }
+          if (!fs.existsSync(shaPath)) {
+            throw new Error(`Missing SHA-256 checksum file: ${shaPath}`);
+          }
+
+          const zipBytes = fs.readFileSync(zipPath);
+          if (zipBytes.length < 22 || zipBytes.readUInt32LE(0) !== 0x04034b50) {
+            throw new Error(`Invalid or empty ZIP archive: ${zipPath} (${zipBytes.length} bytes)`);
+          }
+          if (zipBytes.length >= maxBytes) {
+            throw new Error(
+              `Bundle size budget exceeded: ${zipName} is ${zipBytes.length} bytes (must be < ${maxBytes} bytes)`
+            );
+          }
+
+          const shaLine = fs.readFileSync(shaPath, "utf8").trim();
+          const match = /^([0-9a-f]{64})\s{2}(\S+)$/.exec(shaLine);
+          if (!match) {
+            throw new Error(`Malformed .sha256 file (${shaPath}): "${shaLine}"`);
+          }
+          const [, expectedSha, recordedName] = match;
+          if (recordedName !== zipName) {
+            throw new Error(`Checksum filename mismatch: expected "${zipName}", got "${recordedName}"`);
+          }
+
+          const actualSha = crypto.createHash("sha256").update(zipBytes).digest("hex");
+          if (actualSha !== expectedSha) {
+            throw new Error(`SHA-256 mismatch for ${zipName}: expected ${expectedSha}, computed ${actualSha}`);
+          }
+
+          if (process.env.GITHUB_OUTPUT) {
+            fs.appendFileSync(
+              process.env.GITHUB_OUTPUT,
+              `version=${version}\nbytes=${zipBytes.length}\nsha256=${actualSha}\n`,
+              "utf8"
+            );
+          }
+          console.log(`Verified ${zipName}: ${zipBytes.length} bytes (< ${maxBytes}), sha256=${actualSha}`);
+          EOF
+
+      - name: Upload release package artifacts
+        uses: actions/upload-artifact@v4
         with:
-          python-version: '3.12'
-      - run: python scripts/check.py
-      - run: python scripts/package-release.py --output-dir dist
+          name: Better-visual-Youtube-${{ steps.verify-bundle.outputs.version }}
+          path: |
+            dist/releases/*.zip
+            dist/releases/*.sha256
+          if-no-files-found: error
+          retention-days: 14

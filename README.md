@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Free and open source, made for desktop Microsoft Edge and Google Chrome.
 
-**Latest release: [0.4.80](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.80).** Improves light-mode readability, synchronizes headbar and panel opacity, adds a smooth transition to opaque white, and makes following system reduced motion optional. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.80.md)
+**Latest release: [0.5.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.5.0).** Adds 1-click Style Profiles, cross-device settings sync & JSON Export/Import, native English/Vietnamese localization, seamless sky chrome surfaces, and a 70% smaller MV3 package. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.5.0.md)
 
 ## A little more depth
 
@@ -27,7 +27,7 @@ Choose a light or dark theme, tune the glass effects, and turn interface animati
 
 **Opacity** controls the headbar and reading panels together. At 0% they are clear; the upper range (about 70–100%) gradually blends the selected tint toward white, reaching solid white at 100% with dark reading text. Moving between 99% and 100% keeps the transition gentle.
 
-The optional **Time-of-day background** adds morning sunlight, a daytime sky, sunset or a moonlit star field to Home, Search and channel pages. Auto follows the sun at your chosen city, initially Hà Nội. You can also choose a scene manually. **Animate sky** controls sky movement separately from interface **Motion effects**; Ambient Light has its own switch too.
+The optional **Time-of-day background** adds morning sunlight, a daytime sky, sunset or a moonlit star field to Home, Search and channel pages. Auto follows the sun at your chosen city, initially London, United Kingdom. You can also choose a scene manually. **Animate sky** controls sky movement separately from interface **Motion effects**; Ambient Light has its own switch too.
 
 The procedural sky changes sunlight, twilight colour and cloud structure over time. It pauses while the tab is hidden and falls back to a CSS scene if WebGL is unavailable. Turn **Animate sky** off for a still atmosphere; the scene can still update as the sun or weather changes. The header follows the shared Opacity setting, and Home hover previews stay aligned with their thumbnails.
 
@@ -54,11 +54,11 @@ Found a bug or have an idea? [Open an issue](https://github.com/Moments2505/bett
 
 The source is open under the [MIT license](LICENSE). You can load this repository directly as an unpacked extension; no build step is needed.
 
-To run the source checks and create a ZIP, use Node.js 22+ and Python 3.12+:
+To run the source checks and create a release ZIP, use Node.js 22+:
 
 ```sh
-python scripts/check.py
-python scripts/package-release.py --output-dir dist
+node scripts/check.js
+node scripts/package-release.js
 ```
 
 See [Contributing](CONTRIBUTING.md) for the source layout and development notes.

@@ -180,15 +180,6 @@ html[data-ylg-enabled="true"][data-ylg-theme="dark"] .ylg-glass:not([data-ylg-le
   -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(1.25) brightness(0.96);
   backdrop-filter: blur(var(--ylg-blur)) saturate(1.25) brightness(0.96);
 }
-html[data-ylg-enabled="true"][data-ylg-theme="auto"] .ylg-glass {
-  /* auto light-scheme default already set; dark handled by media query below */
-}
-@media (prefers-color-scheme: dark) {
-  html[data-ylg-enabled="true"][data-ylg-theme="auto"] .ylg-glass:not([data-ylg-level="panel"]) {
-    -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(1.25) brightness(0.96);
-    backdrop-filter: blur(var(--ylg-blur)) saturate(1.25) brightness(0.96);
-  }
-}
 
 /* Video-card hover material: cheap - tint + blur only on hover, never persistent.
    (Selector applied by A3's .ylg-card; kept here as the engine's card contract.) */

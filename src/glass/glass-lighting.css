@@ -53,16 +53,6 @@ html[data-ylg-enabled="true"] .ylg-glass[data-ylg-interactive="1"]:focus-visible
     inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.9));
 }
 
-/* Active nav accent glow (sidebar/active chips - adapter tags data-ylg-active) */
-html[data-ylg-enabled="true"] .ylg-glass[data-ylg-active="1"],
-html[data-ylg-enabled="true"] .ylg-chip[data-ylg-active="1"] {
-  background-color: color-mix(in srgb, var(--ylg-accent) 13%, transparent);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--ylg-accent) 38%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.55)),
-    0 2px 8px color-mix(in srgb, var(--ylg-accent) 16%, transparent);
-}
-
 /* Search-box focus glow (adapter tags the search container) */
 html[data-ylg-enabled="true"] [data-ylg-search-focus="1"] {
   box-shadow:

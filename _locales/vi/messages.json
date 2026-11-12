@@ -1,0 +1,410 @@
+{
+  "extName": {
+    "message": "Better visual Youtube"
+  },
+  "extShortName": {
+    "message": "Better visual"
+  },
+  "extDescription": {
+    "message": "Khoác diện mạo mới cho YouTube với hiệu ứng kính lỏng Liquid Glass, ánh sáng môi trường Ambient Light và chuyển động tùy chỉnh."
+  },
+  "popupTitle": {
+    "message": "Better visual Youtube"
+  },
+  "enableExtension": {
+    "message": "Bật tiện ích"
+  },
+  "styleProfilesHeading": {
+    "message": "Cấu hình nhanh"
+  },
+  "profileCrystal": {
+    "message": "Trong suốt pha lê"
+  },
+  "profileFrosted": {
+    "message": "Kính mờ Tahoe"
+  },
+  "profileCinema": {
+    "message": "Rạp phim rực rỡ"
+  },
+  "profileEco": {
+    "message": "Tiết kiệm tối giản"
+  },
+  "themeHeading": {
+    "message": "Giao diện"
+  },
+  "optAuto": {
+    "message": "Tự động"
+  },
+  "themeLight": {
+    "message": "Sáng"
+  },
+  "themeDark": {
+    "message": "Tối"
+  },
+  "adjustmentsHeading": {
+    "message": "Tinh chỉnh"
+  },
+  "sliderScrollHint": {
+    "message": "Cuộn chuột trên thanh trượt để điều chỉnh giá trị."
+  },
+  "blurStrength": {
+    "message": "Độ mờ nền"
+  },
+  "blurStrengthAria": {
+    "message": "Độ mờ nền tính bằng pixel"
+  },
+  "opacityLabel": {
+    "message": "Độ chắn sáng"
+  },
+  "opacityAria": {
+    "message": "Phần trăm độ chắn sáng bề mặt"
+  },
+  "colourLabel": {
+    "message": "Màu sắc"
+  },
+  "tintBlack": {
+    "message": "Đen"
+  },
+  "tintWhite": {
+    "message": "Trắng"
+  },
+  "tintThumbnail": {
+    "message": "Ảnh thu nhỏ"
+  },
+  "tintCustom": {
+    "message": "Tùy chỉnh"
+  },
+  "customColourAria": {
+    "message": "Màu tùy chỉnh"
+  },
+  "colourSwatchesAria": {
+    "message": "Bảng màu gợi ý"
+  },
+  "swatchBlue": {
+    "message": "Xanh dương"
+  },
+  "swatchPurple": {
+    "message": "Tím"
+  },
+  "swatchTeal": {
+    "message": "Xanh ngọc"
+  },
+  "swatchRose": {
+    "message": "Hồng"
+  },
+  "swatchAmber": {
+    "message": "Hổ phách"
+  },
+  "refractionLabel": {
+    "message": "Khúc xạ"
+  },
+  "refractionAria": {
+    "message": "Phần trăm cường độ khúc xạ"
+  },
+  "cornerRadius": {
+    "message": "Bo góc"
+  },
+  "cornerRadiusAria": {
+    "message": "Độ bo góc tính bằng pixel"
+  },
+  "specularHighlight": {
+    "message": "Ánh phản chiếu"
+  },
+  "specularHighlightAria": {
+    "message": "Phần trăm ánh phản chiếu"
+  },
+  "motionEffects": {
+    "message": "Hiệu ứng chuyển động"
+  },
+  "motionEffectsHint": {
+    "message": "Tắt hoạt ảnh giao diện và chuyển động khi rê chuột nhưng vẫn giữ Ambient Light."
+  },
+  "followSystemMotion": {
+    "message": "Tuân theo giảm chuyển động hệ thống"
+  },
+  "followSystemMotionHint": {
+    "message": "Tắt để các nút Chuyển động, Chuyển động bầu trời và Ambient Light hoạt động độc lập với cài đặt hệ thống."
+  },
+  "hoverEffects": {
+    "message": "Hiệu ứng khi rê chuột"
+  },
+  "followSystemTransparency": {
+    "message": "Tuân theo độ trong suốt hệ thống"
+  },
+  "followSystemTransparencyHint": {
+    "message": "Dùng bề mặt đặc khi hệ thống yêu cầu giảm độ trong suốt."
+  },
+  "opticsHeading": {
+    "message": "Quang học"
+  },
+  "opticalDepth": {
+    "message": "Chiều sâu quang học (tán sắc + thấu kính)"
+  },
+  "chromaticAberration": {
+    "message": "Quang sai màu"
+  },
+  "dispersionLabel": {
+    "message": "Độ tán sắc"
+  },
+  "dispersionAria": {
+    "message": "Độ tán sắc màu"
+  },
+  "magnifyingGlass": {
+    "message": "Kính lúp"
+  },
+  "magnifyingGlassAria": {
+    "message": "Cường độ kính lúp"
+  },
+  "hoverMagnification": {
+    "message": "Phóng đại khi rê chuột"
+  },
+  "lensStrength": {
+    "message": "Độ mạnh thấu kính"
+  },
+  "lensStrengthAria": {
+    "message": "Độ mạnh thấu kính khi rê chuột"
+  },
+  "hoverLift": {
+    "message": "Độ nổi khi rê chuột"
+  },
+  "hoverLiftAria": {
+    "message": "Phần trăm phóng tỷ lệ khi rê chuột"
+  },
+  "valueOff": {
+    "message": "Tắt"
+  },
+  "ambientHeading": {
+    "message": "Ánh sáng môi trường"
+  },
+  "ambientHint": {
+    "message": "Quản lý quầng sáng, chất lượng và chế độ phát tại đây."
+  },
+  "enableAmbient": {
+    "message": "Bật ánh sáng môi trường"
+  },
+  "ambientQualityAria": {
+    "message": "Chất lượng ánh sáng môi trường"
+  },
+  "qualityEco": {
+    "message": "Tiết kiệm"
+  },
+  "qualityBalanced": {
+    "message": "Cân bằng"
+  },
+  "qualityHigh": {
+    "message": "Cao"
+  },
+  "glowBlur": {
+    "message": "Độ nhòe quầng sáng"
+  },
+  "glowBlurAria": {
+    "message": "Độ nhòe quầng sáng tính bằng pixel"
+  },
+  "spreadLabel": {
+    "message": "Độ lan tỏa"
+  },
+  "spreadAria": {
+    "message": "Phần trăm độ lan tỏa ánh sáng"
+  },
+  "saturationLabel": {
+    "message": "Độ bão hòa"
+  },
+  "saturationAria": {
+    "message": "Phần trăm độ bão hòa ánh sáng"
+  },
+  "brightnessLabel": {
+    "message": "Độ sáng"
+  },
+  "brightnessAria": {
+    "message": "Phần trăm độ sáng môi trường"
+  },
+  "fpsLimit": {
+    "message": "Giới hạn FPS"
+  },
+  "fpsLimitAria": {
+    "message": "Giới hạn khung hình mỗi giây"
+  },
+  "normalMode": {
+    "message": "Chế độ thường"
+  },
+  "theaterMode": {
+    "message": "Chế độ rạp phim"
+  },
+  "fullscreenMode": {
+    "message": "Toàn màn hình"
+  },
+  "experimentalTag": {
+    "message": "(thử nghiệm)"
+  },
+  "daylightHeading": {
+    "message": "Nền bầu trời theo thời gian"
+  },
+  "enableSky": {
+    "message": "Bật nền bầu trời"
+  },
+  "daylightHint": {
+    "message": "Áp dụng cho Trang chủ, Tìm kiếm và Kênh. Bầu trời mô phỏng liên tục theo vị trí mặt trời tại thành phố bạn chọn, kết hợp thời tiết thực tế."
+  },
+  "liveSunWeather": {
+    "message": "Mặt trời & thời tiết trực tiếp"
+  },
+  "allowWeatherAccess": {
+    "message": "Cho phép truy cập thời tiết"
+  },
+  "locationLabel": {
+    "message": "Vị trí:"
+  },
+  "chooseCity": {
+    "message": "Chọn thành phố"
+  },
+  "cityPlaceholder": {
+    "message": "Thành phố, quốc gia"
+  },
+  "searchBtn": {
+    "message": "Tìm"
+  },
+  "locationResultsAria": {
+    "message": "Kết quả vị trí"
+  },
+  "skyPrivacyNotice": {
+    "message": "Kết nối tùy chọn sẽ chia sẻ thành phố/tọa độ đã chọn và địa chỉ IP của bạn với"
+  },
+  "skyModelNotice": {
+    "message": "Thời tiết dùng dữ liệu mô hình cập nhật định kỳ, không phải camera trực tiếp."
+  },
+  "skyGeoNamesNotice": {
+    "message": "tìm kiếm địa điểm bởi GeoNames qua Open-Meteo."
+  },
+  "animateSky": {
+    "message": "Chuyển động bầu trời"
+  },
+  "animateSkyHint": {
+    "message": "Độc lập với hiệu ứng chuyển động giao diện. Tắt để giữ bầu trời tĩnh."
+  },
+  "rainLabel": {
+    "message": "MƯA"
+  },
+  "rainHint": {
+    "message": "Mưa lớn và mặt kính ướt. MƯA điều khiển cả hai hiệu ứng độc lập với Thời tiết trực tiếp; Chuyển động bầu trời điều khiển chuyển động."
+  },
+  "backgroundSceneAria": {
+    "message": "Cảnh nền bầu trời"
+  },
+  "sceneMorning": {
+    "message": "Bình minh"
+  },
+  "sceneDay": {
+    "message": "Ban ngày"
+  },
+  "sceneSunset": {
+    "message": "Hoàng hôn"
+  },
+  "sceneNight": {
+    "message": "Ban đêm"
+  },
+  "skyIntensity": {
+    "message": "Cường độ bầu trời"
+  },
+  "skyIntensityAria": {
+    "message": "Phần trăm cường độ bầu trời"
+  },
+  "btnReset": {
+    "message": "Mặc định"
+  },
+  "btnExport": {
+    "message": "Xuất"
+  },
+  "btnImport": {
+    "message": "Nhập"
+  },
+  "statusSaved": {
+    "message": "Đã lưu"
+  },
+  "statusSaveFailed": {
+    "message": "Lưu thất bại"
+  },
+  "statusDefaultsRestored": {
+    "message": "Đã khôi phục mặc định"
+  },
+  "statusProfileApplied": {
+    "message": "Đã áp dụng cấu hình"
+  },
+  "statusExported": {
+    "message": "Đã xuất cài đặt"
+  },
+  "statusImported": {
+    "message": "Đã nhập cài đặt"
+  },
+  "statusImportInvalid": {
+    "message": "Tệp cài đặt không hợp lệ"
+  },
+  "skyBuildPrefix": {
+    "message": "Phiên bản "
+  },
+  "skyWeatherOff": {
+    "message": "Thời tiết đang tắt. Bầu trời vẫn tự động đi theo mặt trời ở chế độ Tự động."
+  },
+  "skyChooseAuto": {
+    "message": "Chọn Tự động để đi theo mặt trời và thời tiết."
+  },
+  "skyEnableToShow": {
+    "message": "Bật nền bầu trời để hiển thị thời tiết trực tiếp."
+  },
+  "skyCheckingAccess": {
+    "message": "Đang kiểm tra quyền thời tiết…"
+  },
+  "skyLiveActive": {
+    "message": "Bầu trời trực tiếp theo thành phố này. Thời tiết cập nhật khoảng 15 phút một lần."
+  },
+  "skyAccessMissing": {
+    "message": "Chưa cấp quyền thời tiết. Nhấn Cho phép truy cập thời tiết bên dưới."
+  },
+  "skyRequiresExtension": {
+    "message": "Thời tiết trực tiếp yêu cầu tiện ích đã cài đặt."
+  },
+  "skyAccessDenied": {
+    "message": "Chưa cấp quyền thời tiết. Bạn có thể bật lại bất cứ lúc nào."
+  },
+  "skyAccessError": {
+    "message": "Không thể yêu cầu quyền thời tiết. Hãy tải lại tiện ích rồi nhấn Cho phép truy cập thời tiết."
+  },
+  "skyLiveEnabled": {
+    "message": "Đã bật mặt trời và thời tiết trực tiếp. Cập nhật khoảng 15 phút một lần."
+  },
+  "skyLiveDisabled": {
+    "message": "Đã tắt thời tiết trực tiếp."
+  },
+  "skyAccessGranted": {
+    "message": "Đã cấp quyền thời tiết. Thời tiết trực tiếp đang hoạt động."
+  },
+  "skyAccessNotGranted": {
+    "message": "Chưa cấp quyền thời tiết."
+  },
+  "skyPermFailed": {
+    "message": "Yêu cầu quyền thất bại. Hãy kiểm tra xem tiện ích đã được tải lại chưa."
+  },
+  "skyCityLength": {
+    "message": "Nhập tên thành phố (2–100 ký tự)."
+  },
+  "skyCityRequiresExt": {
+    "message": "Tìm kiếm thành phố yêu cầu tiện ích đã cài đặt."
+  },
+  "skyCityNeedsAccess": {
+    "message": "Tìm kiếm thành phố cần quyền truy cập thời tiết tùy chọn."
+  },
+  "skySearching": {
+    "message": "Đang tìm…"
+  },
+  "skyNoResults": {
+    "message": "Không có kết quả. Hãy thử nhập thành phố kèm quốc gia hoặc thử lại sau."
+  },
+  "skyLocationSaved": {
+    "message": "Đã lưu vị trí: "
+  },
+  "skySelectLocation": {
+    "message": "Chọn một vị trí."
+  },
+  "skySearchUnavailable": {
+    "message": "Không thể tìm thành phố lúc này. Vị trí đã lưu vẫn được giữ nguyên."
+  }
+}

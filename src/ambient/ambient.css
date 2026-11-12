@@ -1,44 +1,14 @@
 /* ============================================================================
-   YouTube Liquid Glass - ambient.css (A6 scope, Lead-executed)
-   Ambient host = sibling of the player container, paints BELOW it.
-   Never intercepts pointers; never draws over controls; soft-masked edges.
-   All knobs come from inline CSS vars set by ambient-controller.js.
+   YouTube Liquid Glass - ambient.css
+   Coordinates CSS visibility gates, clear-mode local glow envelope, YouTube
+   cinematic lighting suppression, and reduced-motion / forced-colors rules
+   for the bundled ambient engine (.ambientlight).
    ============================================================================ */
-
-.ylg-ambient-host {
-  position: absolute;
-  /* Geometry is written in px by ambient-controller.js (positionHost) from the
-     MEASURED video box; percentage insets resolved against the containing block
-     and spilled the glow across the whole page (live-verified defect). */
-  z-index: 0; /* player container paints above (DOM order + positioning) */
-  pointer-events: none;
-  display: block;
-  contain: layout paint;
-}
-
-.ylg-ambient-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  /* diffusion + grading: user blur x profile scale, saturation, brightness */
-  filter: blur(calc(var(--ylg-ambient-blur, 60px) * var(--ylg-ambient-blur-scale, 1)))
-          saturate(var(--ylg-ambient-sat, 1.1))
-          brightness(var(--ylg-ambient-bri, 1));
-  opacity: var(--ylg-ambient-intensity, 0.55);
-  image-rendering: auto;
-  /* soft rectangular falloff - no hard boundaries */
-  -webkit-mask-image: radial-gradient(115% 115% at 50% 50%, #000 55%, transparent 98%);
-  mask-image: radial-gradient(115% 115% at 50% 50%, #000 55%, transparent 98%);
-  transition: opacity 420ms ease; /* gentle fade on mount/unmount */
-}
 
 /* Master/ambient gates cover upstream too, including the interval before its
    asynchronous hide completes. Runtime stopping is handled by the bridge. */
 html[data-ylg-enabled="false"] .ambientlight,
-html[data-ylg-ambient="off"] .ambientlight,
-html[data-ylg-enabled="false"] .ylg-ambient-host,
-html[data-ylg-ambient="off"] .ylg-ambient-host,
-html[data-ylg-ambient="off"] .ylg-ambient-canvas {
+html[data-ylg-ambient="off"] .ambientlight {
   display: none !important;
 }
 
@@ -47,7 +17,7 @@ html[data-ylg-ambient="off"] .ylg-ambient-canvas {
    The ONLY localisation is the clear-mode envelope below. */
 
 /* ---------------------------------------------------------------------------
-   VIDEO-LOCAL GLOW ENVELOPE - CLEAR MODE ONLY (A6, Lead-approved)
+   VIDEO-LOCAL GLOW ENVELOPE - CLEAR MODE ONLY
    ---------------------------------------------------------------------------
    Why: with a fully clear chrome the bundled engine's glow painted the whole
    page behind the transparent masthead/panels (measured ~rgb(120,130,140) on a
@@ -65,24 +35,11 @@ html[data-ylg-ambient="off"] .ylg-ambient-canvas {
      falloff untouched, i.e. the backdrop glass panels sample is unchanged.
 
    Geometry (`--ylg-env-*`) is measured in px by ambient-controller.js from the
-   live video rect and written to the wrapper; no percentage insets, because
-   percentages resolve against an arbitrary ancestor (already a verified defect
-   for the native host).
-
-   Two intersecting gradients, not one radial: the envelope must be fully opaque
-   over the video RECT, and a radial ellipse can never contain a 16:9 rect and
-   still fade at all four edges. `intersect` multiplies the two axis fades, so
-   corners fall off softly instead of being cut. Both properties are declared
-   (`-webkit-mask-composite: source-in` for Chromium < 120, `mask-composite:
-   intersect` for 120+), and the whole rule is wrapped in @supports: if neither
-   is supported nothing is masked at all, which degrades to today's behaviour
-   instead of leaking glow through a union of the two bands.
+   live video rect and written to the wrapper; no percentage insets.
    --------------------------------------------------------------------------- */
 @supports ((-webkit-mask-composite: source-in) or (mask-composite: intersect)) {
   html[data-ylg-enabled="true"][data-ylg-fill="none"]
     .ambientlight__filter[data-ylg-ambient-envelope="1"] {
-    /* vertical: out above (video top - top band) .. video .. (video bottom +
-       bottom band) out below */
     -webkit-mask-image:
       linear-gradient(180deg,
         transparent calc(var(--ylg-env-y, 0px) - var(--ylg-env-y0, 0px)),
@@ -112,36 +69,11 @@ html[data-ylg-ambient="off"] .ylg-ambient-canvas {
   }
 }
 
-/* Fullscreen is all video (no chrome to protect) and shorts/miniplayer never
-   mount the engine, so the controller never marks an overlay there; the
-   attribute itself is removed on every one of those transitions. */
-
-/* Motion effects freezes the interface while Ambient Light remains active.
-   Remove the native fallback's fade without hiding its backdrop. */
-html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-ambient-canvas {
-  transition: none;
-}
-
-/* FULLSCREEN / SHORTS: engine never mounts here (controller gates), but
-   enforce invisibility if a host survived a rapid mode switch */
-html[data-ylg-enabled="true"]:-webkit-full-screen .ylg-ambient-host,
-:fullscreen .ylg-ambient-host,
-html[data-ylg-enabled="true"] ytd-shorts .ylg-ambient-host {
-  display: none !important;
-}
-
-/* Miniplayer: the watch-page host has no video behind it - hide */
-html[data-ylg-enabled="true"] ytd-miniplayer-active .ylg-ambient-host {
-  display: none !important;
-}
-
 /* ---------------------------------------------------------------------------
    YOUTUBE NATIVE AMBIENT (cinematic lighting) COMPATIBILITY
    When our engine is active we suppress ONLY the native ambient visual layer
-   to avoid double illumination. Selectors UNVERIFIED (marked); scoped strictly
-   under html[data-ylg-ambient="on"] so removing the attribute restores native
-   behavior with zero persistence changes. The engine never modifies YouTube
-   account/player settings.
+   to avoid double illumination. Scoped strictly under html[data-ylg-ambient="on"]
+   so removing the attribute restores native behavior with zero persistence changes.
    --------------------------------------------------------------------------- */
 html[data-ylg-ambient="on"] #movie_player .ytp-cinematic-container,
 html[data-ylg-ambient="on"] #movie_player .ytp-ambient-mode-overlay,
@@ -149,16 +81,18 @@ html[data-ylg-ambient="on"] ytd-app[ambient] #cine-data {
   display: none !important;
 }
 
-/* Reduced motion: disable decorative ambient and its fades. The bridge stops
-   upstream through its existing hide/start lifecycle without storing mode state. */
+/* Reduced motion: disable decorative ambient unless system-motion opt-out is set.
+   The bridge stops upstream through its hide/start lifecycle without storing mode state. */
 @media (prefers-reduced-motion: reduce) {
-  html:not([data-ylg-system-motion="ignore"]) .ylg-ambient-canvas { transition: none; }
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ambientlight,
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ylg-ambient-host { display: none !important; }
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ambientlight {
+    display: none !important;
+  }
 }
 
-/* forced colors: ambient is decorative - disable entirely */
+/* Forced colors: ambient is decorative - disable entirely */
 @media (forced-colors: active) {
   html[data-ylg-enabled="true"] .ambientlight,
-  .ylg-ambient-host { display: none !important; }
+  html[data-ylg-ambient="on"] .ambientlight {
+    display: none !important;
+  }
 }

@@ -1,7 +1,7 @@
-
-!function(){try{var e="undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&(e._sentryDebugIds=e._sentryDebugIds||{},e._sentryDebugIds[n]="c6a977c5-8752-5488-8500-08814f067774")}catch(e){}}();
 (function () {
   'use strict';
+  if (globalThis.__ytalMainWorldInjected) return;
+  globalThis.__ytalMainWorldInjected = true;
 
   
   let console;
@@ -71,8 +71,8 @@
     return container[callbackName];
   };
   const wrapErrorHandler = (callback, reportOnce = false) => (callback.constructor.name === 'AsyncFunction' ? withAsyncErrorHandler : withErrorHandler)(callback, reportOnce, new Error().stack, []);
-  globalThis.matchMedia('(color-gamut: p3)').matches ? 'display-p3' : 'srgb';
-  globalThis.matchMedia('(color-gamut: rec2020)').matches ? 'rec2020' : globalThis.matchMedia('(color-gamut: p3)').matches ? 'display-p3' : 'srgb';
+  globalThis.matchMedia?.('(color-gamut: p3)')?.matches ? 'display-p3' : 'srgb';
+  globalThis.matchMedia?.('(color-gamut: rec2020)')?.matches ? 'rec2020' : globalThis.matchMedia?.('(color-gamut: p3)')?.matches ? 'display-p3' : 'srgb';
   const appendErrorStack = (stack, ex) => {
     try {
       var _ref;
@@ -278,7 +278,7 @@
     immersiveMode
   }) {
     const mastheadElem = getElem('masthead');
-    if (mastheadElem) mastheadElem.classList.add('no-animation');
+    if (mastheadElem) mastheadElem.classList.add('ytal-no-animation');
     const ytdAppElem = getElem('ytd-app');
     if (ytdAppElem) setStyleProperty(ytdAppElem, 'background', ytdAppElemBackground, 'important');
     const html = document.documentElement;
@@ -289,14 +289,14 @@
     html.toggleAttribute('data-ambientlight-enabled', true);
     videoPlayerSetSize();
     if (ytdAppElem) ytdAppElem.style.background = '';
-    if (mastheadElem) mastheadElem.classList.remove('no-animation');
+    if (mastheadElem) mastheadElem.classList.remove('ytal-no-animation');
     contentScript.postMessage('show');
   });
   contentScript.addMessageListener('hide', function hide({
     toDark
   }) {
     const mastheadElem = getElem('masthead');
-    if (mastheadElem) mastheadElem.classList.add('no-animation');
+    if (mastheadElem) mastheadElem.classList.add('ytal-no-animation');
     const html = document.documentElement;
     html.toggleAttribute('data-ambientlight-enabled', false);
     html.toggleAttribute('data-ambientlight-hide-scrollbar', false);
@@ -304,7 +304,7 @@
     updateImmersiveMode(false, true);
     updateTheme(toDark);
     videoPlayerSetSize();
-    if (mastheadElem) mastheadElem.classList.remove('no-animation');
+    if (mastheadElem) mastheadElem.classList.remove('ytal-no-animation');
     contentScript.postMessage('hide');
   });
   contentScript.addMessageListener('video-player-update-video-data-keywords', function videoPlayerUpdateVideoDataKeywords(keywords) {
@@ -381,6 +381,4 @@
   }.bind(window));
 
 })();
-//# sourceMappingURL=injected.js.map
 
-//# debugId=c6a977c5-8752-5488-8500-08814f067774

@@ -679,6 +679,53 @@ test("the one-shot capability probe can only turn advanced refraction off", () =
   changed({ refraction: 1 });
   assert.equal(de.getAttribute("data-ylg-advanced-ok"), null);
 });
+test("lowfx heuristic ignores missing deviceMemory and gates advanced refraction on real <=4 core/GB hardware", () => {
+  const normal = sandbox();
+  normal.context.navigator = { hardwareConcurrency: 12 }; // deviceMemory omitted (privacy/non-Chromium)
+  normal.context.YLG_REFRACTION = { probeSupported: () => true, ensureFilterDefs: () => ({}), setIntensity() {}, dispose() {} };
+  normal.context.YLG_SETTINGS.getStoredSettings = cb => cb(normal.context.YLG_SETTINGS.normalizeSettings({ refraction: 0.7 }));
+  normal.context.YLG_SETTINGS.onSettingsChanged = () => {};
+  normal.load("src/content/bootstrap.js");
+  assert.equal(normal.doc.documentElement.getAttribute("data-ylg-lowfx"), null, "missing deviceMemory must not force lowfx");
+  assert.equal(normal.doc.documentElement.getAttribute("data-ylg-advanced-ok"), "1");
+
+  const low = sandbox();
+  let disposed = 0;
+  low.context.navigator = { hardwareConcurrency: 2, deviceMemory: 2 };
+  low.context.YLG_REFRACTION = {
+    probeSupported: () => true,
+    ensureFilterDefs() { throw Error("lowfx must not build SVG displacement filters"); },
+    setIntensity() { throw Error("lowfx must not apply refraction intensity"); },
+    dispose() { disposed++; }
+  };
+  low.context.YLG_SETTINGS.getStoredSettings = cb => cb(low.context.YLG_SETTINGS.normalizeSettings({ refraction: 1 }));
+  low.context.YLG_SETTINGS.onSettingsChanged = () => {};
+  low.load("src/content/bootstrap.js");
+  assert.equal(low.doc.documentElement.getAttribute("data-ylg-lowfx"), "true");
+  assert.equal(low.doc.documentElement.getAttribute("data-ylg-advanced-ok"), null);
+  assert.ok(disposed >= 1);
+  assert.doesNotMatch(source("src/content/bootstrap.js"), /scheduleChromeBlurCheck/, "production bootstrap must not schedule diagnostic * DOM scans");
+});
+test("reset clears stale vendor storage overrides while saving defaults synchronously", () => {
+  const h = loaded({ blur: 30, theme: "dark" });
+  const removed = [];
+  h.context.chrome.storage.local.remove = function (keys, cb) {
+    removed.push(...(Array.isArray(keys) ? keys : [keys]));
+    if (cb) cb();
+  };
+  h.$("ylg-reset").click();
+  assert.equal(h.writes.length, 1, "defaults still flush synchronously");
+  assert.equal(h.writes[0].settings.theme, h.context.YLG_SETTINGS.DEFAULT_SETTINGS.theme);
+  for (const key of [
+    "setting-detectHorizontalBarSizeEnabled",
+    "setting-detectVerticalBarSizeEnabled",
+    "setting-detectVideoFillScaleEnabled",
+    "setting-surroundingContentShadowSize",
+    "ylg-ambient-visual-baseline-v1"
+  ]) {
+    assert.ok(removed.includes(key), "reset must remove vendor override " + key);
+  }
+});
 for (const file of ["vendor/ambient/content.js", "vendor/ambient/content-main.js"]) {
   test(`${file}: no configured Sentry DSN or persistent crash reporter identity path`, () => {
     const text = source(file);

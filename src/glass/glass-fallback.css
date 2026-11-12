@@ -18,40 +18,42 @@
   }
 }
 
-/* ---- Path 2: weak device (html[data-ylg-lowfx="1"], set by bootstrap) ----- */
-html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass {
+/* ---- Path 2: weak device (html[data-ylg-lowfx="true"], set by bootstrap) -- */
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass {
   -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.2);
   backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.2);
 }
-html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass[data-ylg-level="hero"] {
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass[data-ylg-level="hero"] {
   -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(1.25);
   backdrop-filter: blur(var(--ylg-blur)) saturate(1.25);
 }
-html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass::before,
-html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass::after {
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass::before,
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass::after {
   display: none; /* skip sheens/scatter on weak devices */
 }
-html[data-ylg-enabled="true"][data-ylg-lowfx="1"] .ylg-glass[data-ylg-level="floating"] {
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass[data-ylg-level="floating"] {
   animation: none; /* no settle animation */
 }
 /* lowfx also caps advanced refraction (engine never enables data-ylg-advanced-ok) */
 
 /* ---- Path 3: forced colors (Windows High Contrast) ------------------------ */
-@media (forced-colors: active) {
-  html[data-ylg-enabled="true"] .ylg-glass {
-    background: Canvas !important;
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-    box-shadow: none !important;
-    border: 1px solid CanvasText;
-    forced-color-adjust: auto;
-  }
-  html[data-ylg-enabled="true"] .ylg-glass::before,
-  html[data-ylg-enabled="true"] .ylg-glass::after {
-    display: none !important;
-  }
-  html[data-ylg-enabled="true"] .ylg-glass:focus-visible {
-    outline: 2px solid Highlight;
-    box-shadow: none !important;
+@layer ylg-a11y {
+  @media (forced-colors: active) {
+    html[data-ylg-enabled="true"] .ylg-glass {
+      background: Canvas !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      box-shadow: none !important;
+      border: 1px solid CanvasText !important;
+      forced-color-adjust: auto !important;
+    }
+    html[data-ylg-enabled="true"] .ylg-glass::before,
+    html[data-ylg-enabled="true"] .ylg-glass::after {
+      display: none !important;
+    }
+    html[data-ylg-enabled="true"] .ylg-glass:focus-visible {
+      outline: 2px solid Highlight !important;
+      box-shadow: none !important;
+    }
   }
 }

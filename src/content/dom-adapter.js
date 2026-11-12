@@ -8,7 +8,7 @@
  *  - Idempotent: applyAll() twice == once (data-ylg-tagged marker + Set).
  *  - Budgeted: <= 8 refraction surfaces, <= 60 cards per pass (resumable).
  *  - Player-safe: anything inside #movie_player / .html5-video-player, or
- *    <video>, or ambient artifacts (.ylg-ambient-host) is skipped.
+ *    <video>, or ambient artifacts (.ambientlight) is skipped.
  *  - Fully reversible: teardown() removes exactly what was added.
  *
  * API: YLG_ADAPTER.init() / applyAll() / teardown() / stats()
@@ -73,7 +73,7 @@
     try {
       if (el.closest && el.closest("#movie_player, .html5-video-player")) return false;
       // ambient engine artifacts (v1.1 contract): never touch
-      if (el.closest && el.closest(".ylg-ambient-host")) return false;
+      if (el.closest && el.closest(".ambientlight")) return false;
       if (el.classList && (el.classList.contains("ylg-ambient") || el.classList.contains("ylg-glass-defs"))) return false;
     } catch (e) { return false; }
     return true;

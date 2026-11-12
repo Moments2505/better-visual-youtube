@@ -450,6 +450,23 @@ test("live sky survives offline/permission denial, pauses while hidden, and canc
   w.setClock(23);w.hide(false);const late=messages.at(-1);
   w.api.teardown();replyWeather(w,late);assert.equal(w.host(),null);assert.equal(w.timers.size,0);assert.equal(w.listeners(),0);
 });
+test("permission status retries immediately when permission is granted via settings flush or window focus without 5-minute lockout",()=>{
+  const w=world({hour:12,minute:0}),messages=weatherBridge(w);
+  w.api.updateSettings(liveSnapshot());
+  assert.equal(messages.length,1);
+  messages[0].reply({status:"permission"});
+  assert.equal(w.api.stats().weatherStatus,"permission");
+  w.setClock(12,0,2);
+  w.api.updateSettings(liveSnapshot());
+  assert.equal(messages.length,2,"settings flush after granting permission retries immediately");
+  messages[1].reply({status:"permission"});
+  w.setClock(12,0,4);
+  w.context.emit("focus");
+  assert.equal(messages.length,3,"returning focus after permission dialog closes retries immediately");
+  replyWeather(w,messages[2]);
+  assert.equal(w.api.stats().weatherStatus,"current");
+  assert.equal(w.host().getAttribute("data-weather"),"rain");
+});
 test("procedural renderer stays independent of weather access and is released across route changes",()=>{
   const w=world(),calls=[];
   w.context.YLG_SKY_RENDERER={create(){calls.push("create");return {update(s){calls.push(s);},resize(){calls.push("resize");},teardown(){calls.push("teardown");},stats(){return{active:true};}};}};

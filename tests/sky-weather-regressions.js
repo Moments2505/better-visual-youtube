@@ -6,12 +6,13 @@ const cases=[]; function test(name,run){cases.push({name,run});}
 const noon=Date.parse("2026-06-21T05:00:00Z");
 const seed={enabled:true,daylightBackground:{enabled:true,liveWeather:true,scene:"auto",location:{name:"Hà Nội",latitude:21.0285,longitude:105.8542}}};
 const payload=()=>({current:{time:Math.floor(noon/1000),temperature_2m:31.2,weather_code:61,cloud_cover:80,wind_speed_10m:12}});
-function worker({permission=true,settings=seed,cache={},failure=false}={}){
+function worker({permission=true,settings=seed,cache={},failure=false,uiLanguage}={}){
   let handler,now=noon,requests=[],permitted=permission,broken=failure; const store={ylgSettings:settings,...cache};
   class Clock extends Date {constructor(...a){super(...(a.length?a:[now]));}static now(){return now;}}
   const ctx={console,Date:Clock,URL,AbortController,setTimeout,clearTimeout,
     fetch:async(url,options)=>{requests.push({url,options});if(broken)throw Error("offline");return{ok:true,json:async()=>payload()};},
     chrome:{runtime:{id:"test",getURL:p=>"chrome-extension://test/"+p,onMessage:{addListener:f=>handler=f}},
+      ...(uiLanguage!==undefined?{i18n:{getUILanguage:()=>uiLanguage}}:{}),
       permissions:{contains:async()=>permitted},storage:{local:{get:async keys=>Object.fromEntries((Array.isArray(keys)?keys:[keys]).map(k=>[k,store[k]])),set:async patch=>Object.assign(store,patch)}}}};
   vm.createContext(ctx);
   for(const f of ["src/shared/settings.js","src/shared/sky-environment.js","src/background/weather-service.js"])vm.runInContext(read(f),ctx,{filename:f});
@@ -41,7 +42,7 @@ test("settings migrate without network opt-in and sanitize copied locations",()=
   const S=worker().ctx.YLG_SETTINGS;
   assert.equal(S.normalizeSettings({}).daylightBackground.liveWeather,false);
   const invalid=S.normalizeSettings({daylightBackground:{liveWeather:true,location:{latitude:NaN,longitude:Infinity}}});
-  assert.equal(invalid.daylightBackground.location.latitude,21.0285);
+  assert.equal(invalid.daylightBackground.location.latitude,S.DEFAULT_SETTINGS.daylightBackground.location.latitude);
   const input={latitude:0,longitude:0,name:"<script>"};
   const s=S.normalizeSettings({daylightBackground:{location:input}});input.latitude=90;
   assert.equal(s.daylightBackground.location.latitude,0);assert.equal(s.daylightBackground.location.name,"<script>");
@@ -82,17 +83,40 @@ test("malformed, stale and unexpected weather codes are not displayed as current
 });
 test("sender boundary rejects other origins, subframes and page attempts to use city search",async()=>{
   const h=worker();for(const sender of [{id:"other",url:"https://www.youtube.com/",frameId:0},{id:"test",url:"https://evil.test/",frameId:0},
-    {id:"test",url:"https://www.youtube.com/",frameId:1},{id:"test",url:"https://www.youtube.com/watch?v=x",frameId:0}])assert.equal((await h.send(undefined,sender)).ignored,true);
+    {id:"test",url:"https://www.youtube.com/",frameId:1},{id:"test",url:"https://www.youtube.com/watch?v=x",frameId:0},
+    {id:"test",url:"https://www.youtube.com/shorts/123",frameId:0},{id:"test",url:"https://www.youtube.com/embed/abc",frameId:0},
+    {id:"test",url:"https://www.youtube.com/@",frameId:0},{id:"test",url:"https://www.youtube.com/channel/",frameId:0},
+    {id:"test",url:"https://www.youtube.com/c/",frameId:0},{id:"test",url:"https://www.youtube.com/user/",frameId:0}])assert.equal((await h.send(undefined,sender)).ignored,true,sender.url);
   assert.equal((await h.send({type:"ylg:city-search",name:"Hanoi"},{id:"test",url:"https://www.youtube.com/",frameId:0})).ignored,true);
+  assert.equal((await h.send({type:"ylg:city-search",name:"Hanoi"},{id:"test",url:"https://www.youtube.com/@YouTube",frameId:0})).ignored,true);
   assert.equal(h.requests.length,0);
-  assert.equal((await h.send(undefined,{id:"test",url:"https://www.youtube.com/results?search_query=test",frameId:0})).status,"current");
+  for(const okUrl of [
+    "https://www.youtube.com/",
+    "https://www.youtube.com/results?search_query=test",
+    "https://www.youtube.com/@YouTube",
+    "https://www.youtube.com/@lolesports_vn/videos",
+    "https://www.youtube.com/channel/UC123/videos",
+    "https://www.youtube.com/c/example",
+    "https://www.youtube.com/user/example/playlists"
+  ]){
+    assert.equal((await h.send(undefined,{id:"test",url:okUrl,frameId:0})).status,"current",okUrl);
+  }
 });
-test("changing city ignores the previous cached location and geocoding is explicit and bounded",async()=>{
+test("changing city ignores the previous cached location and geocoding is explicit, bounded and localized",async()=>{
   const h=worker();await h.send();
   h.store.ylgSettings={...seed,daylightBackground:{...seed.daylightBackground,location:{name:"Tokyo",latitude:35.68,longitude:139.69}}};
   await h.send();assert.equal(h.requests.length,2);assert.ok(h.requests[1].url.includes("latitude=35.68"));
   const n=h.requests.length;await h.send({type:"ylg:city-search",name:"a"});assert.equal(h.requests.length,n);
-  await h.send({type:"ylg:city-search",name:"Hà Nội"});assert.equal(new URL(h.requests.at(-1).url).hostname,"geocoding-api.open-meteo.com");
+  await h.send({type:"ylg:city-search",name:"Hà Nội"});
+  const defaultGeo=new URL(h.requests.at(-1).url);
+  assert.equal(defaultGeo.hostname,"geocoding-api.open-meteo.com");
+  assert.equal(defaultGeo.searchParams.get("language"),"en");
   await h.send({type:"ylg:city-search",name:"Tokyo"});assert.equal(h.requests.length,n+1);
+  const ja=worker({uiLanguage:"ja-JP"});
+  await ja.send({type:"ylg:city-search",name:"Tokyo"});
+  assert.equal(new URL(ja.requests.at(-1).url).searchParams.get("language"),"ja");
+  const vi=worker({uiLanguage:"vi_VN"});
+  await vi.send({type:"ylg:city-search",name:"Hà Nội"});
+  assert.equal(new URL(vi.requests.at(-1).url).searchParams.get("language"),"vi");
 });
 (async()=>{for(const t of cases){try{await t.run();console.log("PASS "+t.name);}catch(e){console.error("FAIL "+t.name+"\n"+e.stack);process.exitCode=1;}}console.log("Sky/weather: "+cases.length+" cases");})();

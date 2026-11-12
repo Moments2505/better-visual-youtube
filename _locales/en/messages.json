@@ -1,0 +1,410 @@
+{
+  "extName": {
+    "message": "Better visual Youtube"
+  },
+  "extShortName": {
+    "message": "Better visual"
+  },
+  "extDescription": {
+    "message": "Give YouTube a new look with Liquid Glass, Ambient Light and customizable animations."
+  },
+  "popupTitle": {
+    "message": "Better visual Youtube"
+  },
+  "enableExtension": {
+    "message": "Enable extension"
+  },
+  "styleProfilesHeading": {
+    "message": "Style Profiles"
+  },
+  "profileCrystal": {
+    "message": "Crystal Clear"
+  },
+  "profileFrosted": {
+    "message": "Tahoe Frosted"
+  },
+  "profileCinema": {
+    "message": "Cinema Glow"
+  },
+  "profileEco": {
+    "message": "Eco Minimal"
+  },
+  "themeHeading": {
+    "message": "Theme"
+  },
+  "optAuto": {
+    "message": "Auto"
+  },
+  "themeLight": {
+    "message": "Light"
+  },
+  "themeDark": {
+    "message": "Dark"
+  },
+  "adjustmentsHeading": {
+    "message": "Adjustments"
+  },
+  "sliderScrollHint": {
+    "message": "Scroll over a slider to adjust its value."
+  },
+  "blurStrength": {
+    "message": "Blur strength"
+  },
+  "blurStrengthAria": {
+    "message": "Blur strength in pixels"
+  },
+  "opacityLabel": {
+    "message": "Opacity"
+  },
+  "opacityAria": {
+    "message": "Surface opacity percent"
+  },
+  "colourLabel": {
+    "message": "Colour"
+  },
+  "tintBlack": {
+    "message": "Black"
+  },
+  "tintWhite": {
+    "message": "White"
+  },
+  "tintThumbnail": {
+    "message": "Thumbnail"
+  },
+  "tintCustom": {
+    "message": "Custom"
+  },
+  "customColourAria": {
+    "message": "Custom colour"
+  },
+  "colourSwatchesAria": {
+    "message": "Colour swatches"
+  },
+  "swatchBlue": {
+    "message": "Blue"
+  },
+  "swatchPurple": {
+    "message": "Purple"
+  },
+  "swatchTeal": {
+    "message": "Teal"
+  },
+  "swatchRose": {
+    "message": "Rose"
+  },
+  "swatchAmber": {
+    "message": "Amber"
+  },
+  "refractionLabel": {
+    "message": "Refraction"
+  },
+  "refractionAria": {
+    "message": "Refraction strength percent"
+  },
+  "cornerRadius": {
+    "message": "Corner radius"
+  },
+  "cornerRadiusAria": {
+    "message": "Corner radius in pixels"
+  },
+  "specularHighlight": {
+    "message": "Specular Highlight"
+  },
+  "specularHighlightAria": {
+    "message": "Specular highlight percent"
+  },
+  "motionEffects": {
+    "message": "Motion effects"
+  },
+  "motionEffectsHint": {
+    "message": "Turn off interface animations and hover movement while keeping Ambient Light on."
+  },
+  "followSystemMotion": {
+    "message": "Follow system reduced motion"
+  },
+  "followSystemMotionHint": {
+    "message": "Turn off to let your Motion, Animate sky and Ambient Light switches work independently of the system motion preference."
+  },
+  "hoverEffects": {
+    "message": "Hover effects"
+  },
+  "followSystemTransparency": {
+    "message": "Follow system transparency"
+  },
+  "followSystemTransparencyHint": {
+    "message": "Use solid surfaces when your system requests reduced transparency."
+  },
+  "opticsHeading": {
+    "message": "Optics"
+  },
+  "opticalDepth": {
+    "message": "Optical depth (aberration + hover lens)"
+  },
+  "chromaticAberration": {
+    "message": "Chromatic aberration"
+  },
+  "dispersionLabel": {
+    "message": "Dispersion"
+  },
+  "dispersionAria": {
+    "message": "Chromatic dispersion"
+  },
+  "magnifyingGlass": {
+    "message": "Magnifying Glass"
+  },
+  "magnifyingGlassAria": {
+    "message": "Magnifying glass strength"
+  },
+  "hoverMagnification": {
+    "message": "Hover magnification"
+  },
+  "lensStrength": {
+    "message": "Lens strength"
+  },
+  "lensStrengthAria": {
+    "message": "Hover lens strength"
+  },
+  "hoverLift": {
+    "message": "Hover lift"
+  },
+  "hoverLiftAria": {
+    "message": "Hover scale percent"
+  },
+  "valueOff": {
+    "message": "Off"
+  },
+  "ambientHeading": {
+    "message": "Ambient Light"
+  },
+  "ambientHint": {
+    "message": "Manage ambient glow, quality and playback modes here."
+  },
+  "enableAmbient": {
+    "message": "Enable Ambient Light"
+  },
+  "ambientQualityAria": {
+    "message": "Ambient quality"
+  },
+  "qualityEco": {
+    "message": "Eco"
+  },
+  "qualityBalanced": {
+    "message": "Balanced"
+  },
+  "qualityHigh": {
+    "message": "High"
+  },
+  "glowBlur": {
+    "message": "Glow blur"
+  },
+  "glowBlurAria": {
+    "message": "Ambient glow blur in pixels"
+  },
+  "spreadLabel": {
+    "message": "Spread"
+  },
+  "spreadAria": {
+    "message": "Ambient spread percent"
+  },
+  "saturationLabel": {
+    "message": "Saturation"
+  },
+  "saturationAria": {
+    "message": "Ambient saturation percent"
+  },
+  "brightnessLabel": {
+    "message": "Brightness"
+  },
+  "brightnessAria": {
+    "message": "Ambient brightness percent"
+  },
+  "fpsLimit": {
+    "message": "FPS limit"
+  },
+  "fpsLimitAria": {
+    "message": "Ambient frames per second limit"
+  },
+  "normalMode": {
+    "message": "Normal mode"
+  },
+  "theaterMode": {
+    "message": "Theater mode"
+  },
+  "fullscreenMode": {
+    "message": "Fullscreen"
+  },
+  "experimentalTag": {
+    "message": "(experimental)"
+  },
+  "daylightHeading": {
+    "message": "Time-of-day background"
+  },
+  "enableSky": {
+    "message": "Enable sky background"
+  },
+  "daylightHint": {
+    "message": "Home, search and channel pages. A continuous procedural sky follows the sun at your chosen city. No fixed background images. Live weather adds local conditions."
+  },
+  "liveSunWeather": {
+    "message": "Live sun & weather"
+  },
+  "allowWeatherAccess": {
+    "message": "Allow weather access"
+  },
+  "locationLabel": {
+    "message": "Location:"
+  },
+  "chooseCity": {
+    "message": "Choose a city"
+  },
+  "cityPlaceholder": {
+    "message": "City, country"
+  },
+  "searchBtn": {
+    "message": "Search"
+  },
+  "locationResultsAria": {
+    "message": "Location results"
+  },
+  "skyPrivacyNotice": {
+    "message": "Optional connection shares the chosen city/coordinates and your IP with"
+  },
+  "skyModelNotice": {
+    "message": "Weather uses periodically updated model data, not a live camera."
+  },
+  "skyGeoNamesNotice": {
+    "message": "location search by GeoNames via Open-Meteo."
+  },
+  "animateSky": {
+    "message": "Animate sky"
+  },
+  "animateSkyHint": {
+    "message": "Independent of interface Motion effects. Turn off for a still sky."
+  },
+  "rainLabel": {
+    "message": "RAIN"
+  },
+  "rainHint": {
+    "message": "Heavy rain and wet glass. RAIN controls both effects independently of Live weather; Animate sky controls movement."
+  },
+  "backgroundSceneAria": {
+    "message": "Background scene"
+  },
+  "sceneMorning": {
+    "message": "Morning"
+  },
+  "sceneDay": {
+    "message": "Day"
+  },
+  "sceneSunset": {
+    "message": "Sunset"
+  },
+  "sceneNight": {
+    "message": "Night"
+  },
+  "skyIntensity": {
+    "message": "Sky intensity"
+  },
+  "skyIntensityAria": {
+    "message": "Sky intensity percent"
+  },
+  "btnReset": {
+    "message": "Reset to Defaults"
+  },
+  "btnExport": {
+    "message": "Export"
+  },
+  "btnImport": {
+    "message": "Import"
+  },
+  "statusSaved": {
+    "message": "Saved"
+  },
+  "statusSaveFailed": {
+    "message": "Save failed"
+  },
+  "statusDefaultsRestored": {
+    "message": "Defaults restored"
+  },
+  "statusProfileApplied": {
+    "message": "Profile applied"
+  },
+  "statusExported": {
+    "message": "Settings exported"
+  },
+  "statusImported": {
+    "message": "Settings imported"
+  },
+  "statusImportInvalid": {
+    "message": "Invalid settings file"
+  },
+  "skyBuildPrefix": {
+    "message": "Extension "
+  },
+  "skyWeatherOff": {
+    "message": "Weather is off. The procedural sky still follows the sun in Auto."
+  },
+  "skyChooseAuto": {
+    "message": "Choose Auto to follow the sun and weather."
+  },
+  "skyEnableToShow": {
+    "message": "Enable sky background to show live conditions."
+  },
+  "skyCheckingAccess": {
+    "message": "Checking weather access…"
+  },
+  "skyLiveActive": {
+    "message": "Live sky follows this city. Weather refreshes about every 15 minutes."
+  },
+  "skyAccessMissing": {
+    "message": "Weather access is missing. Click Allow weather access below."
+  },
+  "skyRequiresExtension": {
+    "message": "Live weather requires the installed extension."
+  },
+  "skyAccessDenied": {
+    "message": "Weather access was not granted. You can enable it again."
+  },
+  "skyAccessError": {
+    "message": "Weather access could not be requested. Reload the updated extension, then use Allow weather access."
+  },
+  "skyLiveEnabled": {
+    "message": "Live sun and weather enabled. Weather refreshes about every 15 minutes."
+  },
+  "skyLiveDisabled": {
+    "message": "Live weather is off."
+  },
+  "skyAccessGranted": {
+    "message": "Weather access granted. Live weather is now active."
+  },
+  "skyAccessNotGranted": {
+    "message": "Weather access was not granted."
+  },
+  "skyPermFailed": {
+    "message": "Permission request failed. Check that the updated extension was reloaded."
+  },
+  "skyCityLength": {
+    "message": "Enter a city name (2–100 characters)."
+  },
+  "skyCityRequiresExt": {
+    "message": "City search requires the installed extension."
+  },
+  "skyCityNeedsAccess": {
+    "message": "City search needs optional weather access."
+  },
+  "skySearching": {
+    "message": "Searching…"
+  },
+  "skyNoResults": {
+    "message": "No results. Try the city and country, or try again shortly."
+  },
+  "skyLocationSaved": {
+    "message": "Location saved: "
+  },
+  "skySelectLocation": {
+    "message": "Select a location."
+  },
+  "skySearchUnavailable": {
+    "message": "City search is unavailable. Your saved location is unchanged."
+  }
+}

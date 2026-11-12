@@ -1,17 +1,21 @@
 /* One opacity/tint authority for masthead and reading panels. Gradients must
    not add a second translucent fill or dilute the opaque slider endpoint. */
+@layer ylg-ceiling {
+  @media (forced-colors: none) {
+    html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid] .ylg-glass:is([data-ylg-level="panel"], [data-ylg-level="hero"], [data-ylg-level="floating"]) {
+      background-color: var(--ylg-chrome-scrim) !important;
+      background-image: none !important;
+    }
+    html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid] #frosted-glass::before {
+      background: var(--ylg-chrome-scrim) !important;
+    }
+    html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid][data-ylg-fill="none"] #frosted-glass::before {
+      content: none !important;
+      background: none !important;
+    }
+  }
+}
 @media (forced-colors: none) {
-  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid] .ylg-glass:is([data-ylg-level="panel"], [data-ylg-level="hero"], [data-ylg-level="floating"]) {
-    background-color: var(--ylg-chrome-scrim) !important;
-    background-image: none !important;
-  }
-  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid] #frosted-glass::before {
-    background: var(--ylg-chrome-scrim) !important;
-  }
-  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid][data-ylg-fill="none"] #frosted-glass::before {
-    content: none !important;
-    background: none !important;
-  }
   /* Pale and solid white need a dark reading palette even when the saved glass theme
      is dark. Scope it to material surfaces; retain native inverse button and
      player-control colours. Suppress Ambient's decorative text glow here. */
@@ -38,9 +42,11 @@
     text-shadow: none !important;
   }
 }
-@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
-  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid]:not([data-ylg-transparency="glass"]) .ylg-glass:is([data-ylg-level="panel"], [data-ylg-level="hero"], [data-ylg-level="floating"]),
-  html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid]:not([data-ylg-transparency="glass"]) #frosted-glass::before {
-    background: Canvas !important;
+@layer ylg-a11y {
+  @media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+    html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid]:not([data-ylg-transparency="glass"]) .ylg-glass:is([data-ylg-level="panel"], [data-ylg-level="hero"], [data-ylg-level="floating"]),
+    html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid]:not([data-ylg-transparency="glass"]) #frosted-glass::before {
+      background: Canvas !important;
+    }
   }
 }

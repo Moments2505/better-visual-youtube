@@ -1,3 +1,8 @@
+/* Shared daylight chrome tokens so masthead (#frosted-glass::before at y=0..56px)
+   and open left sidebar (#guide-inner-content at y>56px) share identical optics. */
+html[data-ylg-enabled="true"][data-ylg-daylight] {
+  --ylg-daylight-chrome-blur: clamp(12px, var(--ylg-blur, 40px), 24px);
+}
 /* Channel routes hide the native sheet with .none, even though our masthead
    child surfaces still delegate their material to it. Restore that painter. */
 html[data-ylg-enabled="true"][data-ylg-daylight]:not(:fullscreen):not(:has(:fullscreen)) #frosted-glass {
@@ -43,23 +48,27 @@ html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-search {
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-mini-guide-renderer {
   background-color: transparent !important;
 }
+/* Strip YouTube's opaque drawer fills on intermediate guide wrappers so the
+   sky shows continuously behind #guide-inner-content.ylg-glass below y=56px. */
+html[data-ylg-enabled="true"][data-ylg-daylight] body :is(tp-yt-app-drawer#guide, tp-yt-app-drawer#guide > #contentContainer, #guide-wrapper, #guide-content, ytd-guide-renderer) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
 /* A vendor container can survive watch -> home and paints an opaque page fill
    inside ytd-app's stacking context. The sky owns the backdrop on eligible
    routes; removing the controller flag restores the video renderer untouched. */
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-app .ambientlight__container {
   display: none !important;
 }
-/* Clear panels may reveal the sky, but fixed navigation still needs its own
-   bounded glass sheet over scrolling thumbnails. Clear mode normally removes
-   this pseudo entirely; restore only the existing masthead painter here. Use
-   YouTube's native dark state because its navigation glyphs follow that state,
-   independently of the extension's panel theme. */
+/* Seamless Masthead <-> Guide Sidebar glass continuity over the Daylight sky:
+   unify scrim + backdrop blur across #frosted-glass::before and open guide,
+   and fuse their y=56px left joint when tp-yt-app-drawer#guide[opened] is docked. */
 @media (forced-colors: none) {
   html[data-ylg-enabled="true"][data-ylg-daylight] #frosted-glass::before {
     content: "";
     background: var(--ylg-chrome-scrim);
-    -webkit-backdrop-filter: blur(clamp(12px, var(--ylg-blur, 40px), 24px)) saturate(1);
-    backdrop-filter: blur(clamp(12px, var(--ylg-blur, 40px), 24px)) saturate(1);
+    -webkit-backdrop-filter: blur(var(--ylg-daylight-chrome-blur)) saturate(1);
+    backdrop-filter: blur(var(--ylg-daylight-chrome-blur)) saturate(1);
   }
   html[dark][data-ylg-enabled="true"][data-ylg-daylight] #frosted-glass::before {
     background: var(--ylg-chrome-scrim);
@@ -72,11 +81,40 @@ html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-app .ambientlight__con
   html[dark][data-ylg-enabled="true"][data-ylg-daylight][data-ylg-lowfx="true"] #frosted-glass::before {
     background: var(--ylg-chrome-scrim);
   }
+  html[data-ylg-enabled="true"][data-ylg-daylight]:not([data-ylg-fill="none"]) :is(#guide, #guide-inner-content).ylg-glass,
+  html[data-ylg-enabled="true"][data-ylg-daylight]:not([data-ylg-fill="none"]) :is(#guide, #guide-inner-content).ylg-glass:is(:hover, :focus-within) {
+    background-color: var(--ylg-chrome-scrim) !important;
+    background-image: none !important;
+    -webkit-backdrop-filter: blur(var(--ylg-daylight-chrome-blur)) saturate(1) !important;
+    backdrop-filter: blur(var(--ylg-daylight-chrome-blur)) saturate(1) !important;
+    box-shadow: inset -1px 0 0 color-mix(in srgb, var(--ylg-rim-light) 75%, transparent) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-daylight] #guide.ylg-glass:has(#guide-inner-content.ylg-glass) {
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-daylight]:has(tp-yt-app-drawer#guide[opened]) #frosted-glass {
+    border-bottom-left-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-daylight]:has(tp-yt-app-drawer#guide[opened]) #frosted-glass::before {
+    clip-path: inset(0 round 0 0 10px 0);
+  }
+  html[data-ylg-enabled="true"][data-ylg-daylight]:has(tp-yt-app-drawer#guide[opened]) #frosted-glass::after {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0 var(--app-drawer-width, 240px), #000 var(--app-drawer-width, 240px));
+    mask-image: linear-gradient(90deg, transparent 0 var(--app-drawer-width, 240px), #000 var(--app-drawer-width, 240px));
+  }
 }
-@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
-  html[data-ylg-enabled="true"][data-ylg-daylight]:not([data-ylg-transparency="glass"]) #frosted-glass::before {
-    background: Canvas;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+@layer ylg-a11y {
+  @media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+    html[data-ylg-enabled="true"][data-ylg-daylight]:not([data-ylg-transparency="glass"]) #frosted-glass::before,
+    html[data-ylg-enabled="true"][data-ylg-daylight]:not([data-ylg-transparency="glass"]) :is(#guide, #guide-inner-content).ylg-glass {
+      background: Canvas !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
   }
 }

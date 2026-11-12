@@ -150,16 +150,16 @@ html[data-ambientlight-enabled] .ambientlight__fps-list {
 }
 
 /* Override incorrect default description colors when switching between themes */
-#description .yt-core-attributed-string--link-inherit-color {
+html[data-ambientlight-enabled] #description .yt-core-attributed-string--link-inherit-color {
   color: inherit !important;
 }
-#description .yt-core-attributed-string--highlight-text-decorator {
+html[data-ambientlight-enabled] #description .yt-core-attributed-string--highlight-text-decorator {
   background-color: var(--yt-spec-badge-chip-background) !important;
 }
-#description .yt-core-attributed-string--highlight-text-decorator .yt-core-attributed-string__link--call-to-action-color {
+html[data-ambientlight-enabled] #description .yt-core-attributed-string--highlight-text-decorator .yt-core-attributed-string__link--call-to-action-color {
   color: inherit !important;
 }
-#description .yt-core-attributed-string__link--call-to-action-color {
+html[data-ambientlight-enabled] #description .yt-core-attributed-string__link--call-to-action-color {
   color: var(--yt-spec-call-to-action) !important;
 }
 
@@ -170,9 +170,9 @@ html[data-ambientlight-hide-scrollbar] body::-webkit-scrollbar, html[data-ambien
   display: none !important;
 }
 
-#masthead-container.no-animation,
-#masthead-container.no-animation ytd-masthead,
-#masthead-container.no-animation #background.ytd-masthead {
+#masthead-container.ytal-no-animation,
+#masthead-container.ytal-no-animation ytd-masthead,
+#masthead-container.ytal-no-animation #background.ytd-masthead {
   transition: none !important;
 }
 

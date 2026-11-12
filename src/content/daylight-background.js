@@ -167,6 +167,11 @@
     else if (query.addListener) query[add ? "addListener" : "removeListener"](refresh);
   }
   function resized() { if(renderer)renderer.resize(); }
+  function focused() {
+    if (!started || weatherStatus !== "permission") return;
+    weatherDue = 0;
+    refresh();
+  }
   function navigationStart() {
     resetWeather();
     clearTimer();
@@ -181,6 +186,7 @@
     document.addEventListener("DOMContentLoaded", refresh);
     root.addEventListener("popstate", refresh);
     root.addEventListener("resize", resized);
+    root.addEventListener("focus", focused);
     mediaListen(reduced, true); mediaListen(forced, true);
     refresh();
   }
@@ -193,6 +199,7 @@
       daylightBackground: { enabled: value.enabled === true, animate: value.animate !== false, rain: value.rain === true, scene: value.scene, intensity: value.intensity,
         liveWeather: value.liveWeather === true, location: value.location ? { name:value.location.name, latitude:value.location.latitude, longitude:value.location.longitude } : null }
     };
+    if (weatherStatus === "permission" && snapshot.daylightBackground.liveWeather) weatherDue = 0;
     if (!started) init();
     else refresh();
   }
@@ -206,6 +213,7 @@
     document.removeEventListener("DOMContentLoaded", refresh);
     root.removeEventListener("popstate", refresh);
     root.removeEventListener("resize", resized);
+    root.removeEventListener("focus", focused);
     mediaListen(reduced, false); mediaListen(forced, false);
     snapshot = null;
   }

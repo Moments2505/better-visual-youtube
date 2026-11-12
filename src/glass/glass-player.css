@@ -37,7 +37,7 @@
    top. Stays dark on a white frame yet still bleeds colour on a dark one -
    which is exactly how real smoked glass behaves. */
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
-html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button:not(.ytp-prev-button):not(.ytp-next-button),
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button:where(:not(.ytp-prev-button):not(.ytp-next-button)),
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
   /* v1.3.3 - "thieu do trong suot" was NOT an opacity problem. Measured the paint
@@ -114,7 +114,7 @@ html[data-ylg-lens="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-c
 /* FALLBACK - only while the per-box maps could not be built. A map made for a
    214px rail and painted on a 40px button samples the left flank of the field,
    which is a one-sided rim; it still reads as glass, so falling back is safe. */
-html[data-ylg-lens="1"][data-ylg-enabled="true"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button:not(.ytp-prev-button):not(.ytp-next-button),
+html[data-ylg-lens="1"][data-ylg-enabled="true"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button:where(:not(.ytp-prev-button):not(.ytp-next-button)),
 html[data-ylg-lens="1"][data-ylg-enabled="true"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-time-display,
 html[data-ylg-lens="1"][data-ylg-enabled="true"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-volume-area {
   -webkit-backdrop-filter: url(#ylg-lens-player) saturate(0.62) brightness(0.97) contrast(1.03);
@@ -127,7 +127,7 @@ html[data-ylg-lens="1"][data-ylg-lens-split="1"][data-ylg-enabled="true"] .ytp-c
   -webkit-backdrop-filter: url(#ylg-lens-capsule) saturate(0.62) brightness(0.97) contrast(1.03);
   backdrop-filter: url(#ylg-lens-capsule) saturate(0.62) brightness(0.97) contrast(1.03);
 }
-html[data-ylg-lens="1"][data-ylg-lens-split="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button:not(.ytp-prev-button):not(.ytp-next-button),
+html[data-ylg-lens="1"][data-ylg-lens-split="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button:where(:not(.ytp-prev-button):not(.ytp-next-button)),
 html[data-ylg-lens="1"][data-ylg-lens-split="1"][data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
   -webkit-backdrop-filter: url(#ylg-lens-well) saturate(0.62) brightness(0.97) contrast(1.03);
   backdrop-filter: url(#ylg-lens-well) saturate(0.62) brightness(0.97) contrast(1.03);
@@ -239,7 +239,7 @@ html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display .ytp-time-wra
 /* the right cluster is the one capsule holding several icons */
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls {
   border-radius: 999px;
-  padding-inline: 5px;
+  padding-inline: 8px;
   /* v1.3.14 - A reverted: height was raised to 56px in v1.3.13 for a deeper
      rim roll, then rolled back to YouTube's inherited 40px on request. */
   height: 40px;
@@ -682,9 +682,9 @@ html[data-ylg-enabled="true"] .ytp-popup.ytp-settings-menu:not([aria-hidden="tru
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display {
     transition: none;
   }
 }
@@ -729,8 +729,8 @@ html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom 
   transition-timing-function: var(--ylg-liquid-ease-in);
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls .ytp-button::after,
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button::after {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls .ytp-button::after,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button::after {
     transition: none;
     transform: none;
   }

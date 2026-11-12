@@ -7,15 +7,15 @@ import zipfile
 
 root = pathlib.Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--output-dir", type=pathlib.Path, default=root.parent)
+parser.add_argument("--output-dir", type=pathlib.Path, default=root / "dist" / "releases")
 args = parser.parse_args()
 manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
 assert len(manifest["description"]) <= 132, "Manifest description exceeds 132 characters"
 assert manifest["permissions"] == ["storage"]
 assert manifest["host_permissions"] == ["https://www.youtube.com/*"]
 assert manifest["optional_host_permissions"] == ["https://api.open-meteo.com/*", "https://geocoding-api.open-meteo.com/*"]
-files = [root / name for name in ("manifest.json", "LICENSE", "README.md", "README-VI.md", "INSTALL-EN.md", "INSTALL-VI.md", "CHANGELOG.md", "default-settings.json", "THIRD-PARTY-NOTICES.md", "CONTRIBUTING.md", "docs/PRIVACY-EN.md", "docs/PRIVACY-VI.md")]
-for folder in ("assets", "src", "vendor"):
+files = [root / name for name in ("manifest.json", "LICENSE", "THIRD-PARTY-NOTICES.md")]
+for folder in ("assets", "src", "vendor", "_locales"):
     files.extend(p for p in (root / folder).rglob("*") if p.is_file())
 names = {p.relative_to(root).as_posix() for p in files}
 for name in names:
@@ -25,7 +25,7 @@ required = [manifest["action"]["default_popup"], *manifest["icons"].values()]
 if manifest.get("background", {}).get("service_worker"):
     required.append(manifest["background"]["service_worker"])
 for entry in manifest["content_scripts"]:
-    required += entry["js"] + entry["css"]
+    required += entry.get("js", []) + entry.get("css", [])
 assert all(name in names for name in required), "Missing runtime dependency"
 assert "vendor/ambient/LICENSE" in names
 args.output_dir.mkdir(parents=True, exist_ok=True)

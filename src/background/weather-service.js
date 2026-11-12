@@ -46,12 +46,23 @@
       return { status: valid ? "stale" : "offline", weather: valid || null, nextRefreshAt: now + BACKOFF };
     }
   }
+  function uiLanguage() {
+    var raw = typeof chrome !== "undefined" && chrome.i18n && typeof chrome.i18n.getUILanguage === "function"
+      ? chrome.i18n.getUILanguage()
+      : "";
+    var code = String(raw || "").trim().split(/[-_]/)[0].toLowerCase();
+    return /^[a-z]{2,3}$/.test(code) ? code : "en";
+  }
+  function eligibleYoutubePath(pathname) {
+    return pathname === "/" || pathname === "/results" ||
+      /^\/(?:@[^/]+|(?:channel|c|user)\/[^/]+)(?:\/|$)/.test(pathname || "");
+  }
   async function search(name) {
     if (typeof name !== "string" || name.trim().length < 2 || name.length > 100) return { status: "invalid", places: [] };
     if (!await allowed()) return { status: "permission", places: [] };
     if (Date.now() - searchAt < 1000) return { status: "busy", places: [] };
     searchAt = Date.now();
-    var data = await json("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(name.trim()) + "&count=5&language=vi&format=json");
+    var data = await json("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(name.trim()) + "&count=5&language=" + encodeURIComponent(uiLanguage()) + "&format=json");
     return { status: "current", places: (Array.isArray(data.results) ? data.results : []).filter(YLG_SKY_ENV.validLocation).slice(0,5).map(function (p) {
       return { name: [p.name, p.admin1, p.country].filter(Boolean).join(", ").slice(0,160), latitude: p.latitude, longitude: p.longitude };
     }) };
@@ -60,7 +71,7 @@
     if (sender.id !== chrome.runtime.id || !message) return;
     var popup = sender.url === chrome.runtime.getURL("src/popup/popup.html");
     var page = false;
-    try { var url = new URL(sender.url); page = url.origin === "https://www.youtube.com" && (url.pathname === "/" || url.pathname === "/results") && sender.frameId === 0; } catch (_) {}
+    try { var url = new URL(sender.url); page = url.origin === "https://www.youtube.com" && eligibleYoutubePath(url.pathname) && sender.frameId === 0; } catch (_) {}
     if (message.type === "ylg:weather" && (popup || page)) weather().then(reply, function () { reply({ status: "offline" }); });
     else if (message.type === "ylg:city-search" && popup) search(message.name).then(reply, function () { reply({ status: "offline", places: [] }); });
     else return;

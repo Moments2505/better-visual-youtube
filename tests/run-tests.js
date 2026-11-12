@@ -89,9 +89,8 @@ function load(w, mods) {
   }
 }
 const flush = (w) => { while (w.pendingTimers.length) w.pendingTimers.shift()(); };
-const ALL = ["src/shared/settings.js", "src/glass/glass-refraction.js",
-  "src/ambient/ambient-performance.js", "src/ambient/ambient-renderer.js",
-  "src/ambient/ambient-controller.js", "src/ambient/ambient-lifecycle.js",
+const ALL = ["src/shared/settings.js", "src/ambient/ambient-vendor-bridge.js",
+  "src/glass/glass-refraction.js", "src/ambient/ambient-controller.js",
   "src/content/selector-registry.js", "src/content/dom-adapter.js",
   "src/content/navigation.js", "src/content/bootstrap.js"];
 
@@ -192,18 +191,18 @@ const ALL = ["src/shared/settings.js", "src/glass/glass-refraction.js",
   check("dispose removes defs (no throw)", true);
 }
 
-/* ================= performance profile tests ================= */
+/* ================= ambient css + adapter safety tests ================= */
 {
+  const ambCss = SRC("src/ambient/ambient.css").replace(/\/\*[\s\S]*?\*\//g, "");
+  check("ambient.css drops dead native .ylg-ambient-host/.ylg-ambient-canvas selectors",
+    !/\.ylg-ambient-(?:host|canvas)\b/.test(ambCss));
   const w = buildWorld();
-  load(w, ["src/ambient/ambient-performance.js"]);
-  const P = w.sandbox.YLG_AMBIENT_PERF;
-  check("profile eco", P.resolveProfile("eco", false).name === "eco");
-  check("profile auto starts balanced", P.resolveProfile("auto", false).name === "balanced");
-  check("lowfx caps to eco", P.resolveProfile("high", true).name === "eco");
-  check("explicit high stays high on adapt", P.adapt(P.resolveProfile("high", false), 20).name === "high");
-  check("adapt steps down on cost", P.adapt(P.resolveProfile("balanced", false), 9).name === "eco");
-  const auto = P.resolveProfile("auto", false);
-  check("adapt avg window works", P.rollingAvg([], 3) === 3);
+  load(w, ["src/content/selector-registry.js", "src/content/dom-adapter.js"]);
+  const ambRoot = makeEl("div"); ambRoot.classes.add("ambientlight");
+  const ambChip = makeEl("yt-chip-cloud-chip-renderer"); ambRoot.appendChild(ambChip); w.body.appendChild(ambRoot);
+  w.sandbox.YLG_ADAPTER.init();
+  check("dom-adapter never tags nodes inside vendor .ambientlight tree",
+    !ambChip.classes.has("ylg-glass") && !ambChip.classes.has("ylg-chip"));
 }
 
 /* ================= selector registry tests ================= */
@@ -218,6 +217,10 @@ const ALL = ["src/shared/settings.js", "src/glass/glass-refraction.js",
   check("queryAll for chips", SEL.queryAll("chip").length === 1);
   SEL.invalidate();
   check("invalidate then re-query works", SEL.query("masthead") === w.masthead);
+  const toast = makeEl("yt-notification-action-renderer");
+  w.body.appendChild(toast);
+  SEL.invalidate();
+  check("registry finds real YouTube toast element", SEL.queryAll("toasts").length === 1 && SEL.query("toasts") === toast);
 }
 
 /* ================= dom adapter tests ================= */
@@ -276,31 +279,44 @@ const ALL = ["src/shared/settings.js", "src/glass/glass-refraction.js",
   check("nav teardown does not throw", true);
 }
 
-/* ================= ambient controller tests ================= */
+/* ================= ambient controller (mode sync + clear envelope) tests ================= */
 {
   const w = buildWorld();
-  load(w, ["src/ambient/ambient-performance.js", "src/ambient/ambient-renderer.js", "src/ambient/ambient-controller.js"]);
+  const modesSeen = [];
+  w.sandbox.YLG_AMBIENT_VENDOR = {
+    refreshMode(m) { modesSeen.push(m); },
+    onStateChanged() { return () => {}; },
+    stats() { return { state: "upstream", attached: true, mode: modesSeen[modesSeen.length - 1] || "normal" }; }
+  };
+  const ambContainer = makeEl("div"); ambContainer.classes.add("ambientlight__container");
+  const ambFilter = makeEl("div"); ambFilter.classes.add("ambientlight__filter");
+  ambContainer.appendChild(ambFilter);
+  w.body.appendChild(ambContainer);
+  ambContainer.getBoundingClientRect = () => ({ left: 0, top: 0, right: 1280, bottom: 720, width: 1280, height: 720 });
+  w.video.getBoundingClientRect = () => ({ left: 100, top: 80, right: 900, bottom: 530, width: 800, height: 450 });
+  load(w, ["src/ambient/ambient-controller.js"]);
   const A = w.sandbox.YLG_AMBIENT;
-  const settings = { enabled: true, ambientLight: { enabled: true, quality: "eco", intensity: 0.6, blur: 50, spread: 70, saturation: 1.1, brightness: 1, fpsLimit: 10, modes: { normal: true, theater: true, fullscreen: false, shorts: false } } };
+  check("dead createAmbientController factory removed", typeof A.createAmbientController === "undefined");
+  const settings = { enabled: true, ambientLight: { enabled: true, quality: "auto", intensity: 0.6, blur: 50, spread: 70, saturation: 1.1, brightness: 1, fpsLimit: 10, modes: { normal: true, theater: true, fullscreen: false, shorts: false } } };
+  w.html.setAttribute("data-ylg-fill", "none");
   A.init();
   A.updateSettings(settings); flush(w);
-  check("facade mounts controller", A.stats().mounted === true);
-  check("host is sibling BEFORE player container", w.playerContainer.children[0] && w.playerContainer.children[0].className === "ylg-ambient-host");
-  const hostEl = w.playerContainer.children[0];
-  const cv = hostEl.children[0];
-  check("host contains allocated sampling canvas (32x18 eco, ylg class)", !!cv && cv.tagName === "CANVAS" && cv.width === 32 && cv.height === 18 && cv.className === "ylg-ambient-canvas",
-    cv ? cv.tagName + " " + cv.width + "x" + cv.height + " cls=" + cv.className : "no canvas");
-  settings.ambientLight.blur = 999; A.updateSettings(settings); flush(w);
-  check("controller clamps out-of-range blur (stays mounted)", A.stats().mounted === true);
-  settings.ambientLight.blur = 60;
-  settings.ambientLight.enabled = false; A.updateSettings(settings); flush(w);
-  check("ambient disable unmounts + removes host", A.stats().mounted === false && w.playerContainer.children.every(c => c.className !== "ylg-ambient-host"));
-  settings.ambientLight.enabled = true; A.updateSettings(settings); flush(w);
-  check("ambient re-enable remounts", A.stats().mounted === true);
-  settings.enabled = false; A.updateSettings(settings); flush(w);
-  check("master disable unmounts ambient", A.stats().mounted === false);
+  check("controller forwards player mode to vendor bridge without mounting dead native host",
+    modesSeen.includes("normal") && w.playerContainer.children.every(c => c.className !== "ylg-ambient-host"));
+  check("clear-mode envelope activates on .ambientlight__filter when fill is none",
+    A.stats().envelope.active === true && ambFilter.attrs["data-ylg-ambient-envelope"] === "1");
+  w.flexy.setAttribute("theater", "");
+  A.updateSettings(settings); flush(w);
+  check("theater layout forwards theater mode to vendor bridge", modesSeen.includes("theater"));
+  w.html.setAttribute("data-ylg-fill", "glass");
+  A.updateSettings(settings); flush(w);
+  check("nonzero glass fill clears local envelope so glass panels refract full backdrop",
+    A.stats().envelope.active === false && !ambFilter.attrs["data-ylg-ambient-envelope"]);
+  w.html.setAttribute("data-ylg-fill", "none");
+  A.updateSettings(settings); flush(w);
+  check("returning to clear mode re-arms envelope", A.stats().envelope.active === true);
   A.teardown();
-  check("facade teardown", A.stats().mounted === false);
+  check("facade teardown clears envelope cleanly", A.stats().envelope.active === false && !ambFilter.attrs["data-ylg-ambient-envelope"]);
 }
 
 /* ================= full chain + disable-restores-original ================= */
@@ -319,7 +335,7 @@ const ALL = ["src/shared/settings.js", "src/glass/glass-refraction.js",
   check("disable flips ambient attr", w.html.attrs["data-ylg-ambient"] === "off");
   check("disable removes glass classes", [...w.masthead.classes].filter(c => c.startsWith("ylg-")).length === 0);
   check("disable removes data-ylg attrs from DOM", Object.keys(w.masthead.attrs).filter(k => k.startsWith("data-ylg")).length === 0);
-  check("ambient host removed on master disable", w.playerContainer.children.every(c => c.className !== "ylg-ambient-host"));
+  check("no dead native ambient host created in full chain", w.playerContainer.children.every(c => c.className !== "ylg-ambient-host"));
   // re-enable
   w.storageListeners.forEach(fn => fn({ ylgSettings: { newValue: { enabled: true } } }, "local"));
   flush(w);

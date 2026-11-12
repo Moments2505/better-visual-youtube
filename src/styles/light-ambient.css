@@ -12,7 +12,7 @@
   /* A low-opacity white material cannot support dark reading text over dark
      Ambient. Switch only the reading content, not native button/logo palettes.
      This is opacity-based, not an estimate of every video pixel's luminance. */
-  html:not([dark])[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ambientlight-enabled][data-ylg-light-ink="light"] ytd-watch-flexy :where(h1, #video-title, #content-text, #author-text, #channel-name, #owner-name, #count, #simplebox-placeholder, .ytd-channel-name#text, .yt-lockup-metadata-view-model__title, .yt-lockup-metadata-view-model__metadata, #description, #byline, #metadata-line, #owner-sub-count, #publisher-container, .ytd-playlist-panel-renderer#title) {
+  html:not([dark])[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ambientlight-enabled][data-ylg-light-ink="light"] ytd-watch-flexy :where(h1, #video-title, #content-text, #author-text, #channel-name, #owner-name, #count, #simplebox-placeholder, .ytd-channel-name#text, .yt-lockup-metadata-view-model__title, .yt-lockup-metadata-view-model__metadata, #description, #description-inline-expander, #description yt-attributed-string, #description .yt-core-attributed-string, #byline, #metadata-line, #owner-sub-count, #publisher-container, .ytd-playlist-panel-renderer#title) {
     color: #f8fafc !important;
     --yt-spec-text-primary: #f8fafc;
     --yt-spec-text-secondary: #e2e8f0;
@@ -20,7 +20,29 @@
     --yt-sys-color-baseline--text-secondary: #e2e8f0;
     text-shadow: 0 1px 2px rgba(0, 0, 0, .8), 0 0 4px rgba(0, 0, 0, .35);
   }
-  html:not([dark])[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ambientlight-enabled][data-ylg-light-ink="light"] ytd-watch-flexy :where(#byline, #metadata-line, #owner-sub-count, #publisher-container) {
+  html:not([dark])[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ambientlight-enabled][data-ylg-light-ink="light"] ytd-watch-flexy :where(#byline, #metadata-line, #owner-sub-count, #publisher-container, #info-container, #info, #info span, yt-formatted-string#info, #tooltip) {
     color: #e2e8f0 !important;
+  }
+  html:not([dark])[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ambientlight-enabled][data-ylg-light-ink="light"] ytd-watch-flexy :where(a.yt-core-attributed-string__link, #description a, #content-text a) {
+    color: #7dd3fc !important;
+    --yt-endpoint-color: #7dd3fc;
+    --yt-spec-call-to-action: #7dd3fc;
+  }
+
+  /* Dark-mode watch surfaces over bright Ambient glow: elevate secondary/disabled
+     metadata tokens to crisp cool-white and add a subtle protective shadow halo
+     without touching button foreground tokens or surface alpha. */
+  html[dark]:is([data-ylg-enabled="true"], [data-ylg-active="1"])[data-ylg-ambient="on"]:not([data-ylg-opacity-pale="true"]) ytd-watch-flexy :is(ytd-watch-metadata, #above-the-fold, #description-inner, #secondary, ytd-compact-video-renderer, ytd-comments, ytd-comment-view-model) {
+    --ylg-text-secondary: rgba(241, 245, 249, 0.88);
+    --yt-spec-text-secondary: var(--ylg-text-secondary);
+    --yt-spec-text-disabled: rgba(226, 232, 240, 0.72);
+    --yt-sys-color-baseline--text-secondary: var(--ylg-text-secondary);
+  }
+  html[dark]:is([data-ylg-enabled="true"], [data-ylg-active="1"])[data-ylg-ambient="on"]:not([data-ylg-opacity-pale="true"]) ytd-watch-flexy :where(ytd-watch-metadata h1, ytd-watch-metadata #title, #above-the-fold #title, #channel-name, #owner-name, .ytd-channel-name#text, #description-inner, #description-inline-expander, #secondary #video-title, ytd-compact-video-renderer #video-title, .yt-lockup-metadata-view-model__title, ytd-comments #author-text, ytd-comments #content-text, ytd-comment-view-model #content-text, ytd-comment-view-model .yt-core-attributed-string) {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+  }
+  html[dark]:is([data-ylg-enabled="true"], [data-ylg-active="1"])[data-ylg-ambient="on"]:not([data-ylg-opacity-pale="true"]) ytd-watch-flexy :where(ytd-watch-metadata #info, ytd-watch-metadata #info span, ytd-watch-metadata yt-formatted-string#info, #above-the-fold #info-container, #info-container, #owner-sub-count, #byline, #metadata-line, #metadata-line span, ytd-compact-video-renderer #metadata-line, .yt-lockup-metadata-view-model__metadata, .yt-content-metadata-view-model__metadata-text, ytd-comments #count, ytd-comments #published-time-text, ytd-comments #published-time-text a, ytd-comment-view-model #published-time-text, ytd-comment-view-model #published-time-text a, ytd-comment-view-model .yt-core-attributed-string--link-inherit-color) {
+    color: var(--ylg-text-secondary, rgba(241, 245, 249, 0.88)) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
   }
 }

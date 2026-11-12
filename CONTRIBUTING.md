@@ -6,14 +6,14 @@ Thanks for helping improve Better visual Youtube. Bug reports, ideas and pull re
 
 Load this repository as an unpacked extension. After making changes, reload the extension and YouTube.
 
-With Node.js 22+ and Python 3.12+ installed, run:
+With Node.js 22+ installed (and optionally Python 3.12+), run:
 
 ```sh
-python scripts/check.py
-python scripts/package-release.py --output-dir dist
+node scripts/check.js
+python scripts/package-release.py --output-dir dist/releases
 ```
 
-The ZIP and its SHA-256 checksum are written to `dist/`.
+The release ZIP and its SHA-256 checksum are written to `dist/releases/`.
 
 ## Find your way around
 
@@ -26,7 +26,7 @@ The ZIP and its SHA-256 checksum are written to `dist/`.
 - `vendor/ambient`: modified upstream Ambient Light code.
 - `tests`: source regression checks.
 
-Eight glass stylesheets are checked against a saved visual baseline in `tests/visual-restore-regressions.js`. Put refinements in the additive styles, or explain any intended baseline change in your pull request. Preserve existing settings keys and third-party notices.
+Engine and interface stylesheet invariants (manifest layer order, `lowfx` degradation, `prefers-reduced-motion` opt-out gates, player scrubber/capsule rules, and watch-panel readability) are enforced by `tests/visual-restore-regressions.js` and the companion regression suites under `tests/`. Preserve existing settings keys and third-party notices.
 
 ## Send a change
 

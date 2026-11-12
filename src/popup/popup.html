@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Better visual Youtube</title>
+  <title data-i18n="extName">Better visual Youtube</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -11,202 +11,218 @@
 
     <header class="ylg-header">
       <div class="ylg-orb" aria-hidden="true"></div>
-      <h1>Better visual Youtube</h1>
-      <label class="ylg-switch" title="Enable extension">
-        <input type="checkbox" id="ylg-enabled" role="switch" aria-label="Enable extension">
+      <h1 data-i18n="popupTitle">Better visual Youtube</h1>
+      <label class="ylg-switch" title="Enable extension" data-i18n-title="enableExtension">
+        <input type="checkbox" id="ylg-enabled" role="switch" aria-label="Enable extension" data-i18n-aria-label="enableExtension">
         <span class="ylg-knob"></span>
       </label>
     </header>
 
+    <section class="ylg-profiles-bar" aria-labelledby="ylg-profiles-h" id="ylg-style-profiles">
+      <h2 id="ylg-profiles-h" data-i18n="styleProfilesHeading">Style Profiles</h2>
+      <div class="ylg-profiles-grid">
+        <button type="button" class="ylg-profile-btn" id="ylg-profile-crystal" data-profile="crystal" aria-pressed="false" data-i18n="profileCrystal">Crystal Clear</button>
+        <button type="button" class="ylg-profile-btn" id="ylg-profile-frosted" data-profile="frosted" aria-pressed="false" data-i18n="profileFrosted">Tahoe Frosted</button>
+        <button type="button" class="ylg-profile-btn" id="ylg-profile-cinema" data-profile="cinema" aria-pressed="false" data-i18n="profileCinema">Cinema Glow</button>
+        <button type="button" class="ylg-profile-btn" id="ylg-profile-eco" data-profile="eco" aria-pressed="false" data-i18n="profileEco">Eco Minimal</button>
+      </div>
+    </section>
+
     <main id="ylg-body">
       <section class="ylg-section" aria-labelledby="ylg-theme-h">
-        <h2 id="ylg-theme-h">Theme</h2>
+        <h2 id="ylg-theme-h" data-i18n="themeHeading">Theme</h2>
         <div class="ylg-segmented" role="radiogroup" aria-labelledby="ylg-theme-h" id="ylg-theme">
-          <button type="button" data-value="auto" role="radio">Auto</button>
-          <button type="button" data-value="light" role="radio">Light</button>
-          <button type="button" data-value="dark" role="radio">Dark</button>
+          <button type="button" data-value="auto" role="radio" data-i18n="optAuto">Auto</button>
+          <button type="button" data-value="light" role="radio" data-i18n="themeLight">Light</button>
+          <button type="button" data-value="dark" role="radio" data-i18n="themeDark">Dark</button>
         </div>
       </section>
 
       <section class="ylg-section" aria-labelledby="ylg-adj-h">
-        <h2 id="ylg-adj-h">Adjustments</h2>
-        <p class="ylg-hint">Scroll over a slider to adjust its value.</p>
+        <h2 id="ylg-adj-h" data-i18n="adjustmentsHeading">Adjustments</h2>
+        <p class="ylg-hint" data-i18n="sliderScrollHint">Scroll over a slider to adjust its value.</p>
         <div class="ylg-slider-row">
-          <label for="ylg-blur">Blur strength</label>
-          <input type="range" id="ylg-blur" min="0" max="40" step="1" aria-label="Blur strength in pixels">
+          <label for="ylg-blur" data-i18n="blurStrength">Blur strength</label>
+          <input type="range" id="ylg-blur" min="0" max="40" step="1" aria-label="Blur strength in pixels" data-i18n-aria-label="blurStrengthAria">
           <output id="ylg-blur-v"></output>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-opacity">Opacity</label>
-          <input type="range" id="ylg-opacity" min="0" max="100" step="1" aria-label="Surface opacity percent">
+          <label for="ylg-opacity" data-i18n="opacityLabel">Opacity</label>
+          <input type="range" id="ylg-opacity" min="0" max="100" step="1" aria-label="Surface opacity percent" data-i18n-aria-label="opacityAria">
           <output id="ylg-opacity-v"></output>
         </div>
         <div class="ylg-tint-row">
-          <label id="ylg-tint-label">Colour</label>
+          <label id="ylg-tint-label" data-i18n="colourLabel">Colour</label>
           <div class="ylg-segmented ylg-five" role="radiogroup" aria-labelledby="ylg-tint-label" id="ylg-tint">
-            <button type="button" data-value="auto" role="radio">Auto</button>
-            <button type="button" data-value="black" role="radio">Black</button>
-            <button type="button" data-value="white" role="radio">White</button>
-            <button type="button" data-value="media" role="radio">Thumbnail</button>
-            <button type="button" data-value="custom" role="radio">Custom</button>
+            <button type="button" data-value="auto" role="radio" data-i18n="optAuto">Auto</button>
+            <button type="button" data-value="black" role="radio" data-i18n="tintBlack">Black</button>
+            <button type="button" data-value="white" role="radio" data-i18n="tintWhite">White</button>
+            <button type="button" data-value="media" role="radio" data-i18n="tintThumbnail">Thumbnail</button>
+            <button type="button" data-value="custom" role="radio" data-i18n="tintCustom">Custom</button>
           </div>
           <div class="ylg-accent-row" id="ylg-accent-row" hidden>
-            <input type="color" id="ylg-accent" aria-label="Custom colour" value="#3ea6ff">
-            <div class="ylg-swatches" role="group" aria-label="Colour swatches">
-              <button type="button" class="ylg-swatch" data-color="#3ea6ff" style="background:#3ea6ff" aria-label="Blue"></button>
-              <button type="button" class="ylg-swatch" data-color="#a78bfa" style="background:#a78bfa" aria-label="Purple"></button>
-              <button type="button" class="ylg-swatch" data-color="#2dd4bf" style="background:#2dd4bf" aria-label="Teal"></button>
-              <button type="button" class="ylg-swatch" data-color="#fb7185" style="background:#fb7185" aria-label="Rose"></button>
-              <button type="button" class="ylg-swatch" data-color="#f59e0b" style="background:#f59e0b" aria-label="Amber"></button>
+            <input type="color" id="ylg-accent" aria-label="Custom colour" data-i18n-aria-label="customColourAria" value="#3ea6ff">
+            <div class="ylg-swatches" role="group" aria-label="Colour swatches" data-i18n-aria-label="colourSwatchesAria">
+              <button type="button" class="ylg-swatch" data-color="#3ea6ff" style="background:#3ea6ff" aria-label="Blue" data-i18n-aria-label="swatchBlue"></button>
+              <button type="button" class="ylg-swatch" data-color="#a78bfa" style="background:#a78bfa" aria-label="Purple" data-i18n-aria-label="swatchPurple"></button>
+              <button type="button" class="ylg-swatch" data-color="#2dd4bf" style="background:#2dd4bf" aria-label="Teal" data-i18n-aria-label="swatchTeal"></button>
+              <button type="button" class="ylg-swatch" data-color="#fb7185" style="background:#fb7185" aria-label="Rose" data-i18n-aria-label="swatchRose"></button>
+              <button type="button" class="ylg-swatch" data-color="#f59e0b" style="background:#f59e0b" aria-label="Amber" data-i18n-aria-label="swatchAmber"></button>
             </div>
           </div>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-refraction">Refraction</label>
-          <input type="range" id="ylg-refraction" min="0" max="100" step="1" aria-label="Refraction strength percent">
+          <label for="ylg-refraction" data-i18n="refractionLabel">Refraction</label>
+          <input type="range" id="ylg-refraction" min="0" max="100" step="1" aria-label="Refraction strength percent" data-i18n-aria-label="refractionAria">
           <output id="ylg-refraction-v"></output>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-radius">Corner radius</label>
-          <input type="range" id="ylg-radius" min="6" max="28" step="1" aria-label="Corner radius in pixels">
+          <label for="ylg-radius" data-i18n="cornerRadius">Corner radius</label>
+          <input type="range" id="ylg-radius" min="6" max="28" step="1" aria-label="Corner radius in pixels" data-i18n-aria-label="cornerRadiusAria">
           <output id="ylg-radius-v"></output>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-highlight">Specular Highlight</label>
-          <input type="range" id="ylg-highlight" min="0" max="100" step="1" aria-label="Specular highlight percent">
+          <label for="ylg-highlight" data-i18n="specularHighlight">Specular Highlight</label>
+          <input type="range" id="ylg-highlight" min="0" max="100" step="1" aria-label="Specular highlight percent" data-i18n-aria-label="specularHighlightAria">
           <output id="ylg-highlight-v"></output>
         </div>
         <label class="ylg-check-row" for="ylg-motion">
-          <input type="checkbox" id="ylg-motion"> Motion effects
+          <input type="checkbox" id="ylg-motion"> <span data-i18n="motionEffects">Motion effects</span>
         </label>
-        <p class="ylg-hint">Turn off interface animations and hover movement while keeping Ambient Light on.</p>
+        <p class="ylg-hint" data-i18n="motionEffectsHint">Turn off interface animations and hover movement while keeping Ambient Light on.</p>
         <label class="ylg-check-row" for="ylg-system-motion">
-          <input type="checkbox" id="ylg-system-motion"> Follow system reduced motion
+          <input type="checkbox" id="ylg-system-motion"> <span data-i18n="followSystemMotion">Follow system reduced motion</span>
         </label>
-        <p class="ylg-hint">Turn off to let your Motion, Animate sky and Ambient Light switches work independently of the system motion preference.</p>
+        <p class="ylg-hint" data-i18n="followSystemMotionHint">Turn off to let your Motion, Animate sky and Ambient Light switches work independently of the system motion preference.</p>
         <label class="ylg-check-row" for="ylg-hover-effects">
-          <input type="checkbox" id="ylg-hover-effects"> Hover effects
+          <input type="checkbox" id="ylg-hover-effects"> <span data-i18n="hoverEffects">Hover effects</span>
         </label>
         <label class="ylg-check-row" for="ylg-system-transparency">
-          <input type="checkbox" id="ylg-system-transparency"> Follow system transparency
+          <input type="checkbox" id="ylg-system-transparency"> <span data-i18n="followSystemTransparency">Follow system transparency</span>
         </label>
-        <p class="ylg-hint">Use solid surfaces when your system requests reduced transparency.</p>
+        <p class="ylg-hint" data-i18n="followSystemTransparencyHint">Use solid surfaces when your system requests reduced transparency.</p>
       </section>
 
       <section class="ylg-section" aria-labelledby="ylg-optics-h">
-        <h2 id="ylg-optics-h">Optics</h2>
+        <h2 id="ylg-optics-h" data-i18n="opticsHeading">Optics</h2>
         <label class="ylg-check-row" for="ylg-optics-enabled">
-          <input type="checkbox" id="ylg-optics-enabled" role="switch"> Optical depth (aberration + hover lens)
+          <input type="checkbox" id="ylg-optics-enabled" role="switch"> <span data-i18n="opticalDepth">Optical depth (aberration + hover lens)</span>
         </label>
         <label class="ylg-check-row" for="ylg-optics-aberration">
-          <input type="checkbox" id="ylg-optics-aberration"> Chromatic aberration
+          <input type="checkbox" id="ylg-optics-aberration"> <span data-i18n="chromaticAberration">Chromatic aberration</span>
         </label>
         <div class="ylg-slider-row">
-          <label for="ylg-optics-ab">Dispersion</label>
-          <input type="range" id="ylg-optics-ab" min="0" max="40" step="1" aria-label="Chromatic dispersion">
+          <label for="ylg-optics-ab" data-i18n="dispersionLabel">Dispersion</label>
+          <input type="range" id="ylg-optics-ab" min="0" max="40" step="1" aria-label="Chromatic dispersion" data-i18n-aria-label="dispersionAria">
           <output id="ylg-optics-ab-v"></output>
         </div>
-        <div class="ylg-slider-row"><label for="ylg-optics-lens">Magnifying Glass</label><input type="range" id="ylg-optics-lens" min="0" max="300" step="1" aria-label="Magnifying glass strength"><output id="ylg-optics-lens-v"></output></div>
+        <div class="ylg-slider-row"><label for="ylg-optics-lens" data-i18n="magnifyingGlass">Magnifying Glass</label><input type="range" id="ylg-optics-lens" min="0" max="300" step="1" aria-label="Magnifying glass strength" data-i18n-aria-label="magnifyingGlassAria"><output id="ylg-optics-lens-v"></output></div>
         <label class="ylg-check-row" for="ylg-optics-magnify">
-          <input type="checkbox" id="ylg-optics-magnify"> Hover magnification
+          <input type="checkbox" id="ylg-optics-magnify"> <span data-i18n="hoverMagnification">Hover magnification</span>
         </label>
         <div class="ylg-slider-row">
-          <label for="ylg-optics-scale">Lens strength</label>
-          <input type="range" id="ylg-optics-scale" min="0" max="60" step="1" aria-label="Hover lens strength">
+          <label for="ylg-optics-scale" data-i18n="lensStrength">Lens strength</label>
+          <input type="range" id="ylg-optics-scale" min="0" max="60" step="1" aria-label="Hover lens strength" data-i18n-aria-label="lensStrengthAria">
           <output id="ylg-optics-scale-v"></output>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-optics-hover">Hover lift</label>
-          <input type="range" id="ylg-optics-hover" min="100" max="112" step="1" aria-label="Hover scale percent">
+          <label for="ylg-optics-hover" data-i18n="hoverLift">Hover lift</label>
+          <input type="range" id="ylg-optics-hover" min="100" max="112" step="1" aria-label="Hover scale percent" data-i18n-aria-label="hoverLiftAria">
           <output id="ylg-optics-hover-v"></output>
         </div>
       </section>
 
       <section class="ylg-section" aria-labelledby="ylg-amb-h">
-        <h2 id="ylg-amb-h">Ambient Light</h2>
-        <p class="ylg-hint">Manage ambient glow, quality and playback modes here.</p>
+        <h2 id="ylg-amb-h" data-i18n="ambientHeading">Ambient Light</h2>
+        <p class="ylg-hint" data-i18n="ambientHint">Manage ambient glow, quality and playback modes here.</p>
         <label class="ylg-check-row" for="ylg-ambient-enabled">
-          <input type="checkbox" id="ylg-ambient-enabled" role="switch"> Enable Ambient Light
+          <input type="checkbox" id="ylg-ambient-enabled" role="switch"> <span data-i18n="enableAmbient">Enable Ambient Light</span>
         </label>
-        <div class="ylg-segmented ylg-quad" role="radiogroup" aria-label="Ambient quality" id="ylg-ambient-quality">
-          <button type="button" data-value="eco" role="radio">Eco</button>
-          <button type="button" data-value="balanced" role="radio">Balanced</button>
-          <button type="button" data-value="high" role="radio">High</button>
-          <button type="button" data-value="auto" role="radio">Auto</button>
+        <div class="ylg-segmented ylg-quad" role="radiogroup" aria-label="Ambient quality" data-i18n-aria-label="ambientQualityAria" id="ylg-ambient-quality">
+          <button type="button" data-value="eco" role="radio" data-i18n="qualityEco">Eco</button>
+          <button type="button" data-value="balanced" role="radio" data-i18n="qualityBalanced">Balanced</button>
+          <button type="button" data-value="high" role="radio" data-i18n="qualityHigh">High</button>
+          <button type="button" data-value="auto" role="radio" data-i18n="optAuto">Auto</button>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-amb-blur">Glow blur</label>
-          <input type="range" id="ylg-amb-blur" min="0" max="140" step="5" aria-label="Ambient glow blur in pixels">
+          <label for="ylg-amb-blur" data-i18n="glowBlur">Glow blur</label>
+          <input type="range" id="ylg-amb-blur" min="0" max="140" step="5" aria-label="Ambient glow blur in pixels" data-i18n-aria-label="glowBlurAria">
           <output id="ylg-amb-blur-v"></output>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-amb-spread">Spread</label>
-          <input type="range" id="ylg-amb-spread" min="0" max="200" step="1" aria-label="Ambient spread percent">
+          <label for="ylg-amb-spread" data-i18n="spreadLabel">Spread</label>
+          <input type="range" id="ylg-amb-spread" min="0" max="200" step="1" aria-label="Ambient spread percent" data-i18n-aria-label="spreadAria">
           <output id="ylg-amb-spread-v"></output>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-amb-saturation">Saturation</label>
-          <input type="range" id="ylg-amb-saturation" min="0" max="200" step="5" aria-label="Ambient saturation percent">
+          <label for="ylg-amb-saturation" data-i18n="saturationLabel">Saturation</label>
+          <input type="range" id="ylg-amb-saturation" min="0" max="200" step="5" aria-label="Ambient saturation percent" data-i18n-aria-label="saturationAria">
           <output id="ylg-amb-saturation-v"></output>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-amb-brightness">Brightness</label>
-          <input type="range" id="ylg-amb-brightness" min="0" max="200" step="5" aria-label="Ambient brightness percent">
+          <label for="ylg-amb-brightness" data-i18n="brightnessLabel">Brightness</label>
+          <input type="range" id="ylg-amb-brightness" min="0" max="200" step="5" aria-label="Ambient brightness percent" data-i18n-aria-label="brightnessAria">
           <output id="ylg-amb-brightness-v"></output>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-amb-fps">FPS limit</label>
-          <input type="range" id="ylg-amb-fps" min="1" max="30" step="1" aria-label="Ambient frames per second limit">
+          <label for="ylg-amb-fps" data-i18n="fpsLimit">FPS limit</label>
+          <input type="range" id="ylg-amb-fps" min="1" max="30" step="1" aria-label="Ambient frames per second limit" data-i18n-aria-label="fpsLimitAria">
           <output id="ylg-amb-fps-v"></output>
         </div>
         <div class="ylg-modes">
-          <label class="ylg-check-row" for="ylg-amb-normal"><input type="checkbox" id="ylg-amb-normal"> Normal mode</label>
-          <label class="ylg-check-row" for="ylg-amb-theater"><input type="checkbox" id="ylg-amb-theater"> Theater mode</label>
-          <label class="ylg-check-row" for="ylg-amb-fullscreen"><input type="checkbox" id="ylg-amb-fullscreen"> Fullscreen <span class="ylg-hint">(experimental)</span></label>
+          <label class="ylg-check-row" for="ylg-amb-normal"><input type="checkbox" id="ylg-amb-normal"> <span data-i18n="normalMode">Normal mode</span></label>
+          <label class="ylg-check-row" for="ylg-amb-theater"><input type="checkbox" id="ylg-amb-theater"> <span data-i18n="theaterMode">Theater mode</span></label>
+          <label class="ylg-check-row" for="ylg-amb-fullscreen"><input type="checkbox" id="ylg-amb-fullscreen"> <span data-i18n="fullscreenMode">Fullscreen</span> <span class="ylg-hint" data-i18n="experimentalTag">(experimental)</span></label>
         </div>
       </section>
+
       <section class="ylg-section" aria-labelledby="ylg-daylight-h">
-        <h2 id="ylg-daylight-h">Time-of-day background</h2>
+        <h2 id="ylg-daylight-h" data-i18n="daylightHeading">Time-of-day background</h2>
         <p id="ylg-sky-build" class="ylg-hint"></p>
         <label class="ylg-check-row" for="ylg-daylight-enabled">
-          <input type="checkbox" id="ylg-daylight-enabled" role="switch"> Enable sky background
+          <input type="checkbox" id="ylg-daylight-enabled" role="switch"> <span data-i18n="enableSky">Enable sky background</span>
         </label>
-        <p class="ylg-hint">Home, search and channel pages. A continuous procedural sky follows the sun at your chosen city. No fixed background images. Live weather adds local conditions.</p>
+        <p class="ylg-hint" data-i18n="daylightHint">Home, search and channel pages. A continuous procedural sky follows the sun at your chosen city. No fixed background images. Live weather adds local conditions.</p>
         <div id="ylg-sky-live-controls">
-          <label class="ylg-check-row" for="ylg-sky-live"><input type="checkbox" id="ylg-sky-live"> Live sun &amp; weather</label>
-          <button type="button" id="ylg-sky-allow">Allow weather access</button>
-          <p class="ylg-hint">Location: <strong id="ylg-sky-location">Hà Nội, Việt Nam</strong></p>
-          <label for="ylg-sky-city">Choose a city</label>
-          <div class="ylg-city-row"><input type="search" id="ylg-sky-city" maxlength="100" placeholder="City, country" autocomplete="off"><button type="button" id="ylg-sky-search">Search</button></div>
-          <div id="ylg-sky-results" aria-label="Location results"></div>
+          <label class="ylg-check-row" for="ylg-sky-live"><input type="checkbox" id="ylg-sky-live"> <span data-i18n="liveSunWeather">Live sun &amp; weather</span></label>
+          <button type="button" id="ylg-sky-allow" data-i18n="allowWeatherAccess">Allow weather access</button>
+          <p class="ylg-hint"><span data-i18n="locationLabel">Location:</span> <strong id="ylg-sky-location">London, United Kingdom</strong></p>
+          <label for="ylg-sky-city" data-i18n="chooseCity">Choose a city</label>
+          <div class="ylg-city-row"><input type="search" id="ylg-sky-city" maxlength="100" placeholder="City, country" data-i18n-placeholder="cityPlaceholder" autocomplete="off"><button type="button" id="ylg-sky-search" data-i18n="searchBtn">Search</button></div>
+          <div id="ylg-sky-results" aria-label="Location results" data-i18n-aria-label="locationResultsAria"></div>
           <p id="ylg-sky-status" class="ylg-hint" role="status" aria-live="polite"></p>
-          <p class="ylg-hint">Optional connection shares the chosen city/coordinates and your IP with <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>. Weather uses periodically updated model data, not a live camera. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>; location search by GeoNames via Open-Meteo.</p>
+          <p class="ylg-hint"><span data-i18n="skyPrivacyNotice">Optional connection shares the chosen city/coordinates and your IP with</span> <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>. <span data-i18n="skyModelNotice">Weather uses periodically updated model data, not a live camera.</span> <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>; <span data-i18n="skyGeoNamesNotice">location search by GeoNames via Open-Meteo.</span></p>
         </div>
         <label class="ylg-check-row" for="ylg-daylight-animate">
-          <input type="checkbox" id="ylg-daylight-animate"> Animate sky
+          <input type="checkbox" id="ylg-daylight-animate"> <span data-i18n="animateSky">Animate sky</span>
         </label>
-        <p class="ylg-hint">Independent of interface Motion effects. Turn off for a still sky.</p>
+        <p class="ylg-hint" data-i18n="animateSkyHint">Independent of interface Motion effects. Turn off for a still sky.</p>
         <label class="ylg-check-row" for="ylg-daylight-rain">
-          <input type="checkbox" id="ylg-daylight-rain"> RAIN
+          <input type="checkbox" id="ylg-daylight-rain"> <span data-i18n="rainLabel">RAIN</span>
         </label>
-        <p class="ylg-hint">Heavy rain and wet glass. RAIN controls both effects independently of Live weather; Animate sky controls movement.</p>
-        <div class="ylg-segmented ylg-scene-choices" role="radiogroup" aria-label="Background scene" id="ylg-daylight-scene">
-          <button type="button" data-value="auto" role="radio">Auto</button>
-          <button type="button" data-value="morning" role="radio">Morning</button>
-          <button type="button" data-value="day" role="radio">Day</button>
-          <button type="button" data-value="sunset" role="radio">Sunset</button>
-          <button type="button" data-value="night" role="radio">Night</button>
+        <p class="ylg-hint" data-i18n="rainHint">Heavy rain and wet glass. RAIN controls both effects independently of Live weather; Animate sky controls movement.</p>
+        <div class="ylg-segmented ylg-scene-choices" role="radiogroup" aria-label="Background scene" data-i18n-aria-label="backgroundSceneAria" id="ylg-daylight-scene">
+          <button type="button" data-value="auto" role="radio" data-i18n="optAuto">Auto</button>
+          <button type="button" data-value="morning" role="radio" data-i18n="sceneMorning">Morning</button>
+          <button type="button" data-value="day" role="radio" data-i18n="sceneDay">Day</button>
+          <button type="button" data-value="sunset" role="radio" data-i18n="sceneSunset">Sunset</button>
+          <button type="button" data-value="night" role="radio" data-i18n="sceneNight">Night</button>
         </div>
         <div class="ylg-slider-row">
-          <label for="ylg-daylight-intensity">Sky intensity</label>
-          <input type="range" id="ylg-daylight-intensity" min="0" max="100" step="1" aria-label="Sky intensity percent">
+          <label for="ylg-daylight-intensity" data-i18n="skyIntensity">Sky intensity</label>
+          <input type="range" id="ylg-daylight-intensity" min="0" max="100" step="1" aria-label="Sky intensity percent" data-i18n-aria-label="skyIntensityAria">
           <output id="ylg-daylight-intensity-v"></output>
         </div>
       </section>
     </main>
 
     <footer class="ylg-footer">
-      <button type="button" id="ylg-reset">Reset to Defaults</button>
+      <div class="ylg-footer-actions">
+        <button type="button" id="ylg-reset" data-i18n="btnReset">Reset to Defaults</button>
+        <button type="button" id="ylg-export" data-i18n="btnExport">Export</button>
+        <button type="button" id="ylg-import" data-i18n="btnImport">Import</button>
+        <input type="file" id="ylg-import-file" accept="application/json,.json" hidden="">
+      </div>
       <span id="ylg-status" role="status" aria-live="polite"></span>
     </footer>
   </div>

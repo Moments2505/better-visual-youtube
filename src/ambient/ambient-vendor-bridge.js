@@ -61,8 +61,10 @@
     if (quality === "balanced") return 50;
     if (quality === "high") return 100;
     // Auto is a conservative hardware profile, not a second adaptive scheduler.
-    return (root.navigator && ((root.navigator.hardwareConcurrency || 4) <= 4 ||
-      (root.navigator.deviceMemory || 4) <= 4)) ? 25 : 50;
+    var nav = root.navigator;
+    var lowCores = !!(nav && typeof nav.hardwareConcurrency === "number" && nav.hardwareConcurrency > 0 && nav.hardwareConcurrency <= 4);
+    var lowMem = !!(nav && typeof nav.deviceMemory === "number" && nav.deviceMemory > 0 && nav.deviceMemory <= 4);
+    return (lowCores || lowMem) ? 25 : 50;
   }
   function wanted(settings, currentMode) {
     var amb = settings && settings.ambientLight;

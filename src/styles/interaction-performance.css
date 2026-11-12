@@ -1,41 +1,35 @@
-/* Move the native controls as one unit, including the seek rail. Keep opacity
-*/
-/* Explicit user opt-out from the system motion gate. Keep the pinned engine
-   styles untouched; restore bounded surface timing only while Motion is on. */
-html[data-ylg-enabled="true"][data-ylg-motion="on"][data-ylg-system-motion="ignore"] :is(.ylg-glass, .ylg-card, .ylg-chip) {
-  transition-duration: var(--ylg-dur-base) !important;
-}
-html[data-ylg-enabled="true"][data-ylg-motion="on"][data-ylg-system-motion="ignore"]:not([data-ylg-lowfx="true"]) .ylg-glass[data-ylg-level="floating"] {
-  animation: ylg-settle var(--ylg-dur-base) var(--ylg-ease-glass) both !important;
-}
 /* During direct seeking, keep fills/rims but release live-video backdrop
    sampling across the control strip. Never change native seek geometry. */
-html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom,
-html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom *,
-html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom *::before,
-html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom *::after,
-html[data-ylg-enabled="true"] .html5-video-player .ytp-tooltip.ytp-preview.ytp-preview {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-/* Native guide injects 200ms inline on all three layers. Keep its native
-   transform/visibility behavior, synchronizing duration and easing only. */
-html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide,
-html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide > #contentContainer,
-html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide > #scrim {
-  transition-duration: 460ms !important;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide,
-html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide > #contentContainer,
-html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide > #scrim {
-  transition-duration: 0s !important;
-}
-@media (prefers-reduced-motion: reduce) {
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide,
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #contentContainer,
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #scrim {
+@layer ylg-states {
+  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom,
+  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom *,
+  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom *::before,
+  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom *::after,
+  html[data-ylg-enabled="true"] .html5-video-player .ytp-tooltip.ytp-preview {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  /* Native guide injects 200ms inline on all three layers. Keep its native
+     transform/visibility behavior, synchronizing duration and easing only. */
+  html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide,
+  html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide > #contentContainer,
+  html[data-ylg-enabled="true"][data-ylg-motion="on"] tp-yt-app-drawer#guide > #scrim {
+    transition-duration: 460ms !important;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide,
+  html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide > #contentContainer,
+  html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide > #scrim {
     transition-duration: 0s !important;
+  }
+}
+@layer ylg-a11y {
+  @media (prefers-reduced-motion: reduce) {
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide,
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #contentContainer,
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] tp-yt-app-drawer#guide > #scrim {
+      transition-duration: 0s !important;
+    }
   }
 }
 /* Move the native controls as one unit, including the seek rail. Keep opacity
@@ -46,15 +40,6 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] tp-yt-app-drawer#guide > #s
    remove only that speculative resource reservation. */
 html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"] .ylg-glass::before {
   will-change: auto;
-}
-/* Canonical lowfx value is true (legacy fallback expected 1). Mirror its
-   inexpensive sheen/settle guards without modifying checkpoint CSS. */
-html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass::before,
-html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass::after {
-  display: none;
-}
-html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass[data-ylg-level="floating"] {
-  animation: none;
 }
 /* Prewarm only the bounded control strip and its small hover wells while the
    native controls are visible. Transform/translate hints do not introduce the
@@ -92,118 +77,99 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
   translate: none;
   transition: none !important;
 }
-@media (prefers-reduced-motion: reduce) {
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom,
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-button::before,
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-time-display::before {
-    will-change: auto;
-  }
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.html5-video-player .ytp-chrome-bottom {
-    translate: none;
-    transition: none !important;
-  }
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom,
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom .ytp-chrome-controls {
-    opacity: 0 !important;
-    visibility: hidden !important;
+@layer ylg-a11y {
+  @media (prefers-reduced-motion: reduce) {
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom,
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-button::before,
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion][data-ylg-lens-hover]:not([data-ylg-lowfx="true"]) .html5-video-player:not(.ytp-autohide) .ytp-chrome-bottom .ytp-time-display::before {
+      will-change: auto !important;
+    }
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player .ytp-chrome-bottom {
+      translate: none !important;
+      transition: none !important;
+    }
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom,
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-motion] .html5-video-player.ytp-autohide .ytp-chrome-bottom .ytp-chrome-controls {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
   }
 }
 
-/* Keep one optical pass per control. The existing capsule already bends the
-   video: stacking another SVG hover lens repaints the same moving backdrop.
-   Hover still reveals its directional light and scale with the prior timing. */
-html[data-ylg-enabled="true"][data-ylg-lens-hover="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-right-controls .ytp-button::before {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-/* During the player FLIP, keep the same tint/rim but avoid repeatedly sampling
-   live video through nested SVG filters at changing scale. The final-sized
-   optical maps are rebuilt before this marker is removed. */
-html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
-  -webkit-backdrop-filter: blur(min(var(--ylg-blur, 0px), 2px)) saturate(1) !important;
-  backdrop-filter: blur(min(var(--ylg-blur, 0px), 2px)) saturate(1) !important;
-}
-html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-button::before,
-html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-time-display::before,
-html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-scrubber-button::after {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-html[data-ylg-enabled="true"][data-ylg-player-transition="1"][data-ylg-lowfx="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-@media (forced-colors: active) {
-  html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
+@layer ylg-states {
+  /* Keep one optical pass per control. The existing capsule already bends the
+     video: stacking another SVG hover lens repaints the same moving backdrop.
+     Hover still reveals its directional light and scale with the prior timing. */
+  html[data-ylg-enabled="true"][data-ylg-lens-hover="1"] .ytp-chrome-bottom .ytp-right-controls .ytp-button::before {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  /* The volume capsule changes width while opening. A fixed SVG displacement
+     texture cannot follow that animation without map rebuilds or stretching.
+     A shallow CSS blur retains its glass fill/rim and follows native geometry. */
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+    -webkit-backdrop-filter: blur(min(var(--ylg-blur, 0px), 4px)) saturate(1) !important;
+    backdrop-filter: blur(min(var(--ylg-blur, 0px), 4px)) saturate(1) !important;
+  }
+  /* During the player FLIP, keep the same tint/rim but avoid repeatedly sampling
+     live video through nested SVG filters at changing scale. The final-sized
+     optical maps are rebuilt before this marker is removed. */
+  html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
+    -webkit-backdrop-filter: blur(min(var(--ylg-blur, 0px), 2px)) saturate(1) !important;
+    backdrop-filter: blur(min(var(--ylg-blur, 0px), 2px)) saturate(1) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom .ytp-button::before,
+  html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom .ytp-time-display::before,
+  html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom .ytp-scrubber-button::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-player-transition="1"][data-ylg-lowfx="true"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  /* Seek previews need a frame budget before pointerdown too. Keep the glass
+     fill, specular rim and original timing, but use one shallow CSS sample
+     instead of SVG displacement while hovering, keyboard seeking or dragging.
+     No GPU-vendor assumptions, polling or native seek-handler changes. */
+  html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-progress-bar-container .ytp-scrubber-button::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  html[data-ylg-enabled="true"] .ytp-tooltip.ytp-preview {
+    animation: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-lowfx="true"] .ytp-progress-bar-container:is(:hover, :focus-within, [data-ylg-dragging="1"]) .ytp-scrubber-button::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  /* The open volume capsule already has a transparent fill/rim. Avoid a live
+     video backdrop pass during its width animation and pointer interaction. */
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area:is(:hover, :focus-within, :has(.ytp-volume-panel[data-ylg-dragging="1"])) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-volume-area {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
 }
-@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
-  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"])[data-ylg-player-transition="1"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+
+@layer ylg-a11y {
+  @media (forced-colors: active) {
+    html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button),
+    html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-progress-bar-container:is(:hover, :focus-within, [data-ylg-dragging="1"]) .ytp-scrubber-button::after,
+    html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
   }
-}
-/* The volume capsule changes width while opening. A fixed SVG displacement
-   texture cannot follow that animation without map rebuilds or stretching.
-   A shallow CSS blur retains its glass fill/rim and follows native geometry. */
-html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
-  -webkit-backdrop-filter: blur(min(var(--ylg-blur, 0px), 4px)) saturate(1) !important;
-  backdrop-filter: blur(min(var(--ylg-blur, 0px), 4px)) saturate(1) !important;
-}
-/* Seek previews need a frame budget before pointerdown too. Keep the glass
-   fill, specular rim and original timing, but use one shallow CSS sample
-   instead of SVG displacement while hovering, keyboard seeking or dragging.
-   No GPU-vendor assumptions, polling or native seek-handler changes. */
-html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-progress-bar-container .ytp-scrubber-button::after {
-  /* A moving thumb must not create/sample an offscreen live-video surface.
-     Its transparent material and specular rim remain in liquid-components. */
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-html[data-ylg-enabled="true"] .ytp-tooltip.ytp-preview {
-  /* Native preview positioning updates during every seek hover. Avoid adding
-     an entrance translation on top of that moving target. */
-  animation: none !important;
-}
-/* The interaction rule must never re-enable filtering over accessibility or
-   low-cost materials; match its specificity before applying those gates. */
-html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-lowfx="true"] .ytp-progress-bar-container:is(:hover, :focus-within, [data-ylg-dragging="1"]) .ytp-scrubber-button::after {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-@media (forced-colors: active) {
-  html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-progress-bar-container:is(:hover, :focus-within, [data-ylg-dragging="1"]) .ytp-scrubber-button::after {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-  }
-}
-@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
-  html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-transparency="glass"]) .ytp-progress-bar-container:is(:hover, :focus-within, [data-ylg-dragging="1"]) .ytp-scrubber-button::after {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-  }
-}
-/* The open volume capsule already has a transparent fill/rim. Avoid a live
-   video backdrop pass during its width animation and pointer interaction. */
-html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area:is(:hover, :focus-within, :has(.ytp-volume-panel[data-ylg-dragging="1"])) {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-@media (forced-colors: active) {
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-  }
-}
-@media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
-  html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom.ytp-chrome-bottom .ytp-volume-area {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+  @media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
+    html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"])[data-ylg-player-transition="1"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button),
+    html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-transparency="glass"]) .ytp-progress-bar-container:is(:hover, :focus-within, [data-ylg-dragging="1"]) .ytp-scrubber-button::after,
+    html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom .ytp-volume-area {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
   }
 }

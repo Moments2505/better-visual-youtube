@@ -219,73 +219,18 @@ html[data-ylg-enabled="true"] [data-ylg-search-focus="1"].ylg-glass {
    one glass surface and nothing to fall out of sync.
    At Opacity 0 (data-ylg-fill="none") the pseudo is disabled too: clear mode
    stays clear top to bottom. */
-html[data-ylg-enabled="true"] #frosted-glass {
-  background-color: transparent !important;
-  background-image: none !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  /* documented hazard: this layer sits over the chip row, so it must never
-     take the pointer or every chip click is swallowed */
-  pointer-events: none !important;
-}
-/* The common sheet's painter is owned by chrome-surface.css (loaded last).
-   Do not add another filter or tint here or on its masthead/search children. */
-
-/* v1.3.16 FIX - "lỗi headbar vẫn còn dải đen".
-   YouTube owns a fixed backdrop layer for its chrome:
-     div#frosted-glass  box 0,0,1120x112  position:fixed  z-index:2018
-                        background rgba(15,15,15,0.8)  backdrop-filter blur(48px)
-   It spans the masthead (56px) AND the filter-chip row (56px). With a 56px
-   glass masthead on top, the lower half of that 112px sheet is an 80% opaque
-   near-black band directly under the glass - which is exactly the reported
-   black strip. It is YouTube's layer, not ours, so the fix is to make it carry
-   the same tint as the glass instead of a near-solid black.
-   The blur is kept (it is what stops the feed from running into the chips), and
-   the bottom curve moves here so the chrome block is one shape. */
-/* Specificity matters here and cost one build to learn: YouTube's own rules are
-   `#frosted-glass.with-chipbar.ytd-app` = (1,2,0) and
-   `#frosted-glass.loading-with-chipbar.ytd-app`, and they set the `background`
-   SHORTHAND. A plain `html[attr] #frosted-glass` = (1,1,1) loses on the b
-   column, which is why a first attempt changed the border-radius (nothing
-   competed for it) while the 80% black background stayed. (1,3,1) with the same
-   class pair wins without `!important`. */
 html[data-ylg-enabled="true"] #frosted-glass.with-chipbar.ytd-app,
 html[data-ylg-enabled="true"] #frosted-glass.loading-with-chipbar.ytd-app,
 html[data-ylg-enabled="true"] #frosted-glass {
-  /* v1.3.17 - "không xoá hẳn dải bên dưới headbar được sao?".
-     Retinting it was not enough: ANY fill or blur on this 112px sheet paints a
-     second, differently-toned surface under the 56px glass header, because it
-     spans the filter-chip row too and does not inherit the material's tint
-     stack. Measured after the previous build: the sheet was
-     rgba(8,11,16,0.13) + blur(18px) while the masthead above it is the full
-     .ylg-glass material, so the two never matched and the seam was still
-     readable as a band.
-     The honest fix is to remove the layer's own paint entirely: no fill, no
-     blur, no curve. The header then owns the ONLY glass surface and the chip
-     row sits on the page background exactly as it does in YouTube's own
-     no-frosted-glass mode. Nothing is lost: the chips keep their own hit areas
-     and scrolling behaviour. */
   background-color: transparent !important;
   background-image: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  /* v1.3.20 CRITICAL - "toàn bộ tag này không dùng được nút nào cả".
-     #frosted-glass is position:fixed, 112px tall, z-index:2018 and sits over
-     the filter-chip row. YouTube relies on it being a PAINTED layer; once this
-     rule made it fully transparent it became an invisible click shield:
-       computed pointer-events: auto
-       elementFromPoint at a chip centre -> div#frosted-glass  (not the chip)
-     so every chip click was swallowed while the page still looked correct.
-     Measured A/B on the live page: with pointer-events:auto a chip click did
-     nothing; with none the same click activated it immediately.
-     Nothing in this layer is meant to be interactive - it exists only to paint
-     a blur behind the header - so it must never receive the pointer.
-     This is the failure mode to remember: removing a layer's PAINT does not
-     remove its HIT AREA. */
+  /* documented hazard: this 112px fixed layer sits over the chip row, so once
+     its native paint is cleared it must never take the pointer or chip clicks
+     are swallowed. Its header glass ::before painter lives in chrome-surface.css. */
   pointer-events: none !important;
 }
 
@@ -603,7 +548,7 @@ html[data-ylg-enabled="true"] #secondary.ylg-glass,
 html[data-ylg-enabled="true"] ytd-playlist-panel-renderer.ylg-glass,
 html[data-ylg-enabled="true"] ytd-comments.ylg-glass {
   border-radius: var(--ylg-radius);
-  padding: var(--ylg-radius-s); /* breathing room inside the glass panel */
+  padding: clamp(14px, var(--ylg-radius), 18px); /* clear rounded corners without starving sidebar width */
   /* Bounded expensive blur. These four are the largest glass surfaces on the
      page - the comments shell alone measured 1174x3555px. A backdrop-filter on
      a layer that tall is re-blurred for every scroll frame, so it is capped
@@ -659,8 +604,7 @@ html[data-ylg-enabled="true"] .ytd-popup-container .ylg-glass {
 /* ------------------------------------------------------------------ */
 /* CONTRAST GUARDS - keep text readable over glass in both themes      */
 /* ------------------------------------------------------------------ */
-html[data-ylg-enabled="true"][data-ylg-theme="dark"] .ylg-glass,
-html[data-ylg-enabled="true"][data-ylg-theme="auto"] .ylg-glass {
+html[data-ylg-enabled="true"][data-ylg-theme="dark"] .ylg-glass {
   text-shadow: none;
 }
 html[data-ylg-enabled="true"] .ylg-glass a,

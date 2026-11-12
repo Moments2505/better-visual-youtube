@@ -1,0 +1,209 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-and-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      tag: ${{ steps.verify-tag.outputs.tag }}
+      version: ${{ steps.verify-tag.outputs.version }}
+      zip_file: ${{ steps.verify-tag.outputs.zip_file }}
+      sha256_file: ${{ steps.verify-tag.outputs.sha256_file }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify git tag matches manifest.json version
+        id: verify-tag
+        run: |
+          node - <<'EOF'
+          "use strict";
+          const fs = require("node:fs");
+
+          const manifestPath = process.env.MANIFEST_PATH || "manifest.json";
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+          const manifestVersion = String(manifest.version || "").trim();
+          if (!/^\d+\.\d+\.\d+$/.test(manifestVersion)) {
+            throw new Error(`Invalid manifest.json version: "${manifestVersion}"`);
+          }
+
+          const ref = String(process.env.GITHUB_REF || "").trim();
+          const refName = String(process.env.GITHUB_REF_NAME || "").trim();
+          let tag = "";
+          if (ref) {
+            if (!ref.startsWith("refs/tags/v")) {
+              throw new Error(
+                `Expected GITHUB_REF to start with "refs/tags/v" (got "${ref}")`
+              );
+            }
+            tag = ref.slice("refs/tags/".length);
+            if (refName && refName !== tag) {
+              throw new Error(`Conflicting tag environment: GITHUB_REF="${ref}" vs GITHUB_REF_NAME="${refName}"`);
+            }
+          } else if (refName) {
+            tag = refName;
+          } else {
+            throw new Error("Missing git tag reference (expected GITHUB_REF or GITHUB_REF_NAME)");
+          }
+          if (!/^v\d+\.\d+\.\d+$/.test(tag)) {
+            throw new Error(
+              `Invalid release tag "${tag}": expected "v<major>.<minor>.<patch>" (e.g. "v${manifestVersion}")`
+            );
+          }
+
+          const tagVersion = tag.slice(1);
+          if (tagVersion !== manifestVersion) {
+            throw new Error(
+              `Tag/manifest version mismatch: git tag "${tag}" (${tagVersion}) does not match manifest.json version "${manifestVersion}". Update manifest.json or tag "v${manifestVersion}".`
+            );
+          }
+
+          const zipFile = `dist/releases/Better-visual-Youtube-${manifestVersion}.zip`;
+          const sha256File = `${zipFile}.sha256`;
+          if (process.env.GITHUB_OUTPUT) {
+            fs.appendFileSync(
+              process.env.GITHUB_OUTPUT,
+              `tag=${tag}\nversion=${manifestVersion}\nzip_file=${zipFile}\nsha256_file=${sha256File}\n`,
+              "utf8"
+            );
+          }
+          console.log(`Verified git tag ${tag} matches manifest.json version ${manifestVersion}`);
+          EOF
+
+      - name: Run manifest, syntax & regression checks
+        run: node scripts/check.js
+
+      - name: Build deterministic release package
+        run: node scripts/package-release.js
+
+      - name: Verify release bundle integrity and size budget
+        id: verify-bundle
+        env:
+          MAX_BUNDLE_BYTES: "600000"
+        run: |
+          node - <<'EOF'
+          "use strict";
+          const crypto = require("node:crypto");
+          const fs = require("node:fs");
+          const path = require("node:path");
+
+          const manifestPath = process.env.MANIFEST_PATH || "manifest.json";
+          const releaseDir = process.env.RELEASE_DIR || path.join("dist", "releases");
+          const maxBytes = Number(process.env.MAX_BUNDLE_BYTES || "600000");
+          if (!Number.isFinite(maxBytes) || maxBytes <= 0) {
+            throw new Error(`Invalid MAX_BUNDLE_BYTES: ${process.env.MAX_BUNDLE_BYTES}`);
+          }
+
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+          const version = String(manifest.version || "").trim();
+          if (!/^\d+\.\d+\.\d+$/.test(version)) {
+            throw new Error(`Invalid manifest.json version: "${version}"`);
+          }
+
+          const zipName = `Better-visual-Youtube-${version}.zip`;
+          const shaName = `${zipName}.sha256`;
+          const zipPath = path.join(releaseDir, zipName);
+          const shaPath = path.join(releaseDir, shaName);
+
+          if (!fs.existsSync(zipPath)) {
+            throw new Error(`Missing release archive: ${zipPath}`);
+          }
+          if (!fs.existsSync(shaPath)) {
+            throw new Error(`Missing SHA-256 checksum file: ${shaPath}`);
+          }
+
+          const zipBytes = fs.readFileSync(zipPath);
+          if (zipBytes.length < 22 || zipBytes.readUInt32LE(0) !== 0x04034b50) {
+            throw new Error(`Invalid or empty ZIP archive: ${zipPath} (${zipBytes.length} bytes)`);
+          }
+          if (zipBytes.length >= maxBytes) {
+            throw new Error(
+              `Bundle size budget exceeded: ${zipName} is ${zipBytes.length} bytes (must be < ${maxBytes} bytes)`
+            );
+          }
+
+          const shaLine = fs.readFileSync(shaPath, "utf8").trim();
+          const match = /^([0-9a-f]{64})\s{2}(\S+)$/.exec(shaLine);
+          if (!match) {
+            throw new Error(`Malformed .sha256 file (${shaPath}): "${shaLine}"`);
+          }
+          const [, expectedSha, recordedName] = match;
+          if (recordedName !== zipName) {
+            throw new Error(`Checksum filename mismatch: expected "${zipName}", got "${recordedName}"`);
+          }
+
+          const actualSha = crypto.createHash("sha256").update(zipBytes).digest("hex");
+          if (actualSha !== expectedSha) {
+            throw new Error(`SHA-256 mismatch for ${zipName}: expected ${expectedSha}, computed ${actualSha}`);
+          }
+
+          if (process.env.GITHUB_OUTPUT) {
+            fs.appendFileSync(
+              process.env.GITHUB_OUTPUT,
+              `version=${version}\nbytes=${zipBytes.length}\nsha256=${actualSha}\n`,
+              "utf8"
+            );
+          }
+          console.log(`Verified ${zipName}: ${zipBytes.length} bytes (< ${maxBytes}), sha256=${actualSha}`);
+          EOF
+
+      - name: Upload verified release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets-${{ steps.verify-tag.outputs.version }}
+          path: |
+            ${{ steps.verify-tag.outputs.zip_file }}
+            ${{ steps.verify-tag.outputs.sha256_file }}
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    needs: verify-and-package
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: release-assets-${{ needs.verify-and-package.outputs.version }}
+          path: dist/releases
+
+      - name: Verify downloaded release assets before publishing
+        env:
+          EXPECTED_ZIP: ${{ needs.verify-and-package.outputs.zip_file }}
+          EXPECTED_SHA256: ${{ needs.verify-and-package.outputs.sha256_file }}
+        run: |
+          test -f "$EXPECTED_ZIP"
+          test -f "$EXPECTED_SHA256"
+          (cd dist/releases && sha256sum --check "$(basename "$EXPECTED_SHA256")")
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.verify-and-package.outputs.tag }}
+          name: Better visual Youtube ${{ needs.verify-and-package.outputs.version }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            ${{ needs.verify-and-package.outputs.zip_file }}
+            ${{ needs.verify-and-package.outputs.sha256_file }}

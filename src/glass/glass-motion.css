@@ -37,13 +37,13 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .ylg-glass::after {
   animation: none !important;
 }
 
-/* OS reduced motion */
+/* OS reduced motion (unless user opted out via Follow system reduced motion) */
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-enabled="true"] .ylg-glass,
-  html[data-ylg-enabled="true"] .ylg-card,
-  html[data-ylg-enabled="true"] .ylg-chip,
-  html[data-ylg-enabled="true"] .ylg-glass::before,
-  html[data-ylg-enabled="true"] .ylg-glass::after {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ylg-glass,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ylg-card,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ylg-chip,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ylg-glass::before,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ylg-glass::after {
     transition-duration: 1ms !important;
     animation: none !important;
   }

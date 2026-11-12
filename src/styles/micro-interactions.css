@@ -46,7 +46,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="on"] .ytp-chrome-bottom .ytp-butt
 html[data-ylg-enabled="true"][data-ylg-motion="on"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"] {
   transition: background-color 140ms ease-out, color 140ms ease-out !important;
 }
-html[data-ylg-enabled="true"][data-ylg-motion="on"] .ylg-glass[data-ylg-level="floating"] {
+html[data-ylg-enabled="true"][data-ylg-motion="on"]:not([data-ylg-lowfx="true"]) .ylg-glass[data-ylg-level="floating"] {
   animation: ylg-menu-enter 200ms cubic-bezier(.22,.61,.36,1) both;
 }
 /* Native display:none still owns hiding. Entry animates only once visible;

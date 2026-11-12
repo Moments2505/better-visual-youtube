@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Tiện ích miễn phí, mã nguồn mở, dành cho Microsoft Edge và Google Chrome trên máy tính.
 
-**Bản chính thức mới nhất: [0.4.80](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.4.80).** Cải thiện chữ trong light mode, đồng bộ Opacity của headbar và panel, chuyển dần sang trắng đục và thêm lựa chọn theo cài đặt giảm chuyển động của hệ thống. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.4.80.md)
+**Bản chính thức mới nhất: [0.5.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.5.0).** Bổ sung Cấu hình nhanh 1 chạm, đồng bộ cài đặt & Xuất/Nhập JSON, giao diện song ngữ Anh/Việt gốc, liền mạch kính nền trời và giảm 70% dung lượng gói MV3. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.5.0.md)
 
 ## Thêm chiều sâu cho giao diện
 
@@ -28,7 +28,7 @@ Chọn giao diện sáng hoặc tối, tinh chỉnh hiệu ứng kính và bật
 
 **Opacity** điều chỉnh độ đục của headbar và panel nội dung cùng nhau. Ở 0%, kính trong suốt; vùng cao khoảng 70–100% chuyển dần từ màu tint đã chọn sang trắng, đạt trắng đặc ở 100% với chữ nội dung tối. Bước 99–100% chuyển tiếp nhẹ, không đổi màu đột ngột.
 
-Mục **Time-of-day background** thêm nắng sớm, trời ban ngày, hoàng hôn hoặc bầu trời sao có mặt trăng cho Trang chủ, Tìm kiếm và trang kênh. Auto theo mặt trời tại thành phố đã chọn, ban đầu là Hà Nội; bạn cũng có thể chọn cảnh thủ công. **Animate sky** điều khiển chuyển động nền riêng với **Motion effects** của giao diện; Ambient Light cũng có công tắc riêng.
+Mục **Time-of-day background** thêm nắng sớm, trời ban ngày, hoàng hôn hoặc bầu trời sao có mặt trăng cho Trang chủ, Tìm kiếm và trang kênh. Auto theo mặt trời tại thành phố đã chọn, mặc định là London, United Kingdom; bạn cũng có thể chọn cảnh thủ công. **Animate sky** điều khiển chuyển động nền riêng với **Motion effects** của giao diện; Ambient Light cũng có công tắc riêng.
 
 Nền procedural thay đổi ánh sáng, sắc hoàng hôn và cấu trúc mây theo thời gian, dừng khi tab ẩn và dùng cảnh CSS dự phòng nếu WebGL không hoạt động. Tắt **Animate sky** để giữ cảnh đứng yên; cảnh vẫn có thể cập nhật khi mặt trời hoặc thời tiết đổi. Headbar dùng chung cài đặt Opacity với panel; preview Trang chủ khớp với thumbnail.
 
@@ -55,11 +55,11 @@ Nếu gặp lỗi hoặc có ý tưởng mới, bạn có thể [tạo issue](ht
 
 Dự án mở mã nguồn theo [giấy phép MIT](LICENSE). Có thể nạp trực tiếp thư mục repo vào trình duyệt, không cần build.
 
-Để chạy kiểm thử và đóng gói ZIP, dùng Node.js 22+ và Python 3.12+:
+Để chạy kiểm thử và đóng gói ZIP phát hành, dùng Node.js 22+:
 
 ```sh
-python scripts/check.py
-python scripts/package-release.py --output-dir dist
+node scripts/check.js
+node scripts/package-release.js
 ```
 
 Xem [hướng dẫn đóng góp](CONTRIBUTING.md) để tìm hiểu cấu trúc mã nguồn.

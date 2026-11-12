@@ -48,7 +48,7 @@
     searchResults: ["ytd-search #contents", "ytd-item-section-renderer"],
     shortsPanel: ["ytd-shorts #page-navigation-container", "ytd-shorts"],
     popovers: ["ytd-popup-container tp-yt-iron-dropdown", "tp-yt-iron-dropdown", "ytd-popup-container .ytd-popup-container"],
-    toasts: ["yt-notification-action-renderer-renderer"]
+    toasts: ["yt-notification-action-renderer"]
   };
 
   var cache = {}; // name -> Element|null (valid until invalidate())

@@ -427,6 +427,44 @@ test("renderer errors stay reserved/error and next reconcile can recover", async
   r.engine.start = start; assert.equal(await h.bridge.push(settings()), true);
 });
 
+test("manifest declares Chrome 121+, excludes non-desktop embed/tv/live_chat routes, and omits dead native ambient files", () => {
+  const manifest = JSON.parse(read("manifest.json"));
+  assert.equal(manifest.minimum_chrome_version, "121");
+  const entry = manifest.content_scripts.find(item => item.js.includes("vendor/ambient/content.js"));
+  assert.ok(entry);
+  for (const pattern of ["https://www.youtube.com/live_chat*", "https://www.youtube.com/embed/*", "https://www.youtube.com/tv*"]) {
+    assert.ok(Array.isArray(entry.exclude_matches) && entry.exclude_matches.includes(pattern), "missing exclude_matches: " + pattern);
+  }
+  for (const deadScript of ["src/ambient/ambient-performance.js", "src/ambient/ambient-renderer.js", "src/ambient/ambient-lifecycle.js"]) {
+    assert.equal(entry.js.includes(deadScript), false, "manifest must not load dead script " + deadScript);
+  }
+  for (const deadFile of [
+    "src/ambient/ambient-performance.js",
+    "src/ambient/ambient-renderer.js",
+    "src/ambient/ambient-lifecycle.js",
+    "vendor/ambient/bar-detection-worker.js",
+    "vendor/ambient/SOURCE-manifest.json"
+  ]) {
+    assert.equal(fs.existsSync(path.join(root, deadFile)), false, "dead file must be removed: " + deadFile);
+  }
+});
+
+test("vendor ambient bundle strips Sentry SDK, broken sourceMappingURLs, CSP Blob workers, readback warnings, and global hotkeys", () => {
+  for (const file of ["vendor/ambient/injected.js", "vendor/ambient/content.js", "vendor/ambient/content-main.js"]) {
+    const src = read(file);
+    assert.doesNotMatch(src, /_sentryDebugIds/, file + " must not mutate global _sentryDebugIds");
+    assert.doesNotMatch(src, /sourceMappingURL=/, file + " must not reference missing .map files");
+    assert.doesNotMatch(src, /\bgetSentryCarrier\b|__SENTRY__/, file + " must not bundle unused @sentry SDK");
+  }
+  const main = read("vendor/ambient/content-main.js");
+  assert.doesNotMatch(main, /new Worker\s*\(\s*URL\.createObjectURL/, "must not spawn CSP-blocked Blob workers on YouTube");
+  assert.doesNotMatch(main, /Failed to create a native worker/, "must use main-thread FallbackWorker cleanly without CSP console warnings");
+  const barCtxMatch = main.match(/this\.ctx\s*=\s*this\.canvas\.getContext\('2d',\s*\{([\s\S]*?)\}\)/);
+  assert.ok(barCtxMatch && /willReadFrequently:\s*true/.test(barCtxMatch[1]), "bar-detection fallback 2D context must set willReadFrequently: true");
+  assert.doesNotMatch(main, /on\(document,\s*['"]keydown['"],\s*this\.handleKeyDown\)/, "must not attach hidden global keydown listener");
+  assert.doesNotMatch(main, /this\.settings\.clickUI\(['"]detectHorizontalBarSizeEnabled['"]\)/, "must not toggle black-bar detection via global hotkeys");
+});
+
 (async () => {
   let passed = 0;
   for (const { name, fn } of cases) {

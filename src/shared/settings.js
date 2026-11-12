@@ -12,7 +12,7 @@
   var STORAGE_KEY = "ylgSettings";
   var SCHEMA_VERSION = 8;
 
-  // User-selected defaults captured from the installed extension on 2026-11-04.
+  // Clean fresh-install defaults (slider 37% -> 0.37^1.4 exact round-trip).
   var DEFAULT_SETTINGS = {
     "accent": "#3ea6ff",
     "ambientLight": {
@@ -24,20 +24,20 @@
       "modes": {
         "fullscreen": true,
         "normal": true,
-        "shorts": false,
-        "theater": true
+        "theater": true,
+        "shorts": false
       },
       "quality": "auto",
       "saturation": 1.1,
       "spread": 162
     },
-    "blur": 1,
+    "blur": 14,
     "daylightBackground": {
       "enabled": false,
       "animate": true,
       "rain": false,
       "liveWeather": false,
-      "location": { "name": "Hà Nội, Việt Nam", "latitude": 21.0285, "longitude": 105.8542 },
+      "location": { "name": "London, United Kingdom", "latitude": 51.5074, "longitude": -0.1278 },
       "scene": "auto",
       "intensity": 0.45
     },
@@ -45,7 +45,7 @@
     "highlight": 0.62,
     "hoverEffects": true,
     "motion": true,
-    "opacity": 0.001347159213591947,
+    "opacity": 0.24858928985262752,
     "optics": {
       "aberration": true,
       "aberrationPx": 4,
@@ -60,8 +60,8 @@
     "refraction": 1,
     "respectReducedTransparency": false,
     "respectReducedMotion": true,
-    "theme": "light",
-    "tint": "media"
+    "theme": "auto",
+    "tint": "auto"
   };
 
   var RANGES = {
@@ -538,57 +538,447 @@
     return s;
   }
 
-  function getStoredSettings(cb) {
-    try {
-      if (root.chrome && root.chrome.storage && root.chrome.storage.local && root.chrome.storage.local.get) {
-        root.chrome.storage.local.get(STORAGE_KEY, function (res) {
-          var err = root.chrome.runtime && root.chrome.runtime.lastError;
-          cb(err ? normalizeSettings(null) : normalizeSettings(res && res[STORAGE_KEY]));
-        });
-        return;
-      }
-    } catch (e) { /* fall through */ }
-    try { cb(normalizeSettings(JSON.parse(root.localStorage.getItem(STORAGE_KEY)))); }
-    catch (e2) { cb(normalizeSettings(null)); }
+  /* ---- Curated 1-click style profiles (schema 8) ----------------------- */
+  var STYLE_PROFILES = Object.freeze({
+    crystal: Object.freeze({
+      enabled: true,
+      blur: 8,
+      opacity: sliderToOpacity(18),
+      radius: 18,
+      refraction: 1,
+      highlight: 0.72,
+      tint: "auto",
+      motion: true,
+      hoverEffects: true,
+      optics: Object.freeze({ enabled: true, aberration: true, magnify: true }),
+      ambientLight: Object.freeze({ enabled: true, quality: "auto" })
+    }),
+    frosted: Object.freeze({
+      enabled: true,
+      blur: 18,
+      opacity: sliderToOpacity(52),
+      radius: 20,
+      refraction: 0.85,
+      highlight: 0.68,
+      tint: "auto",
+      motion: true,
+      hoverEffects: true,
+      optics: Object.freeze({ enabled: true, aberration: true, magnify: true }),
+      ambientLight: Object.freeze({ enabled: true, quality: "balanced" })
+    }),
+    cinema: Object.freeze({
+      enabled: true,
+      theme: "dark",
+      blur: 14,
+      opacity: sliderToOpacity(32),
+      radius: 18,
+      refraction: 1,
+      highlight: 0.62,
+      tint: "custom",
+      accent: "#f59e0b",
+      motion: true,
+      hoverEffects: true,
+      optics: Object.freeze({ enabled: true, aberration: true, magnify: true }),
+      ambientLight: Object.freeze({ enabled: true, quality: "high" })
+    }),
+    eco: Object.freeze({
+      enabled: true,
+      blur: 8,
+      opacity: sliderToOpacity(40),
+      radius: 14,
+      refraction: 0,
+      highlight: 0.35,
+      tint: "auto",
+      motion: false,
+      hoverEffects: false,
+      optics: Object.freeze({ enabled: false }),
+      ambientLight: Object.freeze({ enabled: false, quality: "eco" }),
+      daylightBackground: Object.freeze({ enabled: false })
+    })
+  });
+
+  function applyStyleProfile(baseSettings, profileId) {
+    var base = normalizeSettings(baseSettings);
+    var patch = STYLE_PROFILES[profileId];
+    if (!patch) return base;
+    var merged = Object.assign({}, base, patch);
+    if (patch.optics) merged.optics = Object.assign({}, base.optics, patch.optics);
+    if (patch.ambientLight) merged.ambientLight = Object.assign({}, base.ambientLight, patch.ambientLight);
+    if (patch.daylightBackground) merged.daylightBackground = Object.assign({}, base.daylightBackground, patch.daylightBackground);
+    return normalizeSettings(merged);
   }
 
-  function saveSettings(settings, cb) {
+  function matchesProfilePatch(target, patch) {
+    var keys = Object.keys(patch);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var expected = patch[k];
+      var actual = target[k];
+      if (k === "opacity") {
+        if (opacityToSlider(actual) !== opacityToSlider(expected)) return false;
+      } else if (expected && typeof expected === "object" && !Array.isArray(expected)) {
+        if (!actual || typeof actual !== "object") return false;
+        if (!matchesProfilePatch(actual, expected)) return false;
+      } else if (typeof expected === "number") {
+        if (typeof actual !== "number" || Math.abs(actual - expected) > 1e-6) return false;
+      } else if (k === "accent" && typeof expected === "string" && typeof actual === "string") {
+        if (actual.toLowerCase() !== expected.toLowerCase()) return false;
+      } else {
+        if (actual !== expected) return false;
+      }
+    }
+    return true;
+  }
+
+  function matchStyleProfile(settings) {
+    if (!settings || typeof settings !== "object") return null;
+    var clean = normalizeSettings(settings);
+    var ids = Object.keys(STYLE_PROFILES);
+    for (var i = 0; i < ids.length; i++) {
+      if (matchesProfilePatch(clean, STYLE_PROFILES[ids[i]])) return ids[i];
+    }
+    return null;
+  }
+
+  /* ---- Export / Import JSON payload helpers ---------------------------- */
+  function exportSettingsPayload(settings) {
+    return JSON.stringify({
+      schema: "better-visual-youtube-settings",
+      version: 1,
+      settings: normalizeSettings(settings)
+    }, null, 2);
+  }
+
+  function parseImportedSettingsPayload(rawText) {
+    if (typeof rawText !== "string" || !rawText.trim()) {
+      throw new Error("Invalid settings payload: expected a non-empty JSON string.");
+    }
+    var parsed;
+    try {
+      parsed = JSON.parse(rawText);
+    } catch (e) {
+      throw new Error("Invalid settings payload: malformed JSON.");
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Invalid settings payload: root JSON value must be an object.");
+    }
+    var candidate = parsed;
+    if (Object.prototype.hasOwnProperty.call(parsed, "settings")) {
+      if (!parsed.settings || typeof parsed.settings !== "object" || Array.isArray(parsed.settings)) {
+        throw new Error("Invalid settings payload: 'settings' property must be an object.");
+      }
+      candidate = parsed.settings;
+    }
+    return normalizeSettings(candidate);
+  }
+
+  /* ---- Bilingual i18n helper + safe fallback hydration ----------------- */
+  function translateMessage(key, fallback, substitutions, chromeLike) {
+    var fb = (fallback !== undefined && fallback !== null) ? String(fallback) : String(key || "");
+    if (!key || typeof key !== "string") return fb;
+    var c = (chromeLike && typeof chromeLike === "object") ? chromeLike : root.chrome;
+    try {
+      if (c && c.i18n && typeof c.i18n.getMessage === "function") {
+        var msg = substitutions !== undefined
+          ? c.i18n.getMessage(key, substitutions)
+          : c.i18n.getMessage(key);
+        if (typeof msg === "string" && msg.length > 0) return msg;
+      }
+    } catch (e) { /* keep English fallback in VMs or missing catalogs */ }
+    return fb;
+  }
+
+  function hydrateI18n(doc, chromeLike) {
+    if (!doc || typeof doc.querySelectorAll !== "function") return;
+    var c = (chromeLike && typeof chromeLike === "object") ? chromeLike : root.chrome;
+    if (!c || !c.i18n || typeof c.i18n.getMessage !== "function") return;
+    try {
+      if (typeof c.i18n.getUILanguage === "function" && doc.documentElement && doc.documentElement.setAttribute) {
+        var uiLang = c.i18n.getUILanguage();
+        if (typeof uiLang === "string" && uiLang.trim()) {
+          doc.documentElement.setAttribute("lang", uiLang.trim().split(/[-_]/)[0].toLowerCase());
+        }
+      }
+    } catch (eLang) {}
+    var nodes = doc.querySelectorAll("*");
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (!node || typeof node.getAttribute !== "function") continue;
+      var textKey = node.getAttribute("data-i18n");
+      if (textKey) {
+        var textVal = translateMessage(textKey, "", undefined, c);
+        if (textVal) node.textContent = textVal;
+      }
+      var titleKey = node.getAttribute("data-i18n-title");
+      if (titleKey && typeof node.setAttribute === "function") {
+        var titleVal = translateMessage(titleKey, "", undefined, c);
+        if (titleVal) node.setAttribute("title", titleVal);
+      }
+      var placeholderKey = node.getAttribute("data-i18n-placeholder");
+      if (placeholderKey && typeof node.setAttribute === "function") {
+        var placeholderVal = translateMessage(placeholderKey, "", undefined, c);
+        if (placeholderVal) node.setAttribute("placeholder", placeholderVal);
+      }
+      var ariaKey = node.getAttribute("data-i18n-aria-label");
+      if (ariaKey && typeof node.setAttribute === "function") {
+        var ariaVal = translateMessage(ariaKey, "", undefined, c);
+        if (ariaVal) node.setAttribute("aria-label", ariaVal);
+      }
+    }
+  }
+
+  /* ---- Storage persistence (local primary + cross-device sync mirror) -- */
+  var lastKnownJson = null;
+  var pendingSyncHydrationJson = null;
+
+  function makePromise(executor) {
+    if (typeof Promise === "function") return new Promise(executor);
+    var value;
+    executor(function (v) { value = v; }, function () {});
+    return { then: function (fn) { if (fn) fn(value); return this; }, catch: function () { return this; } };
+  }
+
+  function resolveChrome(chromeLike) {
+    return (chromeLike && typeof chromeLike === "object") ? chromeLike : root.chrome;
+  }
+
+  function readStorageArea(area, key, runtime, done) {
+    if (!area || typeof area.get !== "function") {
+      done(undefined, new Error("Storage get unavailable"));
+      return;
+    }
+    var settled = false;
+    function finish(res, err) {
+      if (settled) return;
+      settled = true;
+      if (err) {
+        done(undefined, err);
+        return;
+      }
+      var val = (res && typeof res === "object") ? res[key] : undefined;
+      done(val, null);
+    }
+    try {
+      var ret = area.get(key, function (res) {
+        var err = runtime && runtime.lastError;
+        finish(res, err || null);
+      });
+      if (!settled && ret && typeof ret.then === "function") {
+        ret.then(function (res) {
+          var err = runtime && runtime.lastError;
+          finish(res, err || null);
+        }, function (err) {
+          finish(null, err || new Error("Storage read failed"));
+        });
+      }
+    } catch (e) {
+      finish(null, e);
+    }
+  }
+
+  function writeStorageArea(area, payload, runtime, done) {
+    if (!area || typeof area.set !== "function") {
+      if (done) done(new Error("Storage set unavailable"));
+      return;
+    }
+    var settled = false;
+    function finish(err) {
+      if (settled) return;
+      settled = true;
+      if (done) done(err || null);
+    }
+    try {
+      var ret = area.set(payload, function () {
+        var err = runtime && runtime.lastError;
+        finish(err || null);
+      });
+      if (!settled && ret && typeof ret.then === "function") {
+        ret.then(function () {
+          var err = runtime && runtime.lastError;
+          finish(err || null);
+        }, function (err) {
+          finish(err || new Error("Storage write failed"));
+        });
+      }
+    } catch (e) {
+      finish(e);
+    }
+  }
+
+  function clearHydrationGuardSoon(expectedJson) {
+    if (typeof Promise === "function") {
+      Promise.resolve().then(function () {
+        if (pendingSyncHydrationJson === expectedJson) pendingSyncHydrationJson = null;
+      });
+    } else if (pendingSyncHydrationJson === expectedJson) {
+      pendingSyncHydrationJson = null;
+    }
+  }
+
+  function getStoredSettings(cb, chromeLike) {
+    var callback = (typeof cb === "function") ? cb : null;
+    var c = resolveChrome((typeof cb === "object" && cb !== null) ? cb : chromeLike);
+    return makePromise(function (resolve) {
+      function deliver(clean) {
+        lastKnownJson = JSON.stringify(clean);
+        if (callback) callback(clean);
+        resolve(clean);
+      }
+      try {
+        if (c && c.storage && c.storage.local && typeof c.storage.local.get === "function") {
+          readStorageArea(c.storage.local, STORAGE_KEY, c.runtime, function (localVal, localErr) {
+            if (!localErr && localVal && typeof localVal === "object") {
+              deliver(normalizeSettings(localVal));
+              return;
+            }
+            if (c.storage.sync && typeof c.storage.sync.get === "function") {
+              readStorageArea(c.storage.sync, STORAGE_KEY, c.runtime, function (syncVal, syncErr) {
+                if (!syncErr && syncVal && typeof syncVal === "object") {
+                  var fromSync = normalizeSettings(syncVal);
+                  var syncJson = JSON.stringify(fromSync);
+                  lastKnownJson = syncJson;
+                  if (!localErr && typeof c.storage.local.set === "function") {
+                    pendingSyncHydrationJson = syncJson;
+                    var hydratePayload = {};
+                    hydratePayload[STORAGE_KEY] = fromSync;
+                    writeStorageArea(c.storage.local, hydratePayload, c.runtime, function () {
+                      clearHydrationGuardSoon(syncJson);
+                    });
+                  }
+                  deliver(fromSync);
+                  return;
+                }
+                deliver(normalizeSettings(null));
+              });
+              return;
+            }
+            deliver(normalizeSettings(null));
+          });
+          return;
+        }
+      } catch (e) { /* fall through */ }
+      try { deliver(normalizeSettings(JSON.parse(root.localStorage.getItem(STORAGE_KEY)))); }
+      catch (e2) { deliver(normalizeSettings(null)); }
+    });
+  }
+
+  function loadSettings(chromeLikeOrCb, maybeChromeLike) {
+    if (typeof chromeLikeOrCb === "function") {
+      return getStoredSettings(chromeLikeOrCb, maybeChromeLike);
+    }
+    return getStoredSettings(null, chromeLikeOrCb);
+  }
+
+  function saveSettings(settings, cbOrChromeLike, optionalChromeLike) {
     var s = normalizeSettings(settings);
-    try {
-      if (root.chrome && root.chrome.storage && root.chrome.storage.local && root.chrome.storage.local.set) {
-        var payload = {}; payload[STORAGE_KEY] = s;
-        root.chrome.storage.local.set(payload, function () {
-          var err = root.chrome.runtime && root.chrome.runtime.lastError;
-          if (cb) cb(err ? null : s, err);
-        });
-        return;
-      }
-    } catch (e) { /* fall through */ }
-    try { root.localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch (e2) {}
-    if (cb) cb(s, null);
+    var cb = (typeof cbOrChromeLike === "function") ? cbOrChromeLike : null;
+    var c = resolveChrome((typeof cbOrChromeLike === "object" && cbOrChromeLike !== null) ? cbOrChromeLike : optionalChromeLike);
+    var savedJson = JSON.stringify(s);
+    lastKnownJson = savedJson;
+    return makePromise(function (resolve) {
+      try {
+        if (c && c.storage && c.storage.local && typeof c.storage.local.set === "function") {
+          var payload = {};
+          payload[STORAGE_KEY] = s;
+          writeStorageArea(c.storage.local, payload, c.runtime, function (err) {
+            if (cb) cb(err ? null : s, err || null);
+            resolve(err ? null : s);
+          });
+          if (c.storage.sync && typeof c.storage.sync.set === "function") {
+            var syncPayload = {};
+            syncPayload[STORAGE_KEY] = s;
+            writeStorageArea(c.storage.sync, syncPayload, c.runtime, function () {
+              /* Best-effort sync mirror: never fail saveSettings */
+            });
+          }
+          return;
+        }
+      } catch (e) { /* fall through */ }
+      try { root.localStorage.setItem(STORAGE_KEY, savedJson); } catch (e2) {}
+      if (cb) cb(s, null);
+      resolve(s);
+    });
   }
 
-  function onSettingsChanged(cb) {
+  function onSettingsChanged(cb, chromeLike) {
+    var c = resolveChrome(chromeLike);
     try {
-      if (root.chrome && root.chrome.storage && root.chrome.storage.onChanged) {
+      if (c && c.storage && c.storage.onChanged) {
         var handler = function (changes, area) {
-          if (area === "local" && changes[STORAGE_KEY]) cb(normalizeSettings(changes[STORAGE_KEY].newValue));
+          if (!changes || !changes[STORAGE_KEY]) return;
+          if (area === "local") {
+            var cleanLocal = normalizeSettings(changes[STORAGE_KEY].newValue);
+            var localJson = JSON.stringify(cleanLocal);
+            var wasEcho = (pendingSyncHydrationJson !== null && pendingSyncHydrationJson === localJson);
+            pendingSyncHydrationJson = null;
+            lastKnownJson = localJson;
+            if (!wasEcho) cb(cleanLocal);
+            return;
+          }
+          if (area === "sync") {
+            var rawSync = changes[STORAGE_KEY].newValue;
+            if (!rawSync || typeof rawSync !== "object") return;
+            var cleanSync = normalizeSettings(rawSync);
+            var syncJson = JSON.stringify(cleanSync);
+            if (lastKnownJson === syncJson) return;
+            var st = c.storage;
+            readStorageArea(st.local, STORAGE_KEY, c.runtime, function (localVal) {
+              var currentLocalJson = (localVal && typeof localVal === "object")
+                ? JSON.stringify(normalizeSettings(localVal))
+                : null;
+              lastKnownJson = syncJson;
+              if (currentLocalJson === syncJson) return;
+              if (st.local && typeof st.local.set === "function") {
+                pendingSyncHydrationJson = syncJson;
+                var syncPatch = {};
+                syncPatch[STORAGE_KEY] = cleanSync;
+                writeStorageArea(st.local, syncPatch, c.runtime, function () {
+                  clearHydrationGuardSoon(syncJson);
+                });
+              }
+              cb(cleanSync);
+            });
+          }
         };
-        root.chrome.storage.onChanged.addListener(handler);
-        return function () { root.chrome.storage.onChanged.removeListener(handler); };
+        c.storage.onChanged.addListener(handler);
+        return function () { c.storage.onChanged.removeListener(handler); };
       }
     } catch (e) { /* fall through */ }
     var lsHandler = function () {
       try { cb(normalizeSettings(JSON.parse(root.localStorage.getItem(STORAGE_KEY)))); } catch (e) {}
     };
-    root.addEventListener("storage", lsHandler);
-    return function () { root.removeEventListener("storage", lsHandler); };
+    if (root && typeof root.addEventListener === "function") {
+      root.addEventListener("storage", lsHandler);
+      return function () {
+        if (root && typeof root.removeEventListener === "function") root.removeEventListener("storage", lsHandler);
+      };
+    }
+    return function () {};
   }
+
+  var VENDOR_RESET_KEYS = Object.freeze([
+    "setting-detectHorizontalBarSizeEnabled",
+    "setting-detectVerticalBarSizeEnabled",
+    "setting-detectVideoFillScaleEnabled",
+    "setting-detectColoredHorizontalBarSizeEnabled",
+    "setting-horizontalBarsClipPercentage",
+    "setting-verticalBarsClipPercentage",
+    "setting-headerShadowSize",
+    "setting-headerFillOpacity",
+    "setting-headerImagesOpacity",
+    "setting-surroundingContentShadowSize",
+    "setting-surroundingContentFillOpacity",
+    "setting-surroundingContentImagesOpacity",
+    "setting-pageBackgroundGreyness",
+    "ylg-ambient-visual-baseline-v1"
+  ]);
 
   root.YLG_SETTINGS = {
     STORAGE_KEY: STORAGE_KEY,
+    VENDOR_RESET_KEYS: VENDOR_RESET_KEYS,
     SCHEMA_VERSION: SCHEMA_VERSION,
     DEFAULT_SETTINGS: DEFAULT_SETTINGS,
+    STYLE_PROFILES: STYLE_PROFILES,
     RANGES: RANGES,
     ENUMS: ENUMS,
     AMBIENT_RANGES: AMBIENT_RANGES,
@@ -599,11 +989,19 @@
     sliderToOpacity: sliderToOpacity,   // integer 0..100 -> 0..1
     normalizeSettings: normalizeSettings,
     normalizeAmbient: normalizeAmbient,
+    applyStyleProfile: applyStyleProfile,
+    matchStyleProfile: matchStyleProfile,
+    exportSettingsPayload: exportSettingsPayload,
+    parseImportedSettingsPayload: parseImportedSettingsPayload,
+    t: translateMessage,
+    hydrateI18n: hydrateI18n,
     applySettingsToDocument: applySettingsToDocument,
     setMediaTint: setMediaTint,
     applyThemeToDocument: applyThemeToDocument,
     getStoredSettings: getStoredSettings,
+    loadSettings: loadSettings,
     saveSettings: saveSettings,
-    onSettingsChanged: onSettingsChanged
+    onSettingsChanged: onSettingsChanged,
+    subscribeSettings: onSettingsChanged
   };
 })();

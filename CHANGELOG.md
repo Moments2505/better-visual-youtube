@@ -1,5 +1,16 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.5.0 — 2026-11-12
+
+- Added 1-click **Style Profiles** (*Crystal Clear*, *Tahoe Frosted*, *Cinema Glow*, *Eco Minimal*), cross-device `chrome.storage.sync` mirroring, JSON settings **Export / Import**, and native English + Vietnamese (`_locales/en`, `_locales/vi`) popup localization.
+- Thêm thanh **Cấu hình nhanh** 1 chạm (*Trong suốt pha lê*, *Kính mờ Tahoe*, *Rạp phim rực rỡ*, *Tiết kiệm tối giản*), đồng bộ cài đặt qua `chrome.storage.sync`, **Xuất / Nhập** tệp JSON và bản địa hóa gốc Anh/Việt (`_locales/en`, `_locales/vi`) cho Popup.
+- Migrated Ambient Light execution to native Manifest V3 `"world": "MAIN"` content scripts (removing dynamic cross-origin tag injection and `web_accessible_resources`) and replaced 753 KB static debanding PNGs with cached procedural `<canvas>` noise, cutting release ZIP size by **70%** (~309 KB).
+- Chuyển Ambient Light sang cơ chế MV3 `"world": "MAIN"` gốc (loại bỏ tiêm thẻ cross-origin và `web_accessible_resources`) và thay thế 753 KB ảnh nhiễu PNG bằng nhiễu procedural `<canvas>` có bộ nhớ đệm, giảm **70%** dung lượng gói ZIP (~309 KB).
+- Introduced explicit CSS `@layer` cascade architecture (`ylg-a11y`, `ylg-ceiling`, `ylg-states`, `ylg-components`, `ylg-tokens`), eliminated repeated-selector specificity hacks, fused the `y = 56px` masthead-to-sidebar seam under Time-of-day sky backgrounds, and improved dark-mode secondary metadata contrast over bright Ambient Light.
+- Áp dụng kiến trúc phân tầng CSS `@layer`, xóa bỏ các selector lặp class tăng độ ưu tiên, làm liền mạch đường nối `y = 56px` giữa thanh đầu trang và thanh bên khi bật nền trời theo giờ, đồng thời tăng độ rõ chữ phụ trong giao diện tối trên nền Ambient sáng.
+- Refined fresh-install defaults (`theme: "auto"`, `blur: 14px`, `opacity: 37%`), fixed channel-page live weather messaging, eliminated YouTube Blob Worker CSP & Canvas2D readback warnings, removed dead Sentry telemetry code, excluded `/embed/*`, `/live_chat*` and `/tv*` frames, and added automated Node 22 GitHub Actions CI + tag release workflows.
+- Tinh chỉnh mặc định cài mới (`theme: "auto"`, `blur: 14px`, `opacity: 37%`), sửa kết nối thời tiết trên trang kênh, triệt tiêu lỗi CSP Blob Worker & cảnh báo Canvas2D trên YouTube, gỡ bỏ mã Sentry thừa, loại trừ khung `/embed/*`, `/live_chat*`, `/tv*` và bổ sung quy trình CI/Release tự động trên GitHub Actions.
+
 ## 0.4.80 — 2026-11-10
 
 - Official release, including the light-mode, sky visibility, opacity and optional system-motion fixes developed in 0.4.70–0.4.79.

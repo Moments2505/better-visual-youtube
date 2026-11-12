@@ -263,8 +263,8 @@ html[data-ylg-optics-aberration="1"] ytd-player .ylg-glass {
 
 /* ---- 4. ACCESSIBILITY / FALLBACKS ------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
-  html[data-ylg-optics="on"] .ylg-glass,
-  html[data-ylg-optics="on"] .ylg-glass:hover {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-optics="on"] .ylg-glass,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-optics="on"] .ylg-glass:hover {
     transform: none;
     transition: none;
   }

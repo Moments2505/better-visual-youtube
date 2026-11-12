@@ -2,9 +2,10 @@
   "manifest_version": 3,
   "name": "Better visual Youtube",
   "short_name": "Better visual",
-  "version": "0.4.80",
+  "version": "0.5.0",
+  "default_locale": "en",
   "description": "Give YouTube a new look with Liquid Glass, Ambient Light and customizable animations.",
-  "minimum_chrome_version": "107",
+  "minimum_chrome_version": "121",
   "background": {
     "service_worker": "src/background/service-worker.js"
   },
@@ -25,17 +26,20 @@
       "matches": [
         "https://www.youtube.com/*"
       ],
+      "exclude_matches": [
+        "https://www.youtube.com/live_chat*",
+        "https://www.youtube.com/embed/*",
+        "https://www.youtube.com/tv*"
+      ],
       "js": [
         "src/shared/settings.js",
         "src/shared/sky-environment.js",
         "src/ambient/ambient-vendor-bridge.js",
         "vendor/ambient/content.js",
+        "vendor/ambient/content-main.js",
         "src/glass/glass-refraction.js",
         "src/glass/glass-optics.js",
-        "src/ambient/ambient-performance.js",
-        "src/ambient/ambient-renderer.js",
         "src/ambient/ambient-controller.js",
-        "src/ambient/ambient-lifecycle.js",
         "src/content/selector-registry.js",
         "src/content/dom-adapter.js",
         "src/content/navigation.js",
@@ -49,6 +53,7 @@
         "src/content/bootstrap.js"
       ],
       "css": [
+        "vendor/ambient/content.css",
         "src/glass/glass-tokens.css",
         "src/glass/glass-material.css",
         "src/glass/glass-refraction.css",
@@ -80,6 +85,22 @@
       ],
       "run_at": "document_start",
       "all_frames": false
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "exclude_matches": [
+        "https://www.youtube.com/live_chat*",
+        "https://www.youtube.com/embed/*",
+        "https://www.youtube.com/tv*"
+      ],
+      "js": [
+        "vendor/ambient/injected.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": false,
+      "world": "MAIN"
     }
   ],
   "action": {
@@ -92,19 +113,6 @@
       "128": "assets/icons/icon128.png"
     }
   },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "vendor/ambient/content.css",
-        "vendor/ambient/content-main.js",
-        "vendor/ambient/injected.js",
-        "vendor/ambient/images/*.png"
-      ],
-      "matches": [
-        "https://www.youtube.com/*"
-      ]
-    }
-  ],
   "optional_host_permissions": [
     "https://api.open-meteo.com/*",
     "https://geocoding-api.open-meteo.com/*"

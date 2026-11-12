@@ -36,9 +36,10 @@
 
   function detectLowFx() {
     try {
-      var cores = navigator.hardwareConcurrency || 4;
-      var mem = navigator.deviceMemory || 4;
-      if (cores <= 4 || mem <= 4) de.setAttribute("data-ylg-lowfx", "true");
+      var nav = root.navigator;
+      var lowCores = !!(nav && typeof nav.hardwareConcurrency === "number" && nav.hardwareConcurrency > 0 && nav.hardwareConcurrency <= 4);
+      var lowMem = !!(nav && typeof nav.deviceMemory === "number" && nav.deviceMemory > 0 && nav.deviceMemory <= 4);
+      if (lowCores || lowMem) de.setAttribute("data-ylg-lowfx", "true");
       else de.removeAttribute("data-ylg-lowfx");
     } catch (e) { /* never break the page over heuristics */ }
   }
@@ -55,7 +56,7 @@
   function evaluateAdvancedMode(settings) {
     var refraction = (typeof settings.refraction === "number" && isFinite(settings.refraction))
       ? settings.refraction : 0;
-    if (!settings.enabled || refraction <= 0) {
+    if (!settings.enabled || refraction <= 0 || de.getAttribute("data-ylg-lowfx") === "true") {
       de.removeAttribute("data-ylg-advanced-ok");
       if (R && R.dispose) R.dispose();
       return;
@@ -181,7 +182,6 @@
         if (root.YLG_PANEL_HOVER) root.YLG_PANEL_HOVER[s.motion && s.hoverEffects && s.optics.enabled && s.optics.magnify ? "init" : "teardown"]();
       } catch (e) {}
       scheduleApply(0);
-      scheduleChromeBlurCheck(s);
       if (doc.readyState === "loading") {
         doc.addEventListener("DOMContentLoaded", function onDCL() {
           doc.removeEventListener("DOMContentLoaded", onDCL);
@@ -212,47 +212,6 @@
   }
 
   var applyTimer = null;
-  /* One-shot self-check for the recurring "blurred band across the header"
-     report. In clear mode NOTHING in the chrome should filter the backdrop, so
-     any element that still does is a real, nameable culprit. The check runs
-     twice (early and after late YouTube chrome finishes hydrating) and only
-     logs - it never mutates the page, so it cannot itself change the appearance.
-     This exists because the band reproduces only on some accounts (Premium) and
-     guessing from a screenshot cost a full round each time. */
-  var blurCheckTimers = [];
-  function scheduleChromeBlurCheck(settings) {
-    blurCheckTimers.forEach(clearTimeout);
-    blurCheckTimers = [];
-    if (!settings || settings.enabled === false || settings.opacity !== 0) return;
-    [600, 2500].forEach(function (ms) {
-      blurCheckTimers.push(setTimeout(function () {
-        try {
-          var hits = [];
-          var nodes = doc.querySelectorAll(
-            "#masthead-container *, #frosted-glass, #chips-wrapper *"
-          );
-          for (var i = 0; i < nodes.length && hits.length < 6; i++) {
-            var st = root.getComputedStyle ? root.getComputedStyle(nodes[i]) : null;
-            if (!st) break;
-            var bd = st.backdropFilter || st.webkitBackdropFilter;
-            if (!bd || bd === "none") continue;
-            var b = nodes[i].getBoundingClientRect();
-            if (b.width < 40 || b.height < 8) continue;
-            hits.push(nodes[i].tagName.toLowerCase() +
-              (nodes[i].id ? "#" + nodes[i].id : "") +
-              (nodes[i].className && typeof nodes[i].className === "string"
-                ? "." + nodes[i].className.trim().split(/\s+/).slice(0, 2).join(".") : "") +
-              " [" + Math.round(b.width) + "x" + Math.round(b.height) + "] " + bd);
-          }
-          if (hits.length) {
-            console.warn("[YLG] clear mode, but chrome still blurs: " + hits.join(" | "));
-          } else {
-            console.log("[YLG] clear mode OK: no chrome layer blurs the backdrop.");
-          }
-        } catch (e) { /* diagnostics must never break the page */ }
-      }, ms));
-    });
-  }
 
   function scheduleApply(delayMs) {
     if (applyTimer !== null) return;
