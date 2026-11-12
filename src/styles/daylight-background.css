@@ -20,7 +20,7 @@
 /* Keep the night atmosphere visible at moderate intensity over YouTube's
    near-black page. Screen blending lifts the sky without dimming its stars;
    rain keeps its separate overcast treatment. No additional animation/filter. */
-#ylg-daylight-background[data-scene="night"][data-rain="false"]::before {
+#ylg-daylight-background[data-scene="night"][data-rain="false"]:not([data-weather="rain"]):not([data-weather="storm"])::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -32,7 +32,7 @@
 /* Rain renders a dark overcast scene. Keep native light-theme text readable
    without switching YouTube's palette or recolouring individual cards/menus.
    This veil is inside the decorative host and never covers page content. */
-html:not([dark]) #ylg-daylight-background[data-rain="true"]::after {
+html:not([dark]) #ylg-daylight-background:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"])::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -220,27 +220,30 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
 /* Reuse one precipitation layer for manual and weather-driven rain. The two
    tiled streak sheets use transforms only; no particles, images or JS loop.
    Paint above the WebGL sky but remain behind YouTube's content. */
-#ylg-daylight-background[data-rain="true"] {
+#ylg-daylight-background:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) {
   background:linear-gradient(180deg,#111c2b,#344456);
 }
-#ylg-daylight-background[data-rain="true"] > :is(.ylg-daylight-glow,.ylg-daylight-sun,.ylg-daylight-stars,.ylg-daylight-galaxy) {
+#ylg-daylight-background:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) > :is(.ylg-daylight-glow,.ylg-daylight-sun,.ylg-daylight-stars,.ylg-daylight-galaxy) {
   display:none;
   animation:none;
 }
-#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation {
+#ylg-daylight-background:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) .ylg-daylight-precipitation {
   display:block; inset:0; opacity:.96;
   background:linear-gradient(180deg,#07111f61,#0c1b2c26 70%);
   animation:none;
 }
-#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation::before,
-#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation::after {
+#ylg-daylight-background[data-live="true"][data-weather="storm"] .ylg-daylight-precipitation {
+  background:linear-gradient(180deg,#050c1888,#0b182848 75%);
+}
+#ylg-daylight-background:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) .ylg-daylight-precipitation::before,
+#ylg-daylight-background:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) .ylg-daylight-precipitation::after {
   content:""; position:absolute; inset:-300px;
   pointer-events:none;
   background-repeat:repeat;
   background-size:256px 256px;
   animation:ylg-rain-fall .86s linear infinite paused;
 }
-#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation::before {
+#ylg-daylight-background:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) .ylg-daylight-precipitation::before {
   opacity:.68;
   background-image:
     radial-gradient(ellipse .8px 15px at 14px 25px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
@@ -253,7 +256,7 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
     radial-gradient(ellipse .7px 14px at 218px 88px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%),
     radial-gradient(ellipse .8px 20px at 242px 193px,#d6e8fab0 10%,#d6e8fa55 52%,transparent 100%);
 }
-#ylg-daylight-background[data-rain="true"] .ylg-daylight-precipitation::after {
+#ylg-daylight-background:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) .ylg-daylight-precipitation::after {
   opacity:.92;
   background-image:
     radial-gradient(ellipse 1.3px 27px at 30px 48px,#e0efffb8 8%,#d8ecff66 50%,transparent 100%),
@@ -266,7 +269,15 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
   animation-duration:.48s;
   animation-delay:-.31s;
 }
-#ylg-daylight-background[data-rain="true"] .ylg-daylight-clouds {
+#ylg-daylight-background[data-live="true"][data-weather="storm"] .ylg-daylight-precipitation::before {
+  opacity:.85;
+  animation-duration:.62s;
+}
+#ylg-daylight-background[data-live="true"][data-weather="storm"] .ylg-daylight-precipitation::after {
+  opacity:1;
+  animation-duration:.36s;
+}
+#ylg-daylight-background:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) .ylg-daylight-clouds {
   display:block; left:-6%; top:0; width:112%; height:75%;
   opacity:.9;
   background:linear-gradient(180deg,#182333eb,#344353ad 62%,transparent),radial-gradient(ellipse at 76% 32%,#33455eaa,transparent 72%);
@@ -288,8 +299,8 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
   background-color:#07111f38;
   background-size:512px 384px;
 }
-#ylg-daylight-background[data-moving="true"][data-rain="true"] .ylg-daylight-precipitation::before,
-#ylg-daylight-background[data-moving="true"][data-rain="true"] .ylg-daylight-precipitation::after { animation-play-state:running; }
+#ylg-daylight-background[data-moving="true"]:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) .ylg-daylight-precipitation::before,
+#ylg-daylight-background[data-moving="true"]:is([data-rain="true"], [data-live="true"][data-weather="rain"], [data-live="true"][data-weather="storm"]) .ylg-daylight-precipitation::after { animation-play-state:running; }
 #ylg-daylight-background[data-moving="true"] .ylg-daylight-clouds,
 #ylg-daylight-background[data-moving="true"] .ylg-daylight-precipitation { animation-play-state:running; }
 #ylg-daylight-background[data-moving="false"] .ylg-daylight-sun { transition:none; }

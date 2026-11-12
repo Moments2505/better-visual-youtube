@@ -334,6 +334,8 @@ test("an opt-in scene stays decorative with bounded DOM and compositor-only anim
   const css = fs.readFileSync(path.join(__dirname, "../src/styles/daylight-background.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
   assert.match(css, /pointer-events:\s*none/);
   assert.doesNotMatch(css, /(?:backdrop-filter|filter)\s*:|url\s*\(/i, "the extra sky must not sample or fetch images");
+  assert.match(css, /\[data-live="true"\]\[data-weather="rain"\]/, "live rain weather activates rain visuals without manual RAIN");
+  assert.match(css, /\[data-live="true"\]\[data-weather="storm"\]/, "live storm weather activates storm visuals without manual RAIN");
   const declarations = [];
   for (const hit of css.matchAll(/@keyframes\s+[\w-]+\s*\{/g)) {
     let cursor = hit.index + hit[0].length, depth = 1, text = "";

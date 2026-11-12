@@ -117,5 +117,8 @@ test("teardown releases context, program, buffer, canvas and event listener; lat
 test("shipped shader is procedural and source has no image assets, JS frame loop or readback",()=>{
   const text=read("src/content/sky-renderer.js");assert.doesNotMatch(text,/requestAnimationFrame\s*\(|readPixels\s*\(|texImage2D\s*\(|fetch\s*\(|new Image\s*\(/);
   const w=world();assert.match(w.shaders[1],/uniform float daylight/);assert.match(w.shaders[1],/fbm/);assert.match(w.shaders[1],/gl_FragColor/);
+  const overcastPos=w.shaders[1].indexOf("vec3 overcast(vec2 uv)"),atmoPos=w.shaders[1].indexOf("vec3 atmosphere(vec2 uv)");
+  assert.ok(overcastPos>0&&overcastPos<atmoPos,"overcast() must be declared before atmosphere() for GLSL ES 1.00");
+  assert.match(w.shaders[1],/if\(wet>\.001\)\{\s*color=mix\(color,overcast\(uv\)/,"wet weather blends overcast ceiling even when manual rain glass is off");
 });
 console.log(count+" renderer lifecycle groups passed (WebGL API model, not a GPU/pixel test).");

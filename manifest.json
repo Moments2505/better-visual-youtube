@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Better visual Youtube",
   "short_name": "Better visual",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "default_locale": "en",
   "description": "Give YouTube a new look with Liquid Glass, Ambient Light and customizable animations.",
   "minimum_chrome_version": "121",

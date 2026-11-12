@@ -1,5 +1,10 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.5.1 — 2026-11-12
+
+- Fixed **Live sun & weather** (`[data-live="true"][data-weather="rain"|"storm"]`) so real-time rain and thunderstorm cities automatically render an overcast storm sky and outdoor falling rain streaks even when the manual **RAIN** glass-droplet toggle is off.
+- Sửa lỗi **Thời tiết thực (Live weather)** (`[data-live="true"][data-weather="rain"|"storm"]`) để các thành phố đang mưa hoặc giông bão tự động hiển thị bầu trời mây giông u ám và hiệu ứng mưa rơi ngoài trời ngay cả khi nút **RAIN** (giọt nước bám kính) đang tắt.
+
 ## 0.5.0 — 2026-11-12
 
 - Added 1-click **Style Profiles** (*Crystal Clear*, *Tahoe Frosted*, *Cinema Glow*, *Eco Minimal*), cross-device `chrome.storage.sync` mirroring, JSON settings **Export / Import**, and native English + Vietnamese (`_locales/en`, `_locales/vi`) popup localization.
