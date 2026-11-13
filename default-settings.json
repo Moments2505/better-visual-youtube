@@ -3,8 +3,14 @@
   "ambientLight": {
     "blur": 75,
     "brightness": 1,
+    "contrast": 1,
+    "detectBarSize": false,
+    "directionMode": "full",
     "enabled": true,
+    "energySaver": true,
+    "flickerReduction": 35,
     "fpsLimit": 16,
+    "glassSync": true,
     "intensity": 1,
     "modes": {
       "fullscreen": true,
@@ -14,7 +20,9 @@
     },
     "quality": "auto",
     "saturation": 1.1,
-    "spread": 162
+    "spread": 162,
+    "vibrance": 1,
+    "videoShadow": 25
   },
   "blur": 14,
   "daylightBackground": {
@@ -31,8 +39,11 @@
     }
   },
   "enabled": true,
+  "hideShortsShelf": false,
   "highlight": 0.62,
+  "hotkeys": true,
   "hoverEffects": true,
+  "immersiveCinema": false,
   "motion": true,
   "opacity": 0.24858928985262752,
   "optics": {
@@ -51,5 +62,6 @@
   "respectReducedMotion": true,
   "theme": "auto",
   "tint": "auto",
+  "zenWatch": false,
   "schemaVersion": 8
 }

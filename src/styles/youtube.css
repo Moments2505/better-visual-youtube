@@ -474,39 +474,88 @@ html[data-ylg-enabled="true"] #guide-inner-content.ylg-glass ytd-guide-section-r
    A 10% white rectangle sitting inside the glass rail is exactly the nested
    white UI box the user reported. Neutralise it and let the accent pill below
    carry the "you are here" signal instead. */
-html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] {
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active],
+html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[active] {
   background-color: transparent;
 }
-/* Deliberately NOT neutralising [active] .yt-simple-endpoint: the measured
-   white fill sits on the row element itself, and a rule on the inner endpoint
-   would fight the accent pill below (same property, lower specificity wins by
-   accident of source order). Narrow scope = one offender, one override. */
-/* active navigation pill - painted ONCE, on the anchor only.
-   Measured DOM: ytd-guide-entry-renderer > a#endpoint.yt-simple-endpoint >
-   tp-yt-paper-item ...  The paper-item is a DESCENDANT of the anchor, so
-   matching both painted the 13% accent twice (effective ~24.6%) plus a double
-   inset rim. Dropping the paper-item selectors fixes the doubling.
-   v1.3.14: the selector list now also matches .yt-simple-endpoint and the bare
-   anchor, not just a#endpoint. Reason: the row's white fill is neutralised just
-   above, so if this pill failed to match we would delete the ONLY remaining
-   "current page" indicator - an accessibility regression, and a silent one.
-   Matching by class + attribute + id keeps the indicator alive across YouTube's
-   DOM revisions (the id has changed shape before). */
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] tp-yt-paper-item,
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] tp-yt-paper-item {
+  background-color: transparent;
+}
+/* Active navigation pill: neutral frosted Liquid Glass capsule + 3px left
+   accent bar so --ylg-accent never turns blue/sky backgrounds muddy brown. */
 html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] a,
 html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] .yt-simple-endpoint,
 html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] a,
 html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] .yt-simple-endpoint {
-  background-color: color-mix(in srgb, var(--ylg-accent) 13%, transparent);
-  border-radius: var(--ylg-radius-s);
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.14);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-radius: 12px;
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--ylg-accent) 30%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.5));
-  transition: background-color var(--ylg-dur-fast) var(--ylg-ease-glass);
+    inset 0 1px 0 rgba(255, 255, 255, 0.44),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.20),
+    0 4px 14px rgba(8, 15, 28, 0.18);
+  transition:
+    background-color var(--ylg-dur-fast) var(--ylg-ease-glass),
+    box-shadow var(--ylg-dur-fast) var(--ylg-ease-glass);
 }
-html[data-ylg-enabled="true"] ytd-guide-entry-renderer a:hover,
-html[data-ylg-enabled="true"] ytd-guide-entry-renderer .yt-simple-endpoint:hover {
-  background-color: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.5));
-  border-radius: var(--ylg-radius-s);
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] > a::before,
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] > a::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 24%;
+  bottom: 24%;
+  width: 3px;
+  border-radius: 99px;
+  background: var(--ylg-accent, #3ea6ff);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--ylg-accent, #3ea6ff) 70%, transparent);
+  pointer-events: none;
+}
+html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer[active] a,
+html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer[active] .yt-simple-endpoint,
+html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer[aria-selected="true"] a,
+html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer[aria-selected="true"] .yt-simple-endpoint {
+  background-color: rgba(255, 255, 255, 0.80);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(241, 245, 249, 0.72) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.10),
+    0 3px 10px rgba(15, 23, 42, 0.08);
+}
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) a:hover,
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) .yt-simple-endpoint:hover {
+  background-color: rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+}
+html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) a:hover,
+html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) .yt-simple-endpoint:hover {
+  background-color: rgba(15, 23, 42, 0.06);
+}
+html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[active] a,
+html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[aria-selected="true"] a {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.14);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.44),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.20),
+    0 4px 12px rgba(8, 15, 28, 0.16);
+}
+html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[active] a::before,
+html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[aria-selected="true"] a::before {
+  content: "";
+  position: absolute;
+  left: 26%;
+  right: 26%;
+  bottom: 4px;
+  height: 3px;
+  border-radius: 99px;
+  background: var(--ylg-accent, #3ea6ff);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--ylg-accent, #3ea6ff) 70%, transparent);
+  pointer-events: none;
 }
 
 /* ------------------------------------------------------------------ */
@@ -515,10 +564,6 @@ html[data-ylg-enabled="true"] ytd-guide-entry-renderer .yt-simple-endpoint:hover
 html[data-ylg-enabled="true"] yt-chip-cloud-chip-renderer.ylg-glass,
 html[data-ylg-enabled="true"] ytd-chip-renderer.ylg-glass {
   border-radius: var(--ylg-radius-l);
-}
-html[data-ylg-enabled="true"] yt-chip-cloud-chip-renderer[aria-selected="true"],
-html[data-ylg-enabled="true"] ytd-chip-renderer[aria-selected="true"] {
-  background-color: color-mix(in srgb, var(--ylg-accent) 15%, transparent);
 }
 
 /* ------------------------------------------------------------------ */

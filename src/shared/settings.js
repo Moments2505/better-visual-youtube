@@ -18,8 +18,14 @@
     "ambientLight": {
       "blur": 75,
       "brightness": 1,
+      "contrast": 1,
+      "detectBarSize": false,
+      "directionMode": "full",
       "enabled": true,
+      "energySaver": true,
+      "flickerReduction": 35,
       "fpsLimit": 16,
+      "glassSync": true,
       "intensity": 1,
       "modes": {
         "fullscreen": true,
@@ -29,7 +35,9 @@
       },
       "quality": "auto",
       "saturation": 1.1,
-      "spread": 162
+      "spread": 162,
+      "vibrance": 1,
+      "videoShadow": 25
     },
     "blur": 14,
     "daylightBackground": {
@@ -42,8 +50,11 @@
       "intensity": 0.45
     },
     "enabled": true,
+    "hideShortsShelf": false,
     "highlight": 0.62,
+    "hotkeys": true,
     "hoverEffects": true,
+    "immersiveCinema": false,
     "motion": true,
     "opacity": 0.24858928985262752,
     "optics": {
@@ -61,7 +72,8 @@
     "respectReducedTransparency": false,
     "respectReducedMotion": true,
     "theme": "auto",
-    "tint": "auto"
+    "tint": "auto",
+    "zenWatch": false
   };
 
   var RANGES = {
@@ -86,6 +98,10 @@
     spread: [0, 200],
     saturation: [0, 2],
     brightness: [0, 2],
+    contrast: [0, 2],
+    vibrance: [0, 2],
+    flickerReduction: [0, 100],
+    videoShadow: [0, 100],
     fpsLimit: [1, 30]
   };
   var OPTICS_RANGES = {
@@ -96,6 +112,7 @@
     lensAberration: [0, 0.5]
   };
   var AMBIENT_QUALITY = ["eco", "balanced", "high", "auto"];
+  var AMBIENT_DIRECTIONS = ["full", "sides", "topArch"];
 
   function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
 
@@ -189,6 +206,10 @@
       }
       if (key === "quality") {
         out[key] = (AMBIENT_QUALITY.indexOf(v) !== -1) ? v : def;
+        return;
+      }
+      if (key === "directionMode") {
+        out[key] = (AMBIENT_DIRECTIONS.indexOf(v) !== -1) ? v : def;
         return;
       }
       if (typeof def === "boolean") {
@@ -410,6 +431,7 @@
      written once as fixed literals. */
   var chromeState = null; // { opacity, tint, accent } mirror of the last apply
   var mediaTint = null;   // {r,g,b} sampled from the video/thumbnail, or null
+  var ambientRim = null;  // {r,g,b} ambient edge glow sampled for watch panels
   function tintRGB(theme) {
     if (chromeState && chromeState.tint === "media") {
       return mediaTint ? (mediaTint.r + ", " + mediaTint.g + ", " + mediaTint.b) : null;
@@ -444,13 +466,77 @@
   /** Feed a sampled colour in. Keeps the surface tint AND the accent in sync,
    *  so a thumbnail-tinted header also tints accents/focus rings. */
   function setMediaTint(doc, rgb) {
-    mediaTint = (rgb && typeof rgb.r === "number") ? { r: rgb.r, g: rgb.g, b: rgb.b } : null;
+    var next = (rgb && typeof rgb.r === "number") ? { r: rgb.r, g: rgb.g, b: rgb.b } : null;
+    if (next && mediaTint &&
+        Math.abs(next.r - mediaTint.r) + Math.abs(next.g - mediaTint.g) + Math.abs(next.b - mediaTint.b) < 9) {
+      return;
+    }
+    mediaTint = next;
     if (!chromeState || chromeState.tint !== "media") return;
     var de = doc && doc.documentElement;
     if (!de || !de.style) return;
     var theme = de.getAttribute ? de.getAttribute("data-ylg-theme") : "dark";
     syncChromeScrim(doc, theme);
     applyTintChannels(de, "media", chromeState.accent);
+  }
+
+  var WATCH_RIM_SELECTOR = "ytd-watch-flexy ytd-watch-metadata, ytd-watch-flexy #secondary, ytd-watch-flexy ytd-playlist-panel-renderer, ytd-watch-flexy ytd-comments";
+
+  function applyAmbientRim(doc, syncEnabled) {
+    var de = doc && doc.documentElement;
+    if (!de || !de.style) return;
+    var nodes = (doc && typeof doc.querySelectorAll === "function") ? doc.querySelectorAll(WATCH_RIM_SELECTOR) : null;
+    if (!syncEnabled || !ambientRim) {
+      if (de.style.removeProperty) de.style.removeProperty("--ylg-ambient-rim");
+      if (de.removeAttribute && (!de.getAttribute || de.getAttribute("data-ylg-ambient-sync") !== null)) {
+        de.removeAttribute("data-ylg-ambient-sync");
+      }
+      if (nodes) {
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+          if (node && node.style && node.style.removeProperty) node.style.removeProperty("--ylg-ambient-rim");
+        }
+      }
+      return;
+    }
+    var triplet = ambientRim.r + ", " + ambientRim.g + ", " + ambientRim.b;
+    if (de.style.setProperty && (!de.style.getPropertyValue || de.style.getPropertyValue("--ylg-ambient-rim") !== triplet)) {
+      de.style.setProperty("--ylg-ambient-rim", triplet);
+    }
+    if (de.setAttribute && (!de.getAttribute || de.getAttribute("data-ylg-ambient-sync") !== "1")) {
+      de.setAttribute("data-ylg-ambient-sync", "1");
+    }
+    if (nodes) {
+      for (var j = 0; j < nodes.length; j++) {
+        var panel = nodes[j];
+        if (panel && panel.style && panel.style.setProperty &&
+            (!panel.style.getPropertyValue || panel.style.getPropertyValue("--ylg-ambient-rim") !== triplet)) {
+          panel.style.setProperty("--ylg-ambient-rim", triplet);
+        }
+      }
+    }
+  }
+
+  /** Feed a sampled video colour into --ylg-ambient-rim for surrounding watch panels. */
+  function setAmbientRim(doc, rgb) {
+    var next = (rgb && typeof rgb.r === "number") ? { r: rgb.r, g: rgb.g, b: rgb.b } : null;
+    var de = doc && doc.documentElement;
+    var activeAmbient = !!(de && de.getAttribute && de.getAttribute("data-ylg-ambient") === "on");
+    if (next && ambientRim && activeAmbient && de && de.getAttribute && de.getAttribute("data-ylg-ambient-sync") === "1" &&
+        Math.abs(next.r - ambientRim.r) + Math.abs(next.g - ambientRim.g) + Math.abs(next.b - ambientRim.b) < 9) {
+      var nodes = (doc && typeof doc.querySelectorAll === "function") ? doc.querySelectorAll(WATCH_RIM_SELECTOR) : [];
+      var missingHostRim = false;
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        if (n && n.style && n.style.getPropertyValue && !n.style.getPropertyValue("--ylg-ambient-rim")) {
+          missingHostRim = true;
+          break;
+        }
+      }
+      if (!missingHostRim) return;
+    }
+    ambientRim = next;
+    applyAmbientRim(doc, activeAmbient && !!ambientRim);
   }
 
   /** Resolve Auto against YouTube Appearance, not the operating system.
@@ -497,6 +583,12 @@
     var ambOn = !!(s.enabled && s.ambientLight && s.ambientLight.enabled);
     de.setAttribute("data-ylg-ambient", ambOn ? "on" : "off");
     de.setAttribute("data-ylg-ambient-quality", s.ambientLight.quality);
+    applyAmbientRim(doc, !!(ambOn && s.ambientLight.glassSync));
+
+    if (s.enabled && s.hideShortsShelf) de.setAttribute("data-ylg-hide-shorts", "true");
+    else if (de.removeAttribute) de.removeAttribute("data-ylg-hide-shorts");
+    if (s.enabled && s.zenWatch) de.setAttribute("data-ylg-zen-watch", "true");
+    else if (de.removeAttribute) de.removeAttribute("data-ylg-zen-watch");
 
     setProp("--ylg-blur", px(s.blur));
     // Blur 0 means "no backdrop blur", so the derived sizes collapse with it
@@ -970,6 +1062,16 @@
     "setting-surroundingContentFillOpacity",
     "setting-surroundingContentImagesOpacity",
     "setting-pageBackgroundGreyness",
+    "setting-flickerReduction",
+    "setting-directionTopEnabled",
+    "setting-directionRightEnabled",
+    "setting-directionBottomEnabled",
+    "setting-directionLeftEnabled",
+    "setting-videoShadowSize",
+    "setting-videoShadowOpacity",
+    "setting-energySaver",
+    "setting-vibrance",
+    "setting-contrast",
     "ylg-ambient-visual-baseline-v1"
   ]);
 
@@ -983,6 +1085,7 @@
     ENUMS: ENUMS,
     AMBIENT_RANGES: AMBIENT_RANGES,
     AMBIENT_QUALITY: AMBIENT_QUALITY,
+    AMBIENT_DIRECTIONS: AMBIENT_DIRECTIONS,
     /* Opacity slider <-> stored alpha. Exported so the popup (and any test)
        uses this one curve instead of re-deriving the mapping. */
     opacityToSlider: opacityToSlider,   // 0..1 -> integer 0..100
@@ -997,6 +1100,7 @@
     hydrateI18n: hydrateI18n,
     applySettingsToDocument: applySettingsToDocument,
     setMediaTint: setMediaTint,
+    setAmbientRim: setAmbientRim,
     applyThemeToDocument: applyThemeToDocument,
     getStoredSettings: getStoredSettings,
     loadSettings: loadSettings,

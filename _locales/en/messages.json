@@ -406,5 +406,86 @@
   },
   "skySearchUnavailable": {
     "message": "City search is unavailable. Your saved location is unchanged."
+  },
+  "flickerReductionLabel": {
+    "message": "Anti-flicker"
+  },
+  "flickerReductionAria": {
+    "message": "Anti-flicker frame blend strength"
+  },
+  "vibranceLabel": {
+    "message": "Vibrance"
+  },
+  "vibranceAria": {
+    "message": "Ambient color vibrance percent"
+  },
+  "contrastLabel": {
+    "message": "Contrast"
+  },
+  "contrastAria": {
+    "message": "Ambient contrast percent"
+  },
+  "videoShadowLabel": {
+    "message": "Edge halo"
+  },
+  "videoShadowAria": {
+    "message": "Player edge halo shadow size"
+  },
+  "ambientDirectionLabel": {
+    "message": "Glow sides"
+  },
+  "dirFull": {
+    "message": "All 4 sides"
+  },
+  "dirSides": {
+    "message": "Left + Right"
+  },
+  "dirTopArch": {
+    "message": "Top arch"
+  },
+  "glassSyncLabel": {
+    "message": "Sync panel rim with video glow"
+  },
+  "detectBarSizeLabel": {
+    "message": "Auto-crop letterbox bars (21:9 / 4:3)"
+  },
+  "energySaverLabel": {
+    "message": "Save power on static video frames"
+  },
+  "shortsMode": {
+    "message": "Shorts"
+  },
+  "experienceHeading": {
+    "message": "Experience & Focus"
+  },
+  "immersiveCinemaLabel": {
+    "message": "Immersive Cinema auto-dim"
+  },
+  "hotkeysLabel": {
+    "message": "Quick shortcuts (Alt+A / Alt+S / Alt+D)"
+  },
+  "hotkeysHint": {
+    "message": "Alt+A toggles Ambient Light, Alt+S cycles Style Profiles, Alt+D toggles Cinema dim."
+  },
+  "hideShortsShelfLabel": {
+    "message": "Hide Shorts shelves on Home & sidebar"
+  },
+  "zenWatchLabel": {
+    "message": "Zen Watch focus (dim sidebar until hover)"
+  },
+  "toastAmbientOn": {
+    "message": "Ambient Light: On"
+  },
+  "toastAmbientOff": {
+    "message": "Ambient Light: Off"
+  },
+  "toastProfilePrefix": {
+    "message": "Profile: "
+  },
+  "toastCinemaOn": {
+    "message": "Immersive Cinema: On"
+  },
+  "toastCinemaOff": {
+    "message": "Immersive Cinema: Off"
   }
 }

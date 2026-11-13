@@ -93,6 +93,21 @@
     patch[keys.saturation] = Math.round(number(amb.saturation, 0, 2, 1.1) * 100);
     patch[keys.fpsLimit] = Math.round(number(amb.fpsLimit, 1, 30, 12));
     patch["setting-spread"] = clampSpread(amb.spread);
+    patch["setting-flickerReduction"] = Math.round(number(amb.flickerReduction, 0, 100, 0));
+    var barOn = amb.detectBarSize === true;
+    patch["setting-detectHorizontalBarSizeEnabled"] = barOn;
+    patch["setting-detectVerticalBarSizeEnabled"] = barOn;
+    var dir = (amb.directionMode === "sides" || amb.directionMode === "topArch") ? amb.directionMode : "full";
+    patch["setting-directionTopEnabled"] = dir !== "sides";
+    patch["setting-directionBottomEnabled"] = dir === "full";
+    patch["setting-directionLeftEnabled"] = true;
+    patch["setting-directionRightEnabled"] = true;
+    var vShadow = Math.round(number(amb.videoShadow, 0, 100, 0));
+    patch["setting-videoShadowSize"] = vShadow;
+    patch["setting-videoShadowOpacity"] = vShadow > 0 ? 55 : 0;
+    patch["setting-energySaver"] = amb.energySaver === true;
+    patch["setting-vibrance"] = Math.round(number(amb.vibrance, 0, 2, 1) * 100);
+    patch["setting-contrast"] = Math.round(number(amb.contrast, 0, 2, 1) * 100);
     patch["setting-enableInViews"] = views;
     patch["setting-enableInPictureInPicture"] = false;
     // One Appearance authority: upstream's default is forced Dark and otherwise
@@ -162,8 +177,31 @@
         var workaround = activeEngine.chromiumBugVideoJitterWorkaround;
         if (workaround && workaround.update) workaround.update();
       }
+      if (changed.indexOf("flickerReduction") !== -1) {
+        if (vendorSettings.updateBufferProjectorWebGLCtx) {
+          await vendorSettings.updateBufferProjectorWebGLCtx();
+        }
+        activeEngine.buffersCleared = true;
+      }
+      if (changed.indexOf("detectHorizontalBarSizeEnabled") !== -1 || changed.indexOf("detectVerticalBarSizeEnabled") !== -1) {
+        if (activeEngine.barDetection && activeEngine.barDetection.reset) {
+          activeEngine.barDetection.reset();
+        }
+        activeEngine.buffersCleared = true;
+      }
+      if (changed.indexOf("vibrance") !== -1 && activeEngine.projector && activeEngine.projector.updateVibrance) {
+        await activeEngine.projector.updateVibrance();
+      }
+      if (changed.indexOf("energySaver") !== -1) {
+        if (vendorSettings.energySaver && activeEngine.calculateAverageVideoFramesDifference) {
+          activeEngine.calculateAverageVideoFramesDifference();
+        } else if (!vendorSettings.energySaver && activeEngine.resetAverageVideoFramesDifference) {
+          activeEngine.resetAverageVideoFramesDifference();
+        }
+      }
       if (vendorSettings.updateVisibility) vendorSettings.updateVisibility();
-      if (changed.some(function (name) { return Object.prototype.hasOwnProperty.call(visualDefaults, "setting-" + name); }) &&
+      if ((changed.some(function (name) { return Object.prototype.hasOwnProperty.call(visualDefaults, "setting-" + name); }) ||
+          changed.indexOf("videoShadowSize") !== -1 || changed.indexOf("videoShadowOpacity") !== -1) &&
           activeEngine.updateStyles) activeEngine.updateStyles();
     }
     var on = patch[keys.enabled];

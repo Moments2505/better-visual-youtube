@@ -8,7 +8,9 @@
 /* Master/ambient gates cover upstream too, including the interval before its
    asynchronous hide completes. Runtime stopping is handled by the bridge. */
 html[data-ylg-enabled="false"] .ambientlight,
-html[data-ylg-ambient="off"] .ambientlight {
+html[data-ylg-ambient="off"] .ambientlight,
+html[data-ylg-enabled="false"] #ylg-shorts-glow,
+html[data-ylg-ambient="off"] #ylg-shorts-glow {
   display: none !important;
 }
 
@@ -81,10 +83,47 @@ html[data-ylg-ambient="on"] ytd-app[ambient] #cine-data {
   display: none !important;
 }
 
+/* Feature #3: Ambient-Reactive Glass Rim on surrounding Watch panels. */
+@property --ylg-ambient-rim {
+  syntax: "*";
+  inherits: false;
+  initial-value: 255, 255, 255;
+}
+html[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ylg-ambient-sync="1"]:not([data-ylg-fill="none"]) ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-playlist-panel-renderer, ytd-comments).ylg-glass {
+  box-shadow:
+    inset 0 1px 0 rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.42),
+    inset 0 0 0 1px rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.24),
+    0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+/* Feature #5: Ultra-fast GPU bilinear-upscaled Shorts Vertical Glow layer. */
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] #ylg-shorts-glow {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: -1;
+  object-fit: cover;
+  opacity: var(--ylg-shorts-glow-opacity, 0.68);
+  transform: translateZ(0);
+}
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) {
+  isolation: isolate;
+  background-color: transparent !important;
+}
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) :is(#shorts-container, #shorts-inner-container, .navigation-container, ytd-reel-video-renderer, #player-container) {
+  background-color: transparent !important;
+}
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) #cinematics {
+  display: none !important;
+}
+
 /* Reduced motion: disable decorative ambient unless system-motion opt-out is set.
    The bridge stops upstream through its hide/start lifecycle without storing mode state. */
 @media (prefers-reduced-motion: reduce) {
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ambientlight {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] .ambientlight,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] #ylg-shorts-glow {
     display: none !important;
   }
 }
@@ -92,7 +131,9 @@ html[data-ylg-ambient="on"] ytd-app[ambient] #cine-data {
 /* Forced colors: ambient is decorative - disable entirely */
 @media (forced-colors: active) {
   html[data-ylg-enabled="true"] .ambientlight,
-  html[data-ylg-ambient="on"] .ambientlight {
+  html[data-ylg-ambient="on"] .ambientlight,
+  html[data-ylg-enabled="true"] #ylg-shorts-glow,
+  html[data-ylg-ambient="on"] #ylg-shorts-glow {
     display: none !important;
   }
 }

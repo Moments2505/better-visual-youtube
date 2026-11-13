@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Tiện ích miễn phí, mã nguồn mở, dành cho Microsoft Edge và Google Chrome trên máy tính.
 
-**Bản chính thức mới nhất: [0.5.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.5.0).** Bổ sung Cấu hình nhanh 1 chạm, đồng bộ cài đặt & Xuất/Nhập JSON, giao diện song ngữ Anh/Việt gốc, liền mạch kính nền trời và giảm 70% dung lượng gói MV3. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.5.0.md)
+**Bản chính thức mới nhất: [0.6.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.6.0).** Bổ sung bộ Ambient Light mở rộng (Giảm nhấp nháy, Tự nhận diện viền đen, Đồng bộ viền kính, Hướng ánh sáng, Shorts Glow, Tiết kiệm năng lượng, Độ rực & Tương phản), Rạp phim nhập vai, Phím tắt HUD, Zen Watch, thiết kế lại ô đang chọn thanh bên, headbar liền mạch một lớp và tối ưu 120–144Hz. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.6.0.md)
 
 ## Thêm chiều sâu cho giao diện
 

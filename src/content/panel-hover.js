@@ -25,7 +25,10 @@
       if (panel.id !== "secondary") value = "leaving-primary";
     });
     // A departing left panel stays below the newly selected right panel.
-    document.documentElement.setAttribute("data-ylg-panel-side", value);
+    var de = document.documentElement;
+    if (!de.getAttribute || de.getAttribute("data-ylg-panel-side") !== value) {
+      de.setAttribute("data-ylg-panel-side", value);
+    }
   }
   function finish(panel) {
     if (leaving.has(panel)) root.clearTimeout(leaving.get(panel));
@@ -101,6 +104,13 @@
       }
     }
     if (next && next.querySelector("#description-inline-expander[is-expanded]")) next = null;
+    if (next && (next.id === "secondary" || next.id === "comments" || next.tagName === "YTD-COMMENTS")) {
+      var deState = document.documentElement;
+      if (deState.getAttribute("data-ylg-zen-watch") === "true" ||
+          deState.getAttribute("data-ylg-cinema-idle") === "true") {
+        next = null;
+      }
+    }
     select(next);
   }
   function schedule() {

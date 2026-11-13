@@ -27,9 +27,13 @@
   var rvfcId = null;
   var last = null;
   var lastRun = 0;
+  var inFlight = false;
+  var lastPointerAt = 0;
   var canvas = null;
   var ctx = null;
+  var allowThumbFallback = false;
   var MIN_INTERVAL = 700;      // ≤ ~1.4 Hz; a colour wash does not need more
+  function onPointerMove() { lastPointerAt = Date.now(); }
   var firstVisibleThumb = function () {
     var list = document.querySelectorAll(
       "ytd-rich-item-renderer ytd-thumbnail img, ytd-video-renderer ytd-thumbnail img, " +
@@ -75,6 +79,19 @@
     return { r: clamp(r), g: clamp(g), b: clamp(b) };
   }
 
+  function colorFromPixels(data) {
+    if (!data) return null;
+    var r = 0, g = 0, b = 0, n = 0;
+    for (var i = 0; i < data.length; i += 4) {
+      if (data[i + 3] < 8) continue;
+      r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
+    }
+    if (!n) return null;
+    r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+    if (!usable(r, g, b)) return null;
+    return adjust(r, g, b);
+  }
+
   function readFrom(el, isVideo) {
     var c = surface();
     if (!c) return null;
@@ -85,15 +102,7 @@
     } catch (e) {
       return null;                        // tainted canvas / protected media
     }
-    var r = 0, g = 0, b = 0, n = 0;
-    for (var i = 0; i < data.length; i += 4) {
-      if (data[i + 3] < 8) continue;
-      r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
-    }
-    if (!n) return null;
-    r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
-    if (!usable(r, g, b)) return null;
-    return adjust(r, g, b);
+    return colorFromPixels(data);
   }
 
   function publish(color) {
@@ -119,7 +128,7 @@
     if (video && video.readyState >= 2 && !video.paused && !video.ended) {
       color = readFrom(video, true);
     }
-    if (!color && !video) {
+    if (!color && !video && allowThumbFallback) {
       var img = firstVisibleThumb();
       if (img) color = readFrom(img, false);
     }
@@ -128,7 +137,53 @@
     return color;
   }
 
+  function sampleAsync() {
+    if (!active || inFlight) return;
+    var now = Date.now();
+    if (now - lastPointerAt < 450) return;
+    if (now - lastRun < MIN_INTERVAL) return;
+    lastRun = now;
+    if ((video && video.seeking) || document.querySelector(
+      '.ytp-progress-bar-container:hover, .ytp-volume-area:hover, [data-ylg-dragging="1"]')) return;
+    if (video && video.readyState >= 2 && !video.paused && !video.ended) {
+      inFlight = true;
+      try {
+        root.createImageBitmap(video, { resizeWidth: W, resizeHeight: H }).then(function (bmp) {
+          inFlight = false;
+          if (!active || !bmp) {
+            if (bmp && bmp.close) { try { bmp.close(); } catch (e0) {} }
+            return;
+          }
+          var c = surface();
+          var data = null;
+          try {
+            if (c) {
+              c.clearRect(0, 0, W, H);
+              c.drawImage(bmp, 0, 0, W, H);
+              data = c.getImageData(0, 0, W, H).data;
+            }
+          } catch (e1) { data = null; }
+          try { if (bmp.close) bmp.close(); } catch (e2) {}
+          var col = data ? colorFromPixels(data) : null;
+          if (col) publish(col);
+        }, function () { inFlight = false; });
+      } catch (e3) {
+        inFlight = false;
+      }
+      return;
+    }
+    if (!video && allowThumbFallback) {
+      var img = firstVisibleThumb();
+      if (img) {
+        var cThumb = readFrom(img, false);
+        if (cThumb) publish(cThumb);
+      }
+    }
+  }
+
   function currentVideo() {
+    var direct = document.querySelector("ytd-watch-flexy:not([hidden]) video.html5-main-video, #movie_player video.html5-main-video");
+    if (direct) return direct;
     if (root.YLG_NAV && root.YLG_NAV.getPlayer) {
       try {
         var p = root.YLG_NAV.getPlayer();
@@ -139,6 +194,7 @@
   }
 
   function bindVideo() {
+    if (video && video.isConnected !== false && !video.ended) return;
     var next = currentVideo();
     if (next === video) return;
     unbindVideo();
@@ -147,7 +203,8 @@
       var tick = function () {
         rvfcId = null;
         if (!active || !video) return;
-        sample();
+        if (typeof root.createImageBitmap === "function") sampleAsync();
+        else sample();
         if (!document.hidden && video && !video.paused) rvfcId = video.requestVideoFrameCallback(tick);
       };
       rvfcId = video.requestVideoFrameCallback(tick);
@@ -167,8 +224,11 @@
   }
 
   function init(settings) {
-    var wanted = !!(settings && settings.enabled !== false && settings.tint === "media");
-    if (!wanted) { teardown(); return; }
+    var amb = (settings && settings.ambientLight) || {};
+    var mediaOn = !!(settings && settings.enabled !== false && settings.tint === "media");
+    var syncOn = !!(settings && settings.enabled !== false && amb.enabled !== false && amb.glassSync === true);
+    allowThumbFallback = mediaOn;
+    if (!mediaOn && !syncOn) { teardown(); return; }
     if (active) { bindVideo(); sample(); return; }
     active = true;
     bindVideo();
@@ -177,8 +237,10 @@
     timer = setInterval(function () {
       if (document.hidden) return;
       bindVideo();
-      sample();
+      if (typeof root.createImageBitmap === "function") sampleAsync();
+      else sample();
     }, 1200);
+    document.addEventListener("pointermove", onPointerMove, { passive: true });
     document.addEventListener("visibilitychange", onVisibility);
     // The existing 1200ms safety timer already rebinds recycled video nodes.
     // Do not rediscover the player (including visibility/layout reads) for
@@ -190,10 +252,13 @@
     active = false;
     if (timer !== null) { clearInterval(timer); timer = null; }
     if (observer) { observer.disconnect(); observer = null; }
+    try { document.removeEventListener("pointermove", onPointerMove); } catch (e) {}
     try { document.removeEventListener("visibilitychange", onVisibility); } catch (e) {}
     unbindVideo();
     last = null;
     lastRun = 0;
+    inFlight = false;
+    lastPointerAt = 0;
   }
 
   root.YLG_TINT = {

@@ -176,6 +176,7 @@
     setSegmented("ylg-theme", s.theme);
     setSegmented("ylg-tint", uiTint(s));
     setSegmented("ylg-ambient-quality", amb.quality);
+    setSegmented("ylg-amb-direction", amb.directionMode || "full");
     setSegmented("ylg-daylight-scene", s.daylightBackground.scene);
     syncColour(s);
     syncProfiles(s);
@@ -233,6 +234,13 @@
     setSlider("ylg-amb-saturation", "ylg-amb-saturation-v", Math.round(a.saturation * 100), pct);
     setSlider("ylg-amb-brightness", "ylg-amb-brightness-v", Math.round(a.brightness * 100), pct);
     setSlider("ylg-amb-fps", "ylg-amb-fps-v", a.fpsLimit, function (v) { return v + "fps"; });
+    setSlider("ylg-amb-flicker", "ylg-amb-flicker-v", a.flickerReduction === undefined ? 35 : a.flickerReduction, pct);
+    setSlider("ylg-amb-vibrance", "ylg-amb-vibrance-v", Math.round((a.vibrance === undefined ? 1 : a.vibrance) * 100), pct);
+    setSlider("ylg-amb-contrast", "ylg-amb-contrast-v", Math.round((a.contrast === undefined ? 1 : a.contrast) * 100), pct);
+    setSlider("ylg-amb-shadow", "ylg-amb-shadow-v", a.videoShadow === undefined ? 25 : a.videoShadow, pct);
+    setChecked("ylg-amb-sync", a.glassSync !== false);
+    setChecked("ylg-amb-bars", a.detectBarSize === true);
+    setChecked("ylg-amb-energy", a.energySaver !== false);
     var o = s.optics || {};
     setChecked("ylg-optics-enabled", o.enabled !== false);
     setSlider("ylg-optics-lens", "ylg-optics-lens-v", o.lensPx, fmtLens);
@@ -245,6 +253,11 @@
     setChecked("ylg-amb-normal", modes.normal);
     setChecked("ylg-amb-theater", modes.theater);
     setChecked("ylg-amb-fullscreen", modes.fullscreen);
+    setChecked("ylg-amb-shorts", modes.shorts === true);
+    setChecked("ylg-exp-cinema", s.immersiveCinema === true);
+    setChecked("ylg-exp-hotkeys", s.hotkeys !== false);
+    setChecked("ylg-exp-hide-shorts", s.hideShortsShelf === true);
+    setChecked("ylg-exp-zen-watch", s.zenWatch === true);
     syncState(s);
   }
 
@@ -258,7 +271,7 @@
     var colourOn = uiTint(s) === "custom";
     for (var i = 0; i < controls.length; i++) {
       var el = controls[i];
-      var ambientChild = el.id.indexOf("ylg-amb-") === 0 || !!el.closest("#ylg-ambient-quality");
+      var ambientChild = el.id.indexOf("ylg-amb-") === 0 || !!el.closest("#ylg-ambient-quality") || !!el.closest("#ylg-amb-direction");
       var opticsChild = el.id.indexOf("ylg-optics-") === 0 && el.id !== "ylg-optics-enabled";
       var colourChild = !!el.closest("#ylg-accent-row");
       var daylightChild = el.id === "ylg-daylight-intensity" || el.id === "ylg-daylight-animate" || el.id === "ylg-daylight-rain" || !!el.closest("#ylg-daylight-scene") || !!el.closest("#ylg-sky-live-controls");
@@ -486,6 +499,39 @@
     bindSlider("ylg-amb-fps", "ylg-amb-fps-v", function (v) {
       update({ ambientLight: Object.assign({}, current.ambientLight, { fpsLimit: v }) });
     }, function (v) { return v + "fps"; });
+    bindSlider("ylg-amb-flicker", "ylg-amb-flicker-v", function (v) {
+      update({ ambientLight: Object.assign({}, current.ambientLight, { flickerReduction: v }) });
+    }, pct);
+    bindSlider("ylg-amb-vibrance", "ylg-amb-vibrance-v", function (v) {
+      update({ ambientLight: Object.assign({}, current.ambientLight, { vibrance: v / 100 }) });
+    }, pct);
+    bindSlider("ylg-amb-contrast", "ylg-amb-contrast-v", function (v) {
+      update({ ambientLight: Object.assign({}, current.ambientLight, { contrast: v / 100 }) });
+    }, pct);
+    bindSlider("ylg-amb-shadow", "ylg-amb-shadow-v", function (v) {
+      update({ ambientLight: Object.assign({}, current.ambientLight, { videoShadow: v }) });
+    }, pct);
+    bindSeg("ylg-amb-direction", function (v) {
+      update({ ambientLight: Object.assign({}, current.ambientLight, { directionMode: v }) });
+    });
+    var ambSync = $("ylg-amb-sync");
+    if (ambSync) {
+      ambSync.addEventListener("change", function () {
+        update({ ambientLight: Object.assign({}, current.ambientLight, { glassSync: this.checked }) });
+      });
+    }
+    var ambBars = $("ylg-amb-bars");
+    if (ambBars) {
+      ambBars.addEventListener("change", function () {
+        update({ ambientLight: Object.assign({}, current.ambientLight, { detectBarSize: this.checked }) });
+      });
+    }
+    var ambEnergy = $("ylg-amb-energy");
+    if (ambEnergy) {
+      ambEnergy.addEventListener("change", function () {
+        update({ ambientLight: Object.assign({}, current.ambientLight, { energySaver: this.checked }) });
+      });
+    }
 
     function updateOptics(patch) {
       var next = Object.assign({}, current.optics || {}, patch);
@@ -519,6 +565,20 @@
         update({ ambientLight: Object.assign({}, current.ambientLight, { modes: Object.assign({}, current.ambientLight.modes, { fullscreen: this.checked }) }) });
       });
     }
+    var ambShorts = $("ylg-amb-shorts");
+    if (ambShorts) {
+      ambShorts.addEventListener("change", function () {
+        update({ ambientLight: Object.assign({}, current.ambientLight, { modes: Object.assign({}, current.ambientLight.modes, { shorts: this.checked }) }) });
+      });
+    }
+    var expCinema = $("ylg-exp-cinema");
+    if (expCinema) expCinema.addEventListener("change", function () { update({ immersiveCinema: this.checked }); });
+    var expHotkeys = $("ylg-exp-hotkeys");
+    if (expHotkeys) expHotkeys.addEventListener("change", function () { update({ hotkeys: this.checked }); });
+    var expHideShorts = $("ylg-exp-hide-shorts");
+    if (expHideShorts) expHideShorts.addEventListener("change", function () { update({ hideShortsShelf: this.checked }); });
+    var expZenWatch = $("ylg-exp-zen-watch");
+    if (expZenWatch) expZenWatch.addEventListener("change", function () { update({ zenWatch: this.checked }); });
 
     var reset = $("ylg-reset");
     if (reset) {

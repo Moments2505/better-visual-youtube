@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Better visual Youtube",
   "short_name": "Better visual",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "default_locale": "en",
   "description": "Give YouTube a new look with Liquid Glass, Ambient Light and customizable animations.",
   "minimum_chrome_version": "121",
@@ -50,6 +50,7 @@
         "src/content/panel-hover.js",
         "src/content/sky-renderer.js",
         "src/content/daylight-background.js",
+        "src/content/experience-controls.js",
         "src/content/bootstrap.js"
       ],
       "css": [
@@ -81,7 +82,8 @@
         "src/styles/daylight-background.css",
         "src/styles/daylight-integration.css",
         "src/styles/light-ambient.css",
-        "src/styles/opacity-ceiling.css"
+        "src/styles/opacity-ceiling.css",
+        "src/styles/experience-features.css"
       ],
       "run_at": "document_start",
       "all_frames": false

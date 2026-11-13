@@ -3,8 +3,7 @@
 html[data-ylg-enabled="true"][data-ylg-optics="on"] .ylg-glass[data-ylg-level="panel"] {
   /* Rest-state timing governs pointer exit. Ease-in/out avoids the fast initial
      collapse produced by reusing the entry's front-loaded ease-out curve. */
-  transition: transform 480ms cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 360ms ease-in-out, background-color 360ms ease-in-out;
+  transition: transform 480ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 html[data-ylg-enabled="true"][data-ylg-optics="on"] :is(ytd-watch-metadata, ytd-comments).ylg-glass {
   transform-origin: left top;
@@ -12,9 +11,8 @@ html[data-ylg-enabled="true"][data-ylg-optics="on"] :is(ytd-watch-metadata, ytd-
 html[data-ylg-enabled="true"][data-ylg-optics="on"] #secondary.ylg-glass {
   transform-origin: right top;
 }
-html[data-ylg-enabled="true"][data-ylg-optics="on"] .ylg-glass[data-ylg-level="panel"]:is(:hover, :focus-within) {
-  transition: transform 360ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    box-shadow 280ms ease-out, background-color 280ms ease-out;
+html[data-ylg-enabled="true"][data-ylg-optics="on"]:not([data-ylg-panel-controller="on"]) .ylg-glass[data-ylg-level="panel"]:is(:hover, :focus-within) {
+  transition: transform 360ms cubic-bezier(0.22, 0.61, 0.36, 1);
   transform: scale(calc(1 + (var(--ylg-hover-scale, 1.028) - 1) * 0.4));
 }
 html[data-ylg-enabled="true"][data-ylg-optics-magnify="0"] .ylg-glass[data-ylg-level="panel"]:is(:hover, :focus-within) {

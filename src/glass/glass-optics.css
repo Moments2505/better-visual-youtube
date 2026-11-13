@@ -152,10 +152,7 @@ html[data-ylg-optics="on"] #below     { position: relative; z-index: 2; }
    Measured after: the same overlap resolves to METADATA.
    Same treatment for the comments, so a zooming comments panel always covers the
    video-info card it overlaps rather than sliding beneath it. */
-html[data-ylg-optics="on"] #primary:has(ytd-watch-metadata:hover),
-html[data-ylg-optics="on"] #primary:has(ytd-watch-metadata:focus-within),
-html[data-ylg-optics="on"] #primary:has(ytd-comments:hover),
-html[data-ylg-optics="on"] #primary:has(ytd-comments:focus-within) {
+html[data-ylg-optics="on"]:not([data-ylg-panel-controller="on"]) #primary:has(> #primary-inner > #below :is(ytd-watch-metadata, ytd-comments):is(:hover, :focus-within)) {
   z-index: 4;
 }
 

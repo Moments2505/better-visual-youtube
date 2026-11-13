@@ -2314,25 +2314,41 @@ Click on the questionmark for more and updated information about these artifacts
         try {
           const start = performance.now();
           if (this.worker.isFallbackWorker || !allowedToTransfer || !buffer.transferToImageBitmap || !buffer.getContext) {
-            var _this$ctx;
-            if (!this.canvas) {
-              this.canvas = new SafeOffscreenCanvas(512, 512);
-              this.ctx = undefined;
+            if (!this.worker.isFallbackWorker && typeof createImageBitmap === 'function') {
+              try {
+                const bitmap = await createImageBitmap(buffer, {
+                  resizeWidth: 512,
+                  resizeHeight: 512,
+                  resizeQuality: 'low'
+                });
+                if (bitmap) {
+                  canvasInfo = {
+                    bitmap
+                  };
+                }
+              } catch (_bitmapErr) {}
             }
-            if (!this.ctx || (_this$ctx = this.ctx) !== null && _this$ctx !== void 0 && _this$ctx.isContextLost && this.ctx.isContextLost()) {
-              this.ctx = this.canvas.getContext('2d', {
-                desynchronized: true,
-                willReadFrequently: true
-              });
-              this.ctx.imageSmoothingEnabled = true;
+            if (!canvasInfo) {
+              var _this$ctx;
+              if (!this.canvas) {
+                this.canvas = new SafeOffscreenCanvas(512, 512);
+                this.ctx = undefined;
+              }
+              if (!this.ctx || (_this$ctx = this.ctx) !== null && _this$ctx !== void 0 && _this$ctx.isContextLost && this.ctx.isContextLost()) {
+                this.ctx = this.canvas.getContext('2d', {
+                  desynchronized: true,
+                  willReadFrequently: true
+                });
+                this.ctx.imageSmoothingEnabled = true;
+              }
+              this.ctx.drawImage(buffer, 0, 0, this.canvas.width, this.canvas.height);
+              canvasInfo = this.worker.isFallbackWorker || !this.canvas.transferToImageBitmap ? {
+                canvas: this.canvas,
+                ctx: this.ctx
+              } : {
+                bitmap: this.canvas.transferToImageBitmap()
+              };
             }
-            this.ctx.drawImage(buffer, 0, 0, this.canvas.width, this.canvas.height);
-            canvasInfo = this.worker.isFallbackWorker || !this.canvas.transferToImageBitmap ? {
-              canvas: this.canvas,
-              ctx: this.ctx
-            } : {
-              bitmap: this.canvas.transferToImageBitmap()
-            };
           } else {
             bufferCtx = buffer.getContext('2d');
             if (bufferCtx instanceof Promise) bufferCtx = await bufferCtx;
@@ -2450,7 +2466,7 @@ Click on the questionmark for more and updated information about these artifacts
           } else {
             minThrottle = lastChange + 15000 < now ? 1000 : lastChange + 3000 < now ? 500 : 0;
           }
-          const throttle = Math.max(minThrottle, Math.min(5000, Math.pow(duration, 1.2) - 250));
+          const throttle = Math.max(minThrottle, 1500, Math.min(5000, Math.pow(duration, 1.2) - 250));
           this.ambientlight.stats.updateBarDetectionInfo(throttle, this.changes[this.changes.length - 1]);
           this.timeout = setTimeout(wrapErrorHandler(() => {
             this.timeout = undefined;

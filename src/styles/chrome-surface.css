@@ -81,7 +81,7 @@ html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass::before {
 /* The bounded sheet owns the only headbar painter. */
 html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container#masthead-container ytd-masthead.ylg-glass,
 html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
-html[data-ylg-enabled="true"]:has(#frosted-glass) #chips-wrapper,
+html[data-ylg-enabled="true"]:has(#frosted-glass) :is(#chips-wrapper, ytd-feed-filter-chip-bar-renderer),
 html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-searchbox.ylg-glass {
   background-color: transparent !important;
   background-image: none !important;

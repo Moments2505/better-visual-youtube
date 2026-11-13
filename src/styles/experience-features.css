@@ -1,0 +1,139 @@
+/* ============================================================================
+   YouTube Liquid Glass - experience-features.css
+   Feature #7 (Immersive Cinema idle dimming), Feature #8 (Glass HUD Toast),
+   and Feature #9 (Clean / Zen Layout toggles). Compositor-only properties.
+   ============================================================================ */
+
+/* Feature #7 (Immersive Cinema) & Feature #9 (Zen Watch):
+   Use childless ::after SolidColorDrawQuad scrims instead of container opacity < 1
+   so 5,000px #secondary / ytd-comments subtrees never allocate offscreen RenderSurfaces. */
+html[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments) {
+  position: relative;
+}
+html[data-ylg-enabled="true"] #masthead-container::after,
+html[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background-color: rgba(8, 10, 15, 0.78);
+  opacity: 0;
+  transition: opacity 180ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1));
+}
+html[data-ylg-enabled="true"] #masthead-container::after {
+  inset: 0;
+  z-index: 2100;
+}
+html[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
+  z-index: 40;
+}
+html[data-ylg-enabled="true"]:not([data-ylg-lowfx="true"]) #masthead-container::after,
+html[data-ylg-enabled="true"]:not([data-ylg-lowfx="true"]) ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
+  will-change: opacity;
+}
+html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) #masthead-container::after,
+html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
+  background-color: rgba(248, 250, 252, 0.76);
+}
+html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments),
+html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments, #comments) {
+  transform: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments)::after,
+html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] #masthead-container::after,
+html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
+  opacity: 1;
+}
+html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments):is(:hover, :focus-within)::after,
+html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] #masthead-container:is(:hover, :focus-within)::after,
+html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments):is(:hover, :focus-within)::after {
+  opacity: 0;
+}
+
+/* Feature #8: Compositor-only Liquid Glass HUD Toast */
+html[data-ylg-enabled="true"] #ylg-hud-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2200;
+  pointer-events: none;
+  padding: 9px 16px;
+  border-radius: 999px;
+  font: 600 13px/1.3 "Segoe UI", system-ui, sans-serif;
+  color: #f8fafc;
+  background-color: rgba(18, 24, 34, 0.78);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-accent, #3ea6ff) 38%, rgba(255, 255, 255, 0.22)),
+    0 10px 28px rgba(0, 0, 0, 0.34);
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  transition:
+    opacity 160ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1)),
+    transform 160ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1));
+}
+html[data-ylg-enabled="true"]:not([data-ylg-lowfx="true"]) #ylg-hud-toast {
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  backdrop-filter: blur(12px) saturate(1.3);
+}
+html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) #ylg-hud-toast {
+  color: #0f172a;
+  background-color: rgba(248, 250, 252, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-accent, #3ea6ff) 36%, rgba(15, 23, 42, 0.12)),
+    0 8px 24px rgba(15, 23, 42, 0.16);
+}
+html[data-ylg-enabled="true"] #ylg-hud-toast[data-ylg-visible="true"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Feature #9: Clean / Zen Layout toggles */
+html[data-ylg-enabled="true"][data-ylg-hide-shorts="true"] ytd-rich-section-renderer:has(> #content ytd-rich-shelf-renderer[is-shorts]),
+html[data-ylg-enabled="true"][data-ylg-hide-shorts="true"] ytd-rich-shelf-renderer[is-shorts],
+html[data-ylg-enabled="true"][data-ylg-hide-shorts="true"] ytd-reel-shelf-renderer,
+html[data-ylg-enabled="true"][data-ylg-hide-shorts="true"] ytd-guide-entry-renderer:has(a[href^="/shorts"], a[title="Shorts"]),
+html[data-ylg-enabled="true"][data-ylg-hide-shorts="true"] ytd-mini-guide-entry-renderer:has(a[href^="/shorts"], a[title="Shorts"]) {
+  display: none !important;
+}
+
+/* Feature #3: Ambient-Reactive Glass Rim on surrounding Watch panels (post panel-refinement). */
+@media (forced-colors: none) {
+  html[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ylg-ambient-sync="1"]:not([data-ylg-fill="none"]):not([data-ylg-opacity-solid="true"]) ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-playlist-panel-renderer, ytd-comments).ylg-glass[data-ylg-level="panel"] {
+    box-shadow:
+      0 1px 2px var(--ylg-shadow-contact),
+      0 8px 24px var(--ylg-shadow-ambient),
+      inset 0 1px 0 rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.52),
+      inset 0 0 0 1px rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.26) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] #masthead-container::after,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after,
+  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] #ylg-hud-toast {
+    transition: none !important;
+    will-change: auto !important;
+  }
+}
+
+@layer ylg-a11y {
+  @media (forced-colors: active) {
+    html[data-ylg-enabled="true"] #masthead-container::after,
+    html[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
+      display: none !important;
+    }
+    html[data-ylg-enabled="true"] #ylg-hud-toast {
+      background: Canvas !important;
+      background-image: none !important;
+      color: CanvasText !important;
+      border: 1px solid ButtonBorder !important;
+      box-shadow: none !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
+  }
+}

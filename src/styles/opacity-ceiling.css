@@ -9,6 +9,10 @@
     html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid] #frosted-glass::before {
       background: var(--ylg-chrome-scrim) !important;
     }
+    html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid]:has(#frosted-glass) #masthead-container :is(ytd-masthead, #masthead, ytd-searchbox).ylg-glass {
+      background-color: transparent !important;
+      background-image: none !important;
+    }
     html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid][data-ylg-fill="none"] #frosted-glass::before {
       content: none !important;
       background: none !important;

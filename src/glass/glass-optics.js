@@ -802,6 +802,16 @@
     return buildLens(id, { k: k, aberration: ab, w: box.w, h: box.h });
   }
 
+  function setRootAttr(name, value) {
+    var de = document.documentElement;
+    if (!de) return;
+    if (value === null || value === undefined) {
+      if (!de.hasAttribute || de.hasAttribute(name)) de.removeAttribute(name);
+    } else if (!de.getAttribute || de.getAttribute(name) !== value) {
+      de.setAttribute(name, value);
+    }
+  }
+
   function syncAuxLenses(px, ab) {
     var all = true;
     for (var id in AUX_BOXES) {
@@ -811,8 +821,7 @@
       if (!ok) all = false;
     }
     try {
-      if (all) document.documentElement.setAttribute("data-ylg-lens-split", "1");
-      else document.documentElement.removeAttribute("data-ylg-lens-split");
+      setRootAttr("data-ylg-lens-split", all ? "1" : null);
     } catch (e2) {}
     return all;
   }
@@ -827,10 +836,9 @@
         ok = buildLens("ylg-lens-chrome", { w: box.w, h: box.h,
           k: lensKFor(px), aberration: ab, edgeOnly: true });
       }
-      if (ok) document.documentElement.setAttribute("data-ylg-chrome-lens", "1");
-      else document.documentElement.removeAttribute("data-ylg-chrome-lens");
+      setRootAttr("data-ylg-chrome-lens", ok ? "1" : null);
     } catch (e) {
-      try { document.documentElement.removeAttribute("data-ylg-chrome-lens"); } catch (_) {}
+      try { setRootAttr("data-ylg-chrome-lens", null); } catch (_) {}
     }
     return ok;
   }
@@ -838,8 +846,7 @@
     var ok = false;
     try { ok = syncOne("ylg-lens-control", ".ytp-chrome-bottom .ytp-left-controls > .ytp-button", px, ab); } catch (e) {}
     try {
-      if (ok) document.documentElement.setAttribute("data-ylg-control-lens", "1");
-      else document.documentElement.removeAttribute("data-ylg-control-lens");
+      setRootAttr("data-ylg-control-lens", ok ? "1" : null);
     } catch (e) {}
     return ok;
   }
@@ -1025,7 +1032,10 @@
        band). The rim gradient in glass-player.css does it instead, and this is
        the only coupling between the user's slider and that gradient. */
     try {
-      document.documentElement.style.setProperty("--ylg-lens-ab", String(Math.max(0, Math.min(1, lensAb))));
+      var nextLensAb = String(Math.max(0, Math.min(1, lensAb)));
+      if (document.documentElement.style.getPropertyValue("--ylg-lens-ab") !== nextLensAb) {
+        document.documentElement.style.setProperty("--ylg-lens-ab", nextLensAb);
+      }
     } catch (e) {}
     /* Both axes are now in PIXELS, so the capsule's aspect ratio enters the
        field directly instead of being approximated by a constant. It still has
@@ -1045,20 +1055,20 @@
     var auxOK = lensOK ? syncAuxLenses(lensPx, lensAb) : false;
     if (lensOK) { syncChromeLens(lensPx, lensAb); syncControlLens(lensPx, lensAb); syncInterfaceLenses(lensPx, lensAb); }
     else {
-      document.documentElement.removeAttribute("data-ylg-chrome-lens");
-      document.documentElement.removeAttribute("data-ylg-control-lens");
+      setRootAttr("data-ylg-chrome-lens", null);
+      setRootAttr("data-ylg-control-lens", null);
     }
     var hoverOK = lensOK && mag > 0 ? buildHoverLens("ylg-lens-hover", mag) : false;
     try {
-      document.documentElement.setAttribute("data-ylg-optics", (okA || okM || lensOK) ? "on" : "off");
-      document.documentElement.setAttribute("data-ylg-optics-aberration", okA ? "1" : "0");
-      document.documentElement.setAttribute("data-ylg-optics-magnify", okM ? "1" : "0");
-      document.documentElement.setAttribute("data-ylg-lens", lensOK ? "1" : "0");
-      document.documentElement.setAttribute("data-ylg-lens-hover", hoverOK ? "1" : "0");
+      setRootAttr("data-ylg-optics", (okA || okM || lensOK) ? "on" : "off");
+      setRootAttr("data-ylg-optics-aberration", okA ? "1" : "0");
+      setRootAttr("data-ylg-optics-magnify", okM ? "1" : "0");
+      setRootAttr("data-ylg-lens", lensOK ? "1" : "0");
+      setRootAttr("data-ylg-lens-hover", hoverOK ? "1" : "0");
     } catch (e) {}
     if (lensOK) watchLensBoxes(lensPx, lensAb);
     else {
-      try { document.documentElement.removeAttribute("data-ylg-lens-split"); } catch (e) {}
+      try { setRootAttr("data-ylg-lens-split", null); } catch (e) {}
     }
     installedKey = key;
     installedResult = { aberration: okA, magnify: okM, lens: lensOK };

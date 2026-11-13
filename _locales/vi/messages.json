@@ -406,5 +406,86 @@
   },
   "skySearchUnavailable": {
     "message": "Không thể tìm thành phố lúc này. Vị trí đã lưu vẫn được giữ nguyên."
+  },
+  "flickerReductionLabel": {
+    "message": "Chống nhấp nháy"
+  },
+  "flickerReductionAria": {
+    "message": "Cường độ làm mượt chống nhấp nháy"
+  },
+  "vibranceLabel": {
+    "message": "Độ rực màu"
+  },
+  "vibranceAria": {
+    "message": "Phần trăm độ rực màu ánh sáng"
+  },
+  "contrastLabel": {
+    "message": "Tương phản"
+  },
+  "contrastAria": {
+    "message": "Phần trăm độ tương phản ánh sáng"
+  },
+  "videoShadowLabel": {
+    "message": "Hào quang viền"
+  },
+  "videoShadowAria": {
+    "message": "Kích thước hào quang quanh trình phát"
+  },
+  "ambientDirectionLabel": {
+    "message": "Hướng tỏa sáng"
+  },
+  "dirFull": {
+    "message": "Cả 4 cạnh"
+  },
+  "dirSides": {
+    "message": "Trái + Phải"
+  },
+  "dirTopArch": {
+    "message": "Vòm trên"
+  },
+  "glassSyncLabel": {
+    "message": "Đồng bộ viền kính với màu video"
+  },
+  "detectBarSizeLabel": {
+    "message": "Tự cắt viền đen (21:9 / 4:3)"
+  },
+  "energySaverLabel": {
+    "message": "Tiết kiệm pin khi khung hình tĩnh"
+  },
+  "shortsMode": {
+    "message": "Shorts"
+  },
+  "experienceHeading": {
+    "message": "Trải nghiệm & Tập trung"
+  },
+  "immersiveCinemaLabel": {
+    "message": "Tự tối viền rạp phim khi rảnh"
+  },
+  "hotkeysLabel": {
+    "message": "Phím tắt nhanh (Alt+A / Alt+S / Alt+D)"
+  },
+  "hotkeysHint": {
+    "message": "Alt+A bật/tắt Ambient, Alt+S đổi Style Profile, Alt+D bật/tắt rạp phim."
+  },
+  "hideShortsShelfLabel": {
+    "message": "Ẩn kệ Shorts ở Trang chủ & thanh bên"
+  },
+  "zenWatchLabel": {
+    "message": "Chế độ Zen (làm mờ cột phụ đến khi rê chuột)"
+  },
+  "toastAmbientOn": {
+    "message": "Ánh sáng môi trường: Bật"
+  },
+  "toastAmbientOff": {
+    "message": "Ánh sáng môi trường: Tắt"
+  },
+  "toastProfilePrefix": {
+    "message": "Cấu hình: "
+  },
+  "toastCinemaOn": {
+    "message": "Tối viền rạp phim: Bật"
+  },
+  "toastCinemaOff": {
+    "message": "Tối viền rạp phim: Tắt"
   }
 }

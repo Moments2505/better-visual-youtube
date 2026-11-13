@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Free and open source, made for desktop Microsoft Edge and Google Chrome.
 
-**Latest release: [0.5.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.5.0).** Adds 1-click Style Profiles, cross-device settings sync & JSON Export/Import, native English/Vietnamese localization, seamless sky chrome surfaces, and a 70% smaller MV3 package. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.5.0.md)
+**Latest release: [0.6.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.6.0).** Adds the expanded Ambient Light suite (Flicker Reduction, Auto Letterbox Detection, Glass Rim Sync, Directional Glow, Shorts Vertical Glow, Energy Saver, Vibrance & Contrast), Immersive Cinema, Hotkeys HUD, Zen Watch, redesigned active sidebar capsules, unified headbar rendering, and 120–144Hz optimizations. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.6.0.md)
 
 ## A little more depth
 

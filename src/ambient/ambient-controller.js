@@ -277,6 +277,171 @@
   var syncTimer = null;
   var unsubVendor = null;
 
+  /* ==========================================================================
+     FEATURE #5: SHORTS VERTICAL GLOW (GPU bilinear upscale, 0 CSS blur filter)
+     ========================================================================== */
+  var SG_W = 48, SG_H = 84, SG_TINY_W = 12, SG_TINY_H = 21;
+  var motionQ = root.matchMedia ? root.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  var colorsQ = root.matchMedia ? root.matchMedia("(forced-colors: active)") : null;
+  var sg = {
+    active: false, canvas: null, ctx: null,
+    tiny: null, tinyCtx: null, vignette: null,
+    video: null, rvfcId: null, pollTimer: null, lastDraw: 0
+  };
+
+  function shortsAllowed(st) {
+    if (!st || st.enabled === false) return false;
+    var amb = st.ambientLight || {};
+    if (amb.enabled === false || !(amb.modes && amb.modes.shorts === true)) return false;
+    if (st.respectReducedMotion !== false && motionQ && motionQ.matches) return false;
+    if (colorsQ && colorsQ.matches) return false;
+    return true;
+  }
+
+  function findShortsVideo(fallback) {
+    try {
+      return document.querySelector("ytd-reel-video-renderer[is-active] video, ytd-shorts video.html5-main-video, ytd-shorts video") || fallback || null;
+    } catch (e) { return fallback || null; }
+  }
+
+  function ensureShortsVignette() {
+    if (sg.vignette) return sg.vignette;
+    var vc = document.createElement("canvas");
+    vc.width = SG_W;
+    vc.height = SG_H;
+    var vctx = vc.getContext ? vc.getContext("2d") : null;
+    if (vctx && vctx.createRadialGradient) {
+      var grad = vctx.createRadialGradient(SG_W / 2, SG_H / 2, SG_W * 0.14, SG_W / 2, SG_H / 2, SG_H * 0.56);
+      grad.addColorStop(0, "rgba(0,0,0,0.92)");
+      grad.addColorStop(0.65, "rgba(0,0,0,0.62)");
+      grad.addColorStop(1, "rgba(0,0,0,0.08)");
+      vctx.fillStyle = grad;
+      vctx.fillRect(0, 0, SG_W, SG_H);
+    }
+    sg.vignette = vc;
+    return vc;
+  }
+
+  function ensureShortsCanvas() {
+    if (!sg.canvas) {
+      var c = document.createElement("canvas");
+      c.id = "ylg-shorts-glow";
+      c.width = SG_W;
+      c.height = SG_H;
+      if (c.setAttribute) c.setAttribute("aria-hidden", "true");
+      sg.canvas = c;
+      sg.ctx = c.getContext ? c.getContext("2d", { willReadFrequently: false }) : null;
+    }
+    if (!sg.tiny) {
+      var t = document.createElement("canvas");
+      t.width = SG_TINY_W;
+      t.height = SG_TINY_H;
+      sg.tiny = t;
+      sg.tinyCtx = t.getContext ? t.getContext("2d", { willReadFrequently: false }) : null;
+    }
+    var amb = (currentSettings && currentSettings.ambientLight) || {};
+    var b = envClamp(Number(amb.brightness), 0, 2, 1);
+    var op = Math.round(envClamp(0.45 + (b - 1) * 0.25, 0.15, 0.90, 0.68) * 100) / 100;
+    if (sg.canvas.style && sg.canvas.style.setProperty) {
+      sg.canvas.style.setProperty("--ylg-shorts-glow-opacity", String(op));
+    }
+    var host = null;
+    try { host = document.querySelector("ytd-shorts") || document.body; } catch (e) { host = null; }
+    if (host && sg.canvas.parentNode !== host) {
+      if (host.prepend) host.prepend(sg.canvas);
+      else if (host.insertBefore) host.insertBefore(sg.canvas, host.firstChild || null);
+      else if (host.appendChild) host.appendChild(sg.canvas);
+    }
+  }
+
+  function drawShortsFrame() {
+    if (!sg.active || !sg.video || !sg.ctx || !sg.tinyCtx || document.hidden) return false;
+    var v = sg.video;
+    if (v.readyState < 2 || v.ended) return false;
+    var amb = (currentSettings && currentSettings.ambientLight) || {};
+    var fps = envClamp(Number(amb.fpsLimit), 1, 30, 16);
+    var minMs = Math.round(1000 / fps);
+    var now = Date.now();
+    if (now - sg.lastDraw < minMs) return false;
+    sg.lastDraw = now;
+    try {
+      sg.tinyCtx.drawImage(v, 0, 0, SG_TINY_W, SG_TINY_H);
+      sg.ctx.globalCompositeOperation = "source-over";
+      sg.ctx.imageSmoothingEnabled = true;
+      sg.ctx.imageSmoothingQuality = "high";
+      sg.ctx.clearRect(0, 0, SG_W, SG_H);
+      sg.ctx.drawImage(sg.tiny, 0, 0, SG_W, SG_H);
+      var mask = ensureShortsVignette();
+      sg.ctx.globalCompositeOperation = "destination-in";
+      sg.ctx.drawImage(mask, 0, 0, SG_W, SG_H);
+      sg.ctx.globalCompositeOperation = "source-over";
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function unbindShortsVideo() {
+    if (sg.video && sg.rvfcId !== null && sg.video.cancelVideoFrameCallback) {
+      try { sg.video.cancelVideoFrameCallback(sg.rvfcId); } catch (e) {}
+    }
+    sg.rvfcId = null;
+    sg.video = null;
+  }
+
+  function bindShortsVideo(fallback) {
+    var next = findShortsVideo(fallback);
+    if (next === sg.video) return;
+    unbindShortsVideo();
+    sg.video = next;
+    if (!next) return;
+    drawShortsFrame();
+    if (next.requestVideoFrameCallback) {
+      var tick = function () {
+        sg.rvfcId = null;
+        if (!sg.active || sg.video !== next) return;
+        drawShortsFrame();
+        if (!document.hidden) sg.rvfcId = next.requestVideoFrameCallback(tick);
+      };
+      sg.rvfcId = next.requestVideoFrameCallback(tick);
+    }
+  }
+
+  function shortsStop() {
+    sg.active = false;
+    sg.lastDraw = 0;
+    if (sg.pollTimer !== null) { clearInterval(sg.pollTimer); sg.pollTimer = null; }
+    unbindShortsVideo();
+    if (sg.canvas && sg.canvas.parentNode && sg.canvas.parentNode.removeChild) {
+      sg.canvas.parentNode.removeChild(sg.canvas);
+    }
+  }
+
+  function shortsSync(p) {
+    if (!started || !p || p.mode !== "shorts" || !shortsAllowed(currentSettings)) {
+      shortsStop();
+      return;
+    }
+    sg.active = true;
+    ensureShortsCanvas();
+    bindShortsVideo(p.video);
+    if (sg.pollTimer === null) {
+      sg.pollTimer = setInterval(function () {
+        if (!sg.active || document.hidden) return;
+        bindShortsVideo(null);
+        drawShortsFrame();
+      }, 900);
+    }
+  }
+
+  function shortsStats() {
+    return {
+      active: sg.active,
+      mounted: !!(sg.canvas && sg.canvas.parentNode),
+      hasVideo: !!sg.video
+    };
+  }
+
   function detectPlayer() {
     try {
       var NAV = root.YLG_NAV;
@@ -300,6 +465,7 @@
     if (!currentSettings) return;
     envSchedule(0, true);
     var p = detectPlayer();
+    shortsSync(p);
     var vendor = root.YLG_AMBIENT_VENDOR;
     if (vendor && vendor.refreshMode) {
       vendor.refreshMode(p.mode);
@@ -351,6 +517,7 @@
     generation++;
     started = false;
     envStop();
+    shortsStop();
     if (syncTimer !== null) { clearTimeout(syncTimer); syncTimer = null; }
     if (unsubVendor) { unsubVendor(); unsubVendor = null; }
     if (unsubNav) { try { unsubNav(); } catch (e) {} unsubNav = null; }
@@ -363,8 +530,9 @@
     var vendor = root.YLG_AMBIENT_VENDOR;
     var vendorStats = (vendor && vendor.stats) ? vendor.stats() : null;
     return {
-      mounted: !!(vendorStats && vendorStats.state === "upstream"),
+      mounted: !!(vendorStats && vendorStats.state === "upstream") || sg.active,
       envelope: envStats(),
+      shorts: shortsStats(),
       vendor: vendorStats
     };
   }

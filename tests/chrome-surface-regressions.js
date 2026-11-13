@@ -23,4 +23,8 @@ assert.match(css, /ytd-app\[is-watch-page\]:not\(\[fullscreen\]\) #frosted-glass
 assert.match(css, /inset 0 0 0 1px color-mix\(in srgb, var\(--ylg-rim-light\)/);
 assert.match(css, /InputBox[^}]*background-color:\s*var\(--yt-sys-color-baseline--tonal-background/);
 assert.match(css, /backdrop-filter:\s*blur\(var\(--ylg-blur, 0px\)\) url\(#ylg-lens-chrome\)/);
-console.log('Chrome surface regressions: 17/17 passed (source contracts only; browser rendering requires separate verification).');
+assert.doesNotMatch(css, /ytd-app:has\(\s*>\s*#frosted-glass\s*\)/, "#frosted-glass lives inside ytd-app > #content, not as a direct child of ytd-app");
+assert.match(css, /html\[data-ylg-enabled="true"\]:has\(#frosted-glass\)\s+#masthead-container#masthead-container\s+ytd-masthead\.ylg-glass/);
+const ceilingCss = fs.readFileSync(path.join(root,'src/styles/opacity-ceiling.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+assert.match(ceilingCss, /@layer ylg-ceiling\s*\{[\s\S]*:has\(#frosted-glass\)\s+#masthead-container\s+:is\(ytd-masthead,\s*#masthead,\s*ytd-searchbox\)\.ylg-glass\s*\{[^}]*background-color:\s*transparent\s*!important/);
+console.log('Chrome surface regressions: 20/20 passed (source contracts only; browser rendering requires separate verification).');

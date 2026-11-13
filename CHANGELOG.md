@@ -1,5 +1,16 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.6.0 — 2026-11-13
+
+- Redesigned active sidebar & mini-guide navigation items with a neutral frosted Liquid Glass capsule and a 3px glowing `--ylg-accent` indicator bar, and fixed the two-part split headbar (`chrome-surface.css`, `opacity-ceiling.css`, `daylight-integration.css`) by scoping `:has(#frosted-glass)` cleanly to `ytd-app > #content > #frosted-glass` and removing the duplicate `@layer ylg-ceiling` `--ylg-chrome-scrim` paint pass over `ytd-masthead`.
+- Thiết kế lại ô đang chọn ở thanh bên và mini-guide bằng viên kính mờ trung tính kèm thanh sáng `--ylg-accent` 3px, đồng thời sửa dứt điểm lỗi headbar chia làm 2 phần (`chrome-surface.css`, `opacity-ceiling.css`, `daylight-integration.css`) do bộ chọn `:has(> #frosted-glass)` bỏ sót `#frosted-glass` trong `#content` và tầng `@layer ylg-ceiling` phủ trùng lớp scrim lên `ytd-masthead`.
+- Expanded **Ambient Light** controls with **Flicker Reduction** (`flickerReduction`), **Auto Letterbox Detection** (`detectBarSize`), **Glass Rim Sync** (`glassSync`), **Directional Glow** (`full` / `sides` / `topBottom`) + **Video Shadow** (`videoShadow`), **Shorts Vertical Glow** (`modes.shorts`), and **Energy Saver** + **Vibrance & Contrast** (`energySaver`, `vibrance`, `contrast`).
+- Mở rộng bộ điều khiển **Ambient Light** với **Giảm nhấp nháy** (`flickerReduction`), **Tự động phát hiện viền đen** (`detectBarSize`), **Đồng bộ viền kính** (`glassSync`), **Hướng ánh sáng** (`full` / `sides` / `topBottom`) + **Bóng đổ video** (`videoShadow`), **Ambient cho YouTube Shorts** (`modes.shorts`), và **Tiết kiệm năng lượng** + **Độ rực & Tương phản** (`energySaver`, `vibrance`, `contrast`).
+- Added **Immersive Cinema** idle dimming (`immersiveCinema`), quick **Keyboard Hotkeys** (`Alt+Shift+G`, `Alt+Shift+A`, `Alt+Shift+D`) with a compositor-only Liquid Glass HUD toast (`hotkeys`), and **Clean / Zen Layout** toggles (**Hide Shorts** `hideShortsShelf` & **Zen Watch** `zenWatch`).
+- Bổ sung chế độ **Rạp phim nhập vai** tự làm mờ UI khi rảnh (`immersiveCinema`), **Phím tắt nhanh** (`Alt+Shift+G`, `Alt+Shift+A`, `Alt+Shift+D`) kèm thẻ thông báo HUD kính lỏng thuần compositor (`hotkeys`), và chế độ **Gọn gàng / Zen** (**Ẩn Shorts** `hideShortsShelf` & **Zen Watch** `zenWatch`).
+- Applied 120–144Hz compositor and GPU optimizations: async downscaled `createImageBitmap` letterbox sampling in `vendor/ambient/content-main.js`, childless `::after` `SolidColorDrawQuad` dimming overlays in `experience-features.css`, flattened Watch panel stacking contexts in `hover-refinement.css`, and autohide gating for player backdrop passes in `interaction-performance.css`.
+- Tối ưu hiệu năng 120–144Hz cho compositor & GPU: lấy mẫu viền đen bất đồng bộ bằng `createImageBitmap` hạ tỷ lệ trong `vendor/ambient/content-main.js`, dùng lớp phủ `::after` không con `SolidColorDrawQuad` trong `experience-features.css`, làm phẳng ngữ cảnh xếp chồng panel xem video ở `hover-refinement.css` và ngắt backdrop phụ khi thanh điều khiển tự ẩn ở `interaction-performance.css`.
+
 ## 0.5.1 — 2026-11-12
 
 - Fixed **Live sun & weather** (`[data-live="true"][data-weather="rain"|"storm"]`) so real-time rain and thunderstorm cities automatically render an overcast storm sky and outdoor falling rain streaks even when the manual **RAIN** glass-droplet toggle is off.

@@ -169,11 +169,62 @@
           <input type="range" id="ylg-amb-fps" min="1" max="30" step="1" aria-label="Ambient frames per second limit" data-i18n-aria-label="fpsLimitAria">
           <output id="ylg-amb-fps-v"></output>
         </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-amb-flicker" data-i18n="flickerReductionLabel">Anti-flicker</label>
+          <input type="range" id="ylg-amb-flicker" min="0" max="100" step="5" aria-label="Anti-flicker frame blend strength" data-i18n-aria-label="flickerReductionAria">
+          <output id="ylg-amb-flicker-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-amb-vibrance" data-i18n="vibranceLabel">Vibrance</label>
+          <input type="range" id="ylg-amb-vibrance" min="0" max="200" step="5" aria-label="Ambient color vibrance percent" data-i18n-aria-label="vibranceAria">
+          <output id="ylg-amb-vibrance-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-amb-contrast" data-i18n="contrastLabel">Contrast</label>
+          <input type="range" id="ylg-amb-contrast" min="0" max="200" step="5" aria-label="Ambient contrast percent" data-i18n-aria-label="contrastAria">
+          <output id="ylg-amb-contrast-v"></output>
+        </div>
+        <div class="ylg-slider-row">
+          <label for="ylg-amb-shadow" data-i18n="videoShadowLabel">Edge halo</label>
+          <input type="range" id="ylg-amb-shadow" min="0" max="100" step="5" aria-label="Player edge halo shadow size" data-i18n-aria-label="videoShadowAria">
+          <output id="ylg-amb-shadow-v"></output>
+        </div>
+        <div class="ylg-amb-subrow">
+          <label id="ylg-amb-direction-label" data-i18n="ambientDirectionLabel">Glow sides</label>
+          <div class="ylg-segmented" role="radiogroup" aria-labelledby="ylg-amb-direction-label" id="ylg-amb-direction">
+            <button type="button" data-value="full" role="radio" data-i18n="dirFull">All 4 sides</button>
+            <button type="button" data-value="sides" role="radio" data-i18n="dirSides">Left + Right</button>
+            <button type="button" data-value="topArch" role="radio" data-i18n="dirTopArch">Top arch</button>
+          </div>
+        </div>
+        <div class="ylg-amb-toggles">
+          <label class="ylg-check-row" for="ylg-amb-sync"><input type="checkbox" id="ylg-amb-sync"> <span data-i18n="glassSyncLabel">Sync panel rim with video glow</span></label>
+          <label class="ylg-check-row" for="ylg-amb-bars"><input type="checkbox" id="ylg-amb-bars"> <span data-i18n="detectBarSizeLabel">Auto-crop letterbox bars (21:9 / 4:3)</span></label>
+          <label class="ylg-check-row" for="ylg-amb-energy"><input type="checkbox" id="ylg-amb-energy"> <span data-i18n="energySaverLabel">Save power on static video frames</span></label>
+        </div>
         <div class="ylg-modes">
           <label class="ylg-check-row" for="ylg-amb-normal"><input type="checkbox" id="ylg-amb-normal"> <span data-i18n="normalMode">Normal mode</span></label>
           <label class="ylg-check-row" for="ylg-amb-theater"><input type="checkbox" id="ylg-amb-theater"> <span data-i18n="theaterMode">Theater mode</span></label>
           <label class="ylg-check-row" for="ylg-amb-fullscreen"><input type="checkbox" id="ylg-amb-fullscreen"> <span data-i18n="fullscreenMode">Fullscreen</span> <span class="ylg-hint" data-i18n="experimentalTag">(experimental)</span></label>
+          <label class="ylg-check-row" for="ylg-amb-shorts"><input type="checkbox" id="ylg-amb-shorts"> <span data-i18n="shortsMode">Shorts</span></label>
         </div>
+      </section>
+
+      <section class="ylg-section" aria-labelledby="ylg-exp-h">
+        <h2 id="ylg-exp-h" data-i18n="experienceHeading">Experience &amp; Focus</h2>
+        <label class="ylg-check-row" for="ylg-exp-cinema">
+          <input type="checkbox" id="ylg-exp-cinema"> <span data-i18n="immersiveCinemaLabel">Immersive Cinema auto-dim</span>
+        </label>
+        <label class="ylg-check-row" for="ylg-exp-hotkeys">
+          <input type="checkbox" id="ylg-exp-hotkeys"> <span data-i18n="hotkeysLabel">Quick shortcuts (Alt+A / Alt+S / Alt+D)</span>
+        </label>
+        <p class="ylg-hint" data-i18n="hotkeysHint">Alt+A toggles Ambient Light, Alt+S cycles Style Profiles, Alt+D toggles Cinema dim.</p>
+        <label class="ylg-check-row" for="ylg-exp-hide-shorts">
+          <input type="checkbox" id="ylg-exp-hide-shorts"> <span data-i18n="hideShortsShelfLabel">Hide Shorts shelves on Home &amp; sidebar</span>
+        </label>
+        <label class="ylg-check-row" for="ylg-exp-zen-watch">
+          <input type="checkbox" id="ylg-exp-zen-watch"> <span data-i18n="zenWatchLabel">Zen Watch focus (dim sidebar until hover)</span>
+        </label>
       </section>
 
       <section class="ylg-section" aria-labelledby="ylg-daylight-h">

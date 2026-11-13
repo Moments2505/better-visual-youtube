@@ -147,20 +147,29 @@
       }
     } catch (eVB) {}
 
-    // Optional colour-follow mode: sample the playing video (or a thumbnail off
-    // the watch page) and feed the result into the shared tint. Inert unless the
-    // user picked tint=media; teardown happens on any other choice.
+    // Optional colour-follow mode & Ambient-Reactive Glass Rim (#3): sample the
+    // playing video (or a thumbnail off the watch page when tint=media).
     try {
       var TINT = root.YLG_TINT;
+      var syncAmbRim = !!(s.enabled !== false && s.ambientLight && s.ambientLight.enabled && s.ambientLight.glassSync);
+      var wantTint = !!(s.enabled !== false && (s.tint === "media" || syncAmbRim));
+      if (!syncAmbRim && S.setAmbientRim) S.setAmbientRim(doc, null);
       if (TINT) {
-        if (s.enabled !== false && s.tint === "media") {
+        if (wantTint) {
           TINT.init(s);
           var sampled = TINT.color && TINT.color();
-          if (sampled && S.setMediaTint) S.setMediaTint(doc, sampled);
+          if (sampled) {
+            if (s.tint === "media" && S.setMediaTint) S.setMediaTint(doc, sampled);
+            if (syncAmbRim && S.setAmbientRim) S.setAmbientRim(doc, sampled);
+          }
           if (!tintListener) {
             tintListener = function (e) {
               try {
-                if (e && e.detail && S.setMediaTint) S.setMediaTint(doc, e.detail);
+                if (!e || !e.detail || !lastApplied) return;
+                if (lastApplied.tint === "media" && S.setMediaTint) S.setMediaTint(doc, e.detail);
+                if (lastApplied.ambientLight && lastApplied.ambientLight.enabled && lastApplied.ambientLight.glassSync && S.setAmbientRim) {
+                  S.setAmbientRim(doc, e.detail);
+                }
               } catch (e2) {}
             };
             root.addEventListener("ylg-tint", tintListener);
@@ -209,6 +218,12 @@
         } else root.YLG_DAYLIGHT.teardown();
       }
     } catch (eDaylight) {}
+    try {
+      if (root.YLG_EXPERIENCE) {
+        if (s.enabled) root.YLG_EXPERIENCE.updateSettings(s);
+        else root.YLG_EXPERIENCE.teardown();
+      }
+    } catch (eExp) {}
   }
 
   var applyTimer = null;
