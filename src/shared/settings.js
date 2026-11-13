@@ -630,7 +630,67 @@
     return s;
   }
 
-  /* ---- Curated 1-click style profiles (schema 8) ----------------------- */
+  /* ---- Ambient Quality tiers & 1-click style profiles (schema 8) -------- */
+  var AMBIENT_QUALITY_TIERS = Object.freeze({
+    eco: Object.freeze({
+      quality: "eco",
+      fpsLimit: 10,
+      blur: 50,
+      spread: 95,
+      saturation: 1,
+      brightness: 0.85,
+      vibrance: 0.9,
+      flickerReduction: 45,
+      videoShadow: 15,
+      energySaver: true
+    }),
+    balanced: Object.freeze({
+      quality: "balanced",
+      fpsLimit: 18,
+      blur: 70,
+      spread: 145,
+      saturation: 1.1,
+      brightness: 1,
+      vibrance: 1,
+      flickerReduction: 35,
+      videoShadow: 25,
+      energySaver: true
+    }),
+    high: Object.freeze({
+      quality: "high",
+      fpsLimit: 30,
+      blur: 90,
+      spread: 190,
+      saturation: 1.25,
+      brightness: 1.15,
+      vibrance: 1.25,
+      flickerReduction: 25,
+      videoShadow: 40,
+      energySaver: false
+    }),
+    auto: Object.freeze({
+      quality: "auto",
+      fpsLimit: 16,
+      blur: 75,
+      spread: 162,
+      saturation: 1.1,
+      brightness: 1,
+      vibrance: 1,
+      flickerReduction: 35,
+      videoShadow: 25,
+      energySaver: true
+    })
+  });
+
+  function applyAmbientQualityTier(baseSettings, quality) {
+    var base = normalizeSettings(baseSettings);
+    var tier = AMBIENT_QUALITY_TIERS[quality];
+    var ambPatch = tier ? Object.assign({}, tier) : { quality: quality };
+    return normalizeSettings(Object.assign({}, base, {
+      ambientLight: Object.assign({}, base.ambientLight, ambPatch)
+    }));
+  }
+
   var STYLE_PROFILES = Object.freeze({
     crystal: Object.freeze({
       enabled: true,
@@ -643,7 +703,7 @@
       motion: true,
       hoverEffects: true,
       optics: Object.freeze({ enabled: true, aberration: true, magnify: true }),
-      ambientLight: Object.freeze({ enabled: true, quality: "auto" })
+      ambientLight: Object.freeze({ enabled: true, quality: "auto", modes: Object.freeze({ shorts: true }) })
     }),
     frosted: Object.freeze({
       enabled: true,
@@ -656,7 +716,7 @@
       motion: true,
       hoverEffects: true,
       optics: Object.freeze({ enabled: true, aberration: true, magnify: true }),
-      ambientLight: Object.freeze({ enabled: true, quality: "balanced" })
+      ambientLight: Object.freeze({ enabled: true, quality: "balanced", modes: Object.freeze({ shorts: true }) })
     }),
     cinema: Object.freeze({
       enabled: true,
@@ -671,7 +731,7 @@
       motion: true,
       hoverEffects: true,
       optics: Object.freeze({ enabled: true, aberration: true, magnify: true }),
-      ambientLight: Object.freeze({ enabled: true, quality: "high" })
+      ambientLight: Object.freeze({ enabled: true, quality: "high", modes: Object.freeze({ shorts: true }) })
     }),
     eco: Object.freeze({
       enabled: true,
@@ -684,7 +744,7 @@
       motion: false,
       hoverEffects: false,
       optics: Object.freeze({ enabled: false }),
-      ambientLight: Object.freeze({ enabled: false, quality: "eco" }),
+      ambientLight: Object.freeze({ enabled: false, quality: "eco", modes: Object.freeze({ shorts: false }) }),
       daylightBackground: Object.freeze({ enabled: false })
     })
   });
@@ -695,7 +755,18 @@
     if (!patch) return base;
     var merged = Object.assign({}, base, patch);
     if (patch.optics) merged.optics = Object.assign({}, base.optics, patch.optics);
-    if (patch.ambientLight) merged.ambientLight = Object.assign({}, base.ambientLight, patch.ambientLight);
+    if (patch.ambientLight) {
+      var qTier = patch.ambientLight.quality ? AMBIENT_QUALITY_TIERS[patch.ambientLight.quality] : null;
+      merged.ambientLight = Object.assign({}, base.ambientLight, qTier || {}, patch.ambientLight);
+      if ((base.ambientLight && base.ambientLight.modes) || (qTier && qTier.modes) || patch.ambientLight.modes) {
+        merged.ambientLight.modes = Object.assign(
+          {},
+          base.ambientLight && base.ambientLight.modes,
+          (qTier && qTier.modes) || {},
+          patch.ambientLight.modes || {}
+        );
+      }
+    }
     if (patch.daylightBackground) merged.daylightBackground = Object.assign({}, base.daylightBackground, patch.daylightBackground);
     return normalizeSettings(merged);
   }
@@ -1085,6 +1156,7 @@
     ENUMS: ENUMS,
     AMBIENT_RANGES: AMBIENT_RANGES,
     AMBIENT_QUALITY: AMBIENT_QUALITY,
+    AMBIENT_QUALITY_TIERS: AMBIENT_QUALITY_TIERS,
     AMBIENT_DIRECTIONS: AMBIENT_DIRECTIONS,
     /* Opacity slider <-> stored alpha. Exported so the popup (and any test)
        uses this one curve instead of re-deriving the mapping. */
@@ -1092,6 +1164,7 @@
     sliderToOpacity: sliderToOpacity,   // integer 0..100 -> 0..1
     normalizeSettings: normalizeSettings,
     normalizeAmbient: normalizeAmbient,
+    applyAmbientQualityTier: applyAmbientQualityTier,
     applyStyleProfile: applyStyleProfile,
     matchStyleProfile: matchStyleProfile,
     exportSettingsPayload: exportSettingsPayload,

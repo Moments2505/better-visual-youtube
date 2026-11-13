@@ -26,21 +26,16 @@ html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
-  background-color: rgba(8, 11, 16, 0.07);
-  background-image: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.12),
-    rgba(255, 255, 255, 0.015) 8%,
-    transparent 25%, transparent 85%,
-    rgba(255, 255, 255, 0.015));
-  border-radius: 999px;
+  background-color: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.65));
+  background-image: linear-gradient(155deg, rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.12)), transparent 42%);
+  border-radius: 999px !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.48),
-    inset 0 -1px 0 rgba(198, 220, 255, 0.20),
-    inset 1px 0 0 rgba(255, 255, 255, 0.12),
-    inset -1px 0 0 rgba(255, 255, 255, 0.12),
-    0 2px 4px rgba(0, 0, 0, 0.25);
-  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
-  backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.8)),
+    inset 0 -1px 0 rgba(15, 23, 42, calc(var(--ylg-highlight) * 0.25)),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-highlight) * 100%), transparent),
+    0 2px 5px rgba(0, 0, 0, 0.18);
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1);
+  backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1);
   transition: background-color 160ms ease-out;
 }
 
@@ -92,7 +87,8 @@ html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > :is(.ytp-p
   box-sizing: border-box;
   flex-shrink: 0;
   align-self: center;
-  margin-inline: 0;
+  margin-inline: 0 !important;
+  border-radius: 999px !important;
   line-height: 40px;
   padding: 0 !important;
 }
@@ -120,37 +116,49 @@ html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > :is(.ytp-p
   display: none !important;
 }
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > :is(.ytp-prev-button, .ytp-next-button):hover {
-  background-color: rgba(255, 255, 255, 0.10) !important;
+  background-color: rgba(var(--ylg-surface-tint-light), min(0.9, calc(var(--ylg-opacity) * 0.75 + 0.05)));
 }
 
 /* Override every lens path, including the startup fallback, so desaturation
    cannot silently restore the grey film once the lens finishes initializing. */
 html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-chrome-bottom .ytp-right-controls {
-  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-player) saturate(1) brightness(0.98);
-  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-player) saturate(1) brightness(0.98);
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-player) saturate(1.1);
+  backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-player) saturate(1.1);
 }
 html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-time-display,
 html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-volume-area,
 html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button {
-  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
-  backdrop-filter: blur(var(--ylg-blur, 0px)) saturate(1) brightness(0.98);
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1);
+  backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1);
 }
 html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-lens-split="1"] .ytp-chrome-bottom .ytp-time-display {
-  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-capsule) saturate(1) brightness(0.98);
-  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-capsule) saturate(1) brightness(0.98);
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-capsule) saturate(1.1);
+  backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-capsule) saturate(1.1);
 }
 html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-lens-split="1"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
 html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-lens-split="1"] .ytp-chrome-bottom .ytp-volume-area {
-  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-well) saturate(1) brightness(0.98);
-  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-well) saturate(1) brightness(0.98);
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-well) saturate(1.1);
+  backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-well) saturate(1.1);
 }
 html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-control-lens="1"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button {
-  -webkit-backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-control) saturate(1) brightness(0.98);
-  backdrop-filter: blur(var(--ylg-blur, 0px)) url(#ylg-lens-control) saturate(1) brightness(0.98);
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-control) saturate(1.1);
+  backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-control) saturate(1.1);
 }
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area:hover,
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area:focus-within {
-  background-color: rgba(8, 11, 16, 0.12) !important;
+  background-color: rgba(var(--ylg-surface-tint-light), min(0.9, calc(var(--ylg-opacity) * 0.75 + 0.05)));
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-button svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.58));
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-svg-shadow {
+  stroke: #000000 !important;
+  stroke-width: 2px !important;
+  stroke-opacity: 0.58 !important;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display :is(.ytp-time-current, .ytp-time-separator, .ytp-time-duration, .ytp-time-clip-icon) {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65) !important;
 }
 
 html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area),

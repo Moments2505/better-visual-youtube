@@ -5,50 +5,55 @@
    ============================================================================ */
 
 /* Feature #7 (Immersive Cinema) & Feature #9 (Zen Watch):
-   Use childless ::after SolidColorDrawQuad scrims instead of container opacity < 1
-   so 5,000px #secondary / ytd-comments subtrees never allocate offscreen RenderSurfaces. */
-html[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments) {
-  position: relative;
-}
-html[data-ylg-enabled="true"] #masthead-container::after,
-html[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  background-color: rgba(8, 10, 15, 0.78);
-  opacity: 0;
-  transition: opacity 180ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1));
-}
-html[data-ylg-enabled="true"] #masthead-container::after {
-  inset: 0;
-  z-index: 2100;
-}
-html[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
-  z-index: 40;
-}
-html[data-ylg-enabled="true"]:not([data-ylg-lowfx="true"]) #masthead-container::after,
-html[data-ylg-enabled="true"]:not([data-ylg-lowfx="true"]) ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
-  will-change: opacity;
-}
-html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) #masthead-container::after,
-html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
-  background-color: rgba(248, 250, 252, 0.76);
-}
-html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments),
-html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments, #comments) {
-  transform: none !important;
-}
-html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments)::after,
-html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] #masthead-container::after,
-html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
-  opacity: 1;
-}
-html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments):is(:hover, :focus-within)::after,
-html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] #masthead-container:is(:hover, :focus-within)::after,
-html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments):is(:hover, :focus-within)::after {
-  opacity: 0;
+   Dim via element opacity (never reuse ::after so .ylg-glass::after bottom
+   light scatter in glass-material.css stays unobstructed). Gate Cinema
+   opacity transitions on [data-ylg-cinema-armed="true"] so page load never
+   flashes, and preserve panel hover-lift transform transitions. */
+@layer ylg-states {
+  html[data-ylg-enabled="true"][data-ylg-zen-watch="true"]:not([data-ylg-motion="off"]) ytd-watch-flexy :is(#secondary, ytd-comments) {
+    transition: opacity 220ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1)) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-cinema-armed="true"]:not([data-ylg-motion="off"]) ytd-app[is-watch-page] :is(#masthead-container, #frosted-glass) {
+    transition: opacity 220ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1)) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-cinema-armed="true"]:not([data-ylg-motion="off"]) ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments) {
+    transition: opacity 220ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1)) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-cinema-armed="true"]:not([data-ylg-motion="off"])[data-ylg-optics="on"]:not([data-ylg-panel-controller="on"]) ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments).ylg-glass[data-ylg-level="panel"] {
+    transition:
+      transform 480ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 220ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1)) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-cinema-armed="true"]:not([data-ylg-motion="off"])[data-ylg-optics="on"]:not([data-ylg-panel-controller="on"]) ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments).ylg-glass[data-ylg-level="panel"]:is(:hover, :focus-within) {
+    transition:
+      transform 360ms cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 220ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1)) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-cinema-armed="true"]:not([data-ylg-motion="off"])[data-ylg-hover="on"][data-ylg-optics="on"][data-ylg-panel-controller="on"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments).ylg-glass[data-ylg-level="panel"] {
+    transition:
+      transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 220ms var(--ylg-ease-glass, cubic-bezier(0.32, 0.72, 0, 1)) !important;
+  }
+
+  html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments),
+  html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments, #comments) {
+    transform: none !important;
+  }
+
+  html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-app[is-watch-page] :is(#masthead-container, #frosted-glass),
+  html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments) {
+    opacity: 0.18 !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments) {
+    opacity: 0.16 !important;
+  }
+
+  html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments):is(:hover, :focus-within),
+  html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-app[is-watch-page]:has(#masthead-container:is(:hover, :focus-within)) :is(#masthead-container, #frosted-glass),
+  html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-app[is-watch-page] :is(#masthead-container, #frosted-glass):is(:hover, :focus-within),
+  html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments):is(:hover, :focus-within) {
+    opacity: 1 !important;
+  }
 }
 
 /* Feature #8: Compositor-only Liquid Glass HUD Toast */
@@ -111,20 +116,21 @@ html[data-ylg-enabled="true"][data-ylg-hide-shorts="true"] ytd-mini-guide-entry-
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] #masthead-container::after,
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after,
-  html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] #ylg-hud-toast {
-    transition: none !important;
-    will-change: auto !important;
-  }
-}
-
 @layer ylg-a11y {
+  @media (prefers-reduced-motion: reduce) {
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments),
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-cinema-armed="true"] ytd-app[is-watch-page] :is(#masthead-container, #frosted-glass),
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-cinema-armed="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments),
+    html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"] #ylg-hud-toast {
+      transition: none !important;
+      will-change: auto !important;
+    }
+  }
   @media (forced-colors: active) {
-    html[data-ylg-enabled="true"] #masthead-container::after,
-    html[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments)::after {
-      display: none !important;
+    html[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments),
+    html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-app[is-watch-page] :is(#masthead-container, #frosted-glass),
+    html[data-ylg-enabled="true"][data-ylg-cinema-idle="true"] ytd-watch-flexy :is(ytd-watch-metadata, #secondary, ytd-comments) {
+      opacity: 1 !important;
     }
     html[data-ylg-enabled="true"] #ylg-hud-toast {
       background: Canvas !important;

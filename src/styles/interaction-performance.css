@@ -5,9 +5,10 @@
   html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom *,
   html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom *::before,
   html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom *::after,
-  html[data-ylg-enabled="true"] .html5-video-player .ytp-tooltip.ytp-preview {
+  html[data-ylg-enabled="true"] .html5-video-player .ytp-tooltip {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
+    transition: none !important;
   }
   /* Native guide injects 200ms inline on all three layers. Keep its native
      transform/visibility behavior, synchronizing duration and easing only. */
@@ -101,10 +102,9 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
 }
 
 @layer ylg-states {
-  /* Keep one optical pass per control. The existing capsule already bends the
-     video: stacking another SVG hover lens repaints the same moving backdrop.
-     Hover still reveals its directional light and scale with the prior timing. */
-  html[data-ylg-enabled="true"][data-ylg-lens-hover="1"] .ytp-chrome-bottom :is(.ytp-button, .ytp-time-display)::before {
+  /* Keep idle buttons light while restoring the SVG hover lens when hovered or keyboard-focused (except lowfx). */
+  html[data-ylg-enabled="true"][data-ylg-lens-hover="1"] .ytp-chrome-bottom :is(.ytp-button, .ytp-time-display):not(:hover):not(:focus-visible):not(:focus-within)::before,
+  html[data-ylg-enabled="true"][data-ylg-lens-hover="1"][data-ylg-lowfx="true"] .ytp-chrome-bottom :is(.ytp-button, .ytp-time-display)::before {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
@@ -112,31 +112,15 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
-  /* The volume capsule changes width while opening. A fixed SVG displacement
-     texture cannot follow that animation without map rebuilds or stretching.
-     A shallow CSS blur retains its glass fill/rim and follows native geometry. */
-  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
-    -webkit-backdrop-filter: blur(min(var(--ylg-blur, 0px), 4px)) saturate(1) !important;
-    backdrop-filter: blur(min(var(--ylg-blur, 0px), 4px)) saturate(1) !important;
+  /* When no dedicated control lens is active, match Search Bar --ylg-blur-s on the expandable volume capsule. */
+  html[data-ylg-enabled="true"]:not([data-ylg-fill="none"]):not([data-ylg-control-lens="1"]) .ytp-chrome-bottom .ytp-volume-area {
+    -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1) !important;
+    backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1) !important;
   }
-  /* Keep one live Snell SVG lens on .ytp-right-controls during playback while
-     releasing secondary live-video backdrop passes on the left pills so total
-     D3D11 frame time stays inside 6.94ms (144Hz). Paused frames retain all lenses. */
-  html[data-ylg-enabled="true"] .html5-video-player.playing-mode .ytp-chrome-bottom :is(.ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-    background-color: rgba(10, 14, 22, 0.52) !important;
-    transition: none !important;
-  }
-  html[data-ylg-enabled="true"] .html5-video-player.playing-mode .ytp-chrome-bottom .ytp-right-controls {
-    transition: none !important;
-  }
-  html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lowfx="true"]):not([data-ylg-scrubbing="1"]):not([data-ylg-player-transition="1"]) .html5-video-player.playing-mode:not(.ytp-autohide) .ytp-chrome-bottom .ytp-right-controls {
-    -webkit-backdrop-filter: url(#ylg-lens-player) saturate(1) brightness(0.98) !important;
-    backdrop-filter: url(#ylg-lens-player) saturate(1) brightness(0.98) !important;
-  }
-  html[data-ylg-enabled="true"] .html5-video-player.playing-mode .ytp-chrome-bottom .ytp-volume-area:is(:hover, :focus-within) {
-    background-color: rgba(10, 14, 22, 0.66) !important;
+  /* During active video playback, keep capsule lenses intact while releasing child SVG drop-shadow filters. */
+  html[data-ylg-enabled="true"] .html5-video-player.playing-mode:not(.ytp-autohide) .ytp-chrome-bottom .ytp-button svg {
+    filter: none !important;
+    will-change: auto !important;
   }
   /* During the player FLIP, keep the same tint/rim but avoid repeatedly sampling
      live video through nested SVG filters at changing scale. The final-sized
@@ -155,11 +139,8 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
-  /* Seek previews need a frame budget before pointerdown too. Keep the glass
-     fill, specular rim and original timing, but use one shallow CSS sample
-     instead of SVG displacement while hovering, keyboard seeking or dragging.
-     No GPU-vendor assumptions, polling or native seek-handler changes. */
-  html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-progress-bar-container .ytp-scrubber-button::after {
+  /* Keep scrubber seeker lens active during hover/focus/drag while saving backdrop samples at rest. */
+  html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-progress-bar-container:not(:hover):not(:focus-within):not([data-ylg-dragging="1"]) .ytp-scrubber-button::after {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
@@ -180,7 +161,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
-  html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"] .ylg-glass[data-ylg-level="panel"]::before {
+  html[data-ylg-enabled="true"][data-ylg-lowfx="true"][data-ylg-optics-aberration="1"] .ylg-glass[data-ylg-level="panel"]::before {
     filter: none !important;
   }
 }

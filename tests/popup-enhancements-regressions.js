@@ -231,7 +231,7 @@ function loadSettingsContract(extraGlobals = {}) {
   return { ctx, S: ctx.YLG_SETTINGS };
 }
 
-function createPopupHarness({ seed = {}, i18nCatalog = null, uiLang = "en", withBlob = true, syncStore = null } = {}) {
+function createPopupHarness({ seed = {}, i18nCatalog = null, uiLang = "en", withBlob = true, syncStore = null, matchMedia = null } = {}) {
   const doc = buildPopupDom();
   const timer = clock();
   const localWrites = [];
@@ -325,6 +325,7 @@ function createPopupHarness({ seed = {}, i18nCatalog = null, uiLang = "en", with
     removeEventListener() {},
     localStorage: { getItem() { return null; }, setItem() {} },
     chrome: chromeObj,
+    ...(matchMedia ? { matchMedia } : {}),
     ...(withBlob ? {
       Blob: MockBlob,
       URL: {
@@ -835,6 +836,50 @@ test("Vietnamese locale hydrates popup DOM labels/attributes and translates runt
 
   // Sky controls status string also translates to Vietnamese
   assert.equal(h.$("ylg-sky-status").textContent, vi.skyWeatherOff.message);
+});
+
+test("clicking Eco / Balanced / High / Auto in popup updates ambient sliders and clears respectReducedMotion under OS reduced motion", () => {
+  const h = createPopupHarness({
+    seed: { respectReducedMotion: true, ambientLight: { enabled: true, quality: "balanced" } },
+    matchMedia: q => ({
+      media: q,
+      matches: q.includes("prefers-reduced-motion"),
+      addEventListener() {},
+      removeEventListener() {}
+    })
+  });
+
+  const qBtns = Object.fromEntries(
+    h.$("ylg-ambient-quality").querySelectorAll("button[data-value]").map(b => [b.getAttribute("data-value"), b])
+  );
+
+  qBtns.eco.click();
+  assert.equal(h.$("ylg-amb-fps").value, "10");
+  assert.equal(h.$("ylg-amb-spread").value, "95");
+  assert.equal(h.$("ylg-amb-blur").value, "50");
+  assert.equal(h.$("ylg-amb-energy").checked, true);
+  assert.equal(h.$("ylg-system-motion").checked, false, "OS reduced motion auto-cleared when selecting ambient quality");
+  assert.equal(h.localData.ylgSettings.respectReducedMotion, false);
+  assert.equal(h.localData.ylgSettings.ambientLight.quality, "eco");
+
+  qBtns.high.click();
+  assert.equal(h.$("ylg-amb-fps").value, "30");
+  assert.equal(h.$("ylg-amb-spread").value, "190");
+  assert.equal(h.$("ylg-amb-blur").value, "90");
+  assert.equal(h.$("ylg-amb-energy").checked, false);
+  assert.equal(h.localData.ylgSettings.ambientLight.quality, "high");
+
+  qBtns.balanced.click();
+  assert.equal(h.$("ylg-amb-fps").value, "18");
+  assert.equal(h.$("ylg-amb-spread").value, "145");
+  assert.equal(h.$("ylg-amb-blur").value, "70");
+  assert.equal(h.$("ylg-amb-energy").checked, true);
+
+  qBtns.auto.click();
+  assert.equal(h.$("ylg-amb-fps").value, "16");
+  assert.equal(h.$("ylg-amb-spread").value, "162");
+  assert.equal(h.$("ylg-amb-blur").value, "75");
+  assert.equal(h.localData.ylgSettings.ambientLight.quality, "auto");
 });
 
 (async () => {

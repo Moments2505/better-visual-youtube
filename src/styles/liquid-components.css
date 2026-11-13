@@ -1,20 +1,5 @@
-/* One glass surface per chip/searchbox. Text and glyphs are never filtered. */
-html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"],
-html[data-ylg-enabled="true"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox {
-  background-color: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.65)) !important;
-  background-image: linear-gradient(155deg, rgba(255,255,255,calc(var(--ylg-highlight) * 0.10)), transparent 42%) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,calc(var(--ylg-highlight) * 0.8)),
-    inset 0 -1px 0 rgba(15,23,42,calc(var(--ylg-highlight) * 0.25)),
-    inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-highlight) * 100%), transparent),
-    0 2px 5px rgba(0,0,0,.12) !important;
-  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1) !important;
-  backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1) !important;
-}
-html[data-ylg-enabled="true"][data-ylg-lens="1"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"],
-html[data-ylg-enabled="true"][data-ylg-lens="1"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox {
-  -webkit-backdrop-filter: blur(var(--ylg-blur-s)) var(--ylg-interface-lens, saturate(1)) saturate(1.1) !important;
-  backdrop-filter: blur(var(--ylg-blur-s)) var(--ylg-interface-lens, saturate(1)) saturate(1.1) !important;
-}
+/* Unified Liquid Glass capsule material across chips, search bar & player controls.
+   Text and glyphs are never filtered by parent backdrop-filter. */
 html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"]:is([selected], [aria-selected="true"]) {
   background-color: var(--yt-sys-color-baseline--text-primary, CanvasText) !important;
 }
@@ -95,36 +80,144 @@ html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-scrubber-button::after {
   backdrop-filter: url(#ylg-lens-seek);
 }
 html[data-ylg-enabled="true"] .ytp-play-progress { background: #ff2337 !important; }
-/* Shared Specular Highlight also drives the player capsule rims. */
+
+/* Shared Liquid Glass capsule material: Search Bar, Voice Mic, Chips & Player Controls
+   share identical tint, opacity, sheen, specular rim, and blur. */
 @layer ylg-components {
+  html[data-ylg-enabled="true"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"],
+  html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"] #masthead-container #voice-search-button,
   html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
   html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
   html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
   html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
-    box-shadow: inset 0 1px 0 rgba(255,255,255,calc(var(--ylg-highlight) * .8)),
-      inset 0 -1px 0 rgba(198,220,255,calc(var(--ylg-highlight) * .33)),
-      inset 0 1px 0 rgba(255,228,214,calc(var(--ylg-lens-ab, 0) * var(--ylg-highlight) * .5)),
-      inset 0 -1px 0 rgba(196,222,255,calc(var(--ylg-lens-ab, 0) * var(--ylg-highlight) * .45)),
-      0 2px 4px rgba(0,0,0,.25) !important;
+    background-color: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.65)) !important;
+    background-image: linear-gradient(155deg, rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.12)), transparent 42%) !important;
+    border-radius: 999px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.8)),
+      inset 0 -1px 0 rgba(15, 23, 42, calc(var(--ylg-highlight) * 0.25)),
+      inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-highlight) * 100%), transparent),
+      0 2px 5px rgba(0, 0, 0, 0.18) !important;
+    -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1) !important;
+    backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1) !important;
   }
-  /* The right dock had an extra full-strength dispersion ring above the common
-     material. All capsules now use the same shared directional rim instead. */
+  html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentInputBox {
+    border-color: transparent !important;
+  }
+  /* Keep Search Button a single-painter transparent overlay inside the unified Search capsule. */
+  html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentSearchButton,
+  html[data-ylg-enabled="true"] #masthead-container #voice-search-button yt-button-shape button {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentInputBox:hover,
+  html[data-ylg-enabled="true"] #masthead-container #voice-search-button:hover,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > :is(.ytp-prev-button, .ytp-next-button):hover,
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area:is(:hover, :focus-within) {
+    background-color: rgba(var(--ylg-surface-tint-light), min(0.9, calc(var(--ylg-opacity) * 0.75 + 0.05))) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-lens="1"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"],
+  html[data-ylg-enabled="true"][data-ylg-lens="1"] #masthead-container #center .ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"][data-ylg-lens="1"] #masthead-container #voice-search-button {
+    -webkit-backdrop-filter: blur(var(--ylg-blur-s)) var(--ylg-interface-lens, saturate(1)) saturate(1.1) !important;
+    backdrop-filter: blur(var(--ylg-blur-s)) var(--ylg-interface-lens, saturate(1)) saturate(1.1) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-chrome-bottom .ytp-right-controls {
+    -webkit-backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-player) saturate(1.1) !important;
+    backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-player) saturate(1.1) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-lens-split="1"] .ytp-chrome-bottom .ytp-time-display {
+    -webkit-backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-capsule) saturate(1.1) !important;
+    backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-capsule) saturate(1.1) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-control-lens="1"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"][data-ylg-lens="1"][data-ylg-control-lens="1"] .ytp-chrome-bottom .ytp-volume-area {
+    -webkit-backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-control) saturate(1.1) !important;
+    backdrop-filter: blur(var(--ylg-blur-s)) url(#ylg-lens-control) saturate(1.1) !important;
+  }
+  /* Chromatic aberration edge fringe driven by --ylg-lens-ab when optics aberration is active. */
+  html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"]:not([data-ylg-fill="none"]):not([data-ylg-lowfx="true"]) :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"],
+  html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"]:not([data-ylg-fill="none"]):not([data-ylg-lowfx="true"]) #masthead-container #center .ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"]:not([data-ylg-fill="none"]):not([data-ylg-lowfx="true"]) #masthead-container #voice-search-button,
+  html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"]:not([data-ylg-fill="none"]):not([data-ylg-lowfx="true"]) .ytp-chrome-bottom .ytp-right-controls,
+  html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"]:not([data-ylg-fill="none"]):not([data-ylg-lowfx="true"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"]:not([data-ylg-fill="none"]):not([data-ylg-lowfx="true"]) .ytp-chrome-bottom .ytp-time-display,
+  html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"]:not([data-ylg-fill="none"]):not([data-ylg-lowfx="true"]) .ytp-chrome-bottom .ytp-volume-area {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.8)),
+      inset 0 -1px 0 rgba(15, 23, 42, calc(var(--ylg-highlight) * 0.25)),
+      inset 1.5px 1px 2px rgba(255, 118, 168, calc(var(--ylg-lens-ab, 0) * 0.44)),
+      inset -1.5px -1px 2px rgba(96, 212, 255, calc(var(--ylg-lens-ab, 0) * 0.44)),
+      inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(var(--ylg-highlight) * 100%), transparent),
+      0 2px 5px rgba(0, 0, 0, 0.18) !important;
+  }
+  html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > :is(.ytp-prev-button, .ytp-next-button) {
+    border-radius: 999px !important;
+    margin-inline: 0 !important;
+  }
+  /* All capsules use the same shared directional rim without a duplicate dispersion ring. */
   html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls::after {
     content: none !important;
   }
 }
 @layer ylg-states {
+  /* High-opacity Pale mode: Search Bar and Player Control Bar capsules share crisp pale glass + dark ink. */
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) #masthead-container #center .ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) #masthead-container #voice-search-button,
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-right-controls,
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-time-display,
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-volume-area {
+    background-color: color-mix(in srgb, var(--ylg-search-scrim) 84%, rgba(255, 255, 255, 0.88)) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92),
+      inset 0 0 0 1px rgba(15, 23, 42, 0.14),
+      0 2px 6px rgba(15, 23, 42, 0.14) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-button:not([data-tooltip-target-id="ytp-autonav-toggle-button"]):not(:has(.ytp-autonav-toggle-button)) :is(svg, .ytp-svg-fill, svg :is(path, rect, circle, polygon, use):not(.ytp-svg-shadow):not([fill="none"])) {
+    color: #111827 !important;
+    fill: #111827 !important;
+    filter: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-svg-shadow {
+    fill: none !important;
+    stroke: rgba(255, 255, 255, 0.45) !important;
+    stroke-opacity: 0.45 !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-autonav-toggle-button {
+    background-color: rgba(17, 24, 39, 0.22) !important;
+    box-shadow: inset 0 0 0 1px rgba(17, 24, 39, 0.28) !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-time-display :is(.ytp-time-current, .ytp-time-separator, .ytp-time-duration, .ytp-time-clip-icon) {
+    color: #111827 !important;
+    text-shadow: none !important;
+  }
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom :is(.ytp-volume-slider-handle, .ytp-volume-slider-handle::before) {
+    background: #111827 !important;
+  }
+  /* Clear mode (Opacity = 0%): Search Bar and Player Control Bar both go completely crystal-clear. */
   html[data-ylg-enabled="true"][data-ylg-fill="none"] :is(yt-chip-cloud-chip-renderer, ytd-chip-renderer).ylg-glass[data-ylg-level="chip"],
-  html[data-ylg-enabled="true"][data-ylg-fill="none"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
-  html[data-ylg-enabled="true"][data-ylg-fill="none"] :is(#guide, #guide-inner-content).ylg-glass {
+  html[data-ylg-enabled="true"][data-ylg-fill="none"] #masthead-container #center .ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"][data-ylg-fill="none"] #masthead-container #voice-search-button,
+  html[data-ylg-enabled="true"][data-ylg-fill="none"] :is(#guide, #guide-inner-content).ylg-glass,
+  html[data-ylg-enabled="true"][data-ylg-fill="none"] .ytp-chrome-bottom .ytp-right-controls,
+  html[data-ylg-enabled="true"][data-ylg-fill="none"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+  html[data-ylg-enabled="true"][data-ylg-fill="none"] .ytp-chrome-bottom .ytp-time-display,
+  html[data-ylg-enabled="true"][data-ylg-fill="none"] .ytp-chrome-bottom .ytp-volume-area {
     background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
   html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ylg-glass[data-ylg-level="chip"],
   html[data-ylg-enabled="true"][data-ylg-lowfx="true"] :is(#guide, #guide-inner-content).ylg-glass,
-  html[data-ylg-enabled="true"][data-ylg-lowfx="true"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"][data-ylg-lowfx="true"] #masthead-container #center .ytSearchboxComponentInputBox,
+  html[data-ylg-enabled="true"][data-ylg-lowfx="true"] #masthead-container #voice-search-button,
   html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-scrubber-button::after {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
@@ -134,7 +227,8 @@ html[data-ylg-enabled="true"] .ytp-play-progress { background: #ff2337 !importan
   @media (forced-colors: active) {
     html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="chip"],
     html[data-ylg-enabled="true"] :is(#guide, #guide-inner-content).ylg-glass,
-    html[data-ylg-enabled="true"] #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+    html[data-ylg-enabled="true"] #masthead-container #center .ytSearchboxComponentInputBox,
+    html[data-ylg-enabled="true"] #masthead-container #voice-search-button,
     html[data-ylg-enabled="true"] .ytp-scrubber-button::after {
       background: Canvas !important;
       color: CanvasText !important;
@@ -145,7 +239,8 @@ html[data-ylg-enabled="true"] .ytp-play-progress { background: #ff2337 !importan
   @media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
     html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ylg-glass[data-ylg-level="chip"],
     html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) :is(#guide, #guide-inner-content).ylg-glass,
-    html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) #masthead-container#masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+    html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) #masthead-container #center .ytSearchboxComponentInputBox,
+    html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) #masthead-container #voice-search-button,
     html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-scrubber-button::after {
       background: Canvas !important;
       color: CanvasText !important;

@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Tiện ích miễn phí, mã nguồn mở, dành cho Microsoft Edge và Google Chrome trên máy tính.
 
-**Bản chính thức mới nhất: [0.6.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.6.0).** Bổ sung bộ Ambient Light mở rộng (Giảm nhấp nháy, Tự nhận diện viền đen, Đồng bộ viền kính, Hướng ánh sáng, Shorts Glow, Tiết kiệm năng lượng, Độ rực & Tương phản), Rạp phim nhập vai, Phím tắt HUD, Zen Watch, thiết kế lại ô đang chọn thanh bên, headbar liền mạch một lớp và tối ưu 120–144Hz. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.6.0.md)
+**Bản chính thức mới nhất: [0.7.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.7.0).** Đồng bộ viên kính Search Bar & Player Control Bar, khôi phục khúc xạ Snell cùng tán sắc `--ylg-lens-ab` khi bật Ambient Light, chuyển `immersiveCinema` / `zenWatch` sang làm mờ mượt qua `opacity` kèm cố định `#frosted-glass` chống lọt chữ sau logo, sửa nút Tắt / mức chất lượng Ambient Light và nâng cấp `/shorts` Ambient Glow với tự cắt viền đen 2 trục. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.7.0.md)
 
 ## Thêm chiều sâu cho giao diện
 

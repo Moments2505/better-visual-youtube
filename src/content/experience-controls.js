@@ -22,6 +22,7 @@
   var lastActivityAt = 0;
   var unsubNav = null;
   var boundVideo = null;
+  var lastNavUrl = "";
   var toastEl = null;
   var toastTimer = null;
 
@@ -67,6 +68,16 @@
     }
   }
 
+  function setCinemaArmed(on) {
+    var de = document.documentElement;
+    if (!de) return;
+    if (on) {
+      de.setAttribute("data-ylg-cinema-armed", "true");
+    } else if (de.removeAttribute) {
+      de.removeAttribute("data-ylg-cinema-armed");
+    }
+  }
+
   function clearIdleTimer() {
     if (idleTimer !== null) {
       clearTimeout(idleTimer);
@@ -86,16 +97,29 @@
     }, IDLE_DELAY_MS);
   }
 
+  function currentUrlKey() {
+    var loc = root.location;
+    if (!loc) return "";
+    var pathSearch = String(loc.pathname || "") + String(loc.search || "");
+    if (pathSearch) return pathSearch;
+    return typeof loc.href === "string" ? loc.href : "";
+  }
+
+  function isCinemaIdleNow() {
+    var de = document.documentElement;
+    return !!(de && de.getAttribute && de.getAttribute("data-ylg-cinema-idle") === "true");
+  }
+
   function bindWatchVideoEvents() {
-    if (boundVideo && boundVideo.isConnected !== false) return;
     var v = activeVideo();
-    if (v === boundVideo) return;
+    if (v === boundVideo && boundVideo && boundVideo.isConnected !== false) return false;
     unbindWatchVideoEvents();
     boundVideo = v;
-    if (!v || !v.addEventListener) return;
+    if (!v || !v.addEventListener) return false;
     v.addEventListener("pause", onVideoPause, { passive: true });
     v.addEventListener("ended", onVideoPause, { passive: true });
     v.addEventListener("play", onVideoPlay, { passive: true });
+    return true;
   }
 
   function unbindWatchVideoEvents() {
@@ -128,24 +152,57 @@
     armIdleTimer();
   }
 
+  function onNavEvent(info) {
+    if (!cinemaActive) return;
+    var reason = info && info.reason;
+    var nextUrl = currentUrlKey();
+    var urlChanged = nextUrl !== lastNavUrl;
+    if (urlChanged) lastNavUrl = nextUrl;
+
+    var newlyBound = bindWatchVideoEvents();
+
+    if (reason === "fullscreenchange") {
+      if (document.fullscreenElement) {
+        setCinemaIdle(false);
+        clearIdleTimer();
+      } else if (idleTimer === null && !isCinemaIdleNow()) {
+        armIdleTimer();
+      }
+      return;
+    }
+
+    if (reason === "schedule" && !urlChanged) {
+      if (newlyBound && idleTimer === null && !isCinemaIdleNow()) {
+        var v = boundVideo;
+        if (v && !v.paused && !v.ended) {
+          armIdleTimer();
+        }
+      }
+      return;
+    }
+
+    setCinemaIdle(false);
+    armIdleTimer();
+  }
+
   function enableCinema() {
     if (cinemaActive) {
+      setCinemaArmed(true);
+      lastNavUrl = currentUrlKey();
       bindWatchVideoEvents();
       armIdleTimer();
       return;
     }
     cinemaActive = true;
+    setCinemaArmed(true);
+    lastNavUrl = currentUrlKey();
     lastActivityAt = Date.now();
     document.addEventListener("pointermove", noteActivity, { passive: true });
     document.addEventListener("pointerdown", noteActivity, { passive: true });
     document.addEventListener("wheel", noteActivity, { passive: true });
     document.addEventListener("keydown", noteActivity, { passive: true });
     if (root.YLG_NAV && root.YLG_NAV.onNavigation && !unsubNav) {
-      unsubNav = root.YLG_NAV.onNavigation(function () {
-        setCinemaIdle(false);
-        bindWatchVideoEvents();
-        armIdleTimer();
-      });
+      unsubNav = root.YLG_NAV.onNavigation(onNavEvent);
     }
     bindWatchVideoEvents();
     armIdleTimer();
@@ -155,7 +212,9 @@
     cinemaActive = false;
     clearIdleTimer();
     setCinemaIdle(false);
+    setCinemaArmed(false);
     unbindWatchVideoEvents();
+    lastNavUrl = "";
     if (unsubNav) {
       try { unsubNav(); } catch (e) {}
       unsubNav = null;
@@ -252,8 +311,17 @@
       teardown();
       return;
     }
-    if (current.immersiveCinema) enableCinema();
-    else disableCinema();
+    if (current.immersiveCinema) {
+      setCinemaIdle(false);
+      if (cinemaActive) {
+        setCinemaArmed(true);
+        armIdleTimer();
+      } else {
+        enableCinema();
+      }
+    } else {
+      disableCinema();
+    }
 
     if (current.hotkeys !== false) enableHotkeys();
     else disableHotkeys();
@@ -281,6 +349,7 @@
       var de = document.documentElement;
       return {
         cinemaActive: cinemaActive,
+        cinemaArmed: !!(de && de.getAttribute && de.getAttribute("data-ylg-cinema-armed") === "true"),
         cinemaIdle: !!(de && de.getAttribute && de.getAttribute("data-ylg-cinema-idle") === "true"),
         hotkeysActive: hotkeysActive,
         hasToast: !!(toastEl && toastEl.isConnected !== false)

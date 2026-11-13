@@ -27,4 +27,37 @@ assert.doesNotMatch(css, /ytd-app:has\(\s*>\s*#frosted-glass\s*\)/, "#frosted-gl
 assert.match(css, /html\[data-ylg-enabled="true"\]:has\(#frosted-glass\)\s+#masthead-container#masthead-container\s+ytd-masthead\.ylg-glass/);
 const ceilingCss = fs.readFileSync(path.join(root,'src/styles/opacity-ceiling.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
 assert.match(ceilingCss, /@layer ylg-ceiling\s*\{[\s\S]*:has\(#frosted-glass\)\s+#masthead-container\s+:is\(ytd-masthead,\s*#masthead,\s*ytd-searchbox\)\.ylg-glass\s*\{[^}]*background-color:\s*transparent\s*!important/);
-console.log('Chrome surface regressions: 20/20 passed (source contracts only; browser rendering requires separate verification).');
+assert.match(css, /ytd-app:not\(\[fullscreen\]\) #frosted-glass,[\s\S]*?display:\s*block\s*!important/);
+assert.match(css, /:has\(#frosted-glass\)\s+#masthead-container\s+#background[\s\S]*?opacity:\s*0\s*!important/);
+assert.match(ceilingCss, /@layer ylg-ceiling\s*\{[\s\S]*#masthead-container\s+#background\s*\{[^}]*opacity:\s*0\s*!important/);
+assert.match(ceilingCss, /@layer ylg-ceiling\s*\{[\s\S]*#masthead-container\s*\{[^}]*--ytal-image-opacity:\s*1\s*!important/);
+assert.match(ceilingCss, /@layer ylg-ceiling\s*\{[\s\S]*color:\s*var\(--ylg-chrome-text\)\s*!important/);
+
+const perfCss = fs.readFileSync(path.join(root,'src/styles/interaction-performance.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+assert.doesNotMatch(perfCss, /rgba\(10,\s*14,\s*22,\s*0\.52\)/, "must not strip left player capsules to dark opaque pills");
+assert.doesNotMatch(perfCss, /brightness\(0\.80\)/, "playing player controls must not darken backdrop out of sync with search bar");
+assert.match(perfCss, /\.html5-video-player\.ytp-autohide\s+\.ytp-chrome-bottom[^{]*\{[^}]*backdrop-filter:\s*none\s*!important/, "autohide player controls must suppress backdrop-filter");
+assert.doesNotMatch(perfCss, /playing-mode:not\(\.ytp-autohide\)[^{]*\{[^}]*backdrop-filter:\s*none/, "active playback must preserve capsule lenses");
+assert.match(perfCss, /playing-mode:not\(\.ytp-autohide\)[\s\S]*?\.ytp-button svg\s*\{[^}]*filter:\s*none\s*!important/);
+assert.match(perfCss, /\[data-ylg-lens-hover="1"\][^{]*:not\(:hover\):not\(:focus-visible\)[^}]*backdrop-filter:\s*none\s*!important/, "hover lens should suppress backdrop-filter only when idle");
+assert.match(perfCss, /\[data-ylg-lens="1"\][^{]*\.ytp-progress-bar-container:not\(:hover\):not\(:focus-within\):not\(\[data-ylg-dragging="1"\]\)\s+\.ytp-scrubber-button::after/, "scrubber lens should remain active on hover/focus/drag");
+assert.match(perfCss, /\[data-ylg-lowfx="true"\]\[data-ylg-optics-aberration="1"\][^{]*\.ylg-glass\[data-ylg-level="panel"\]::before\s*\{[^}]*filter:\s*none\s*!important/, "panel optics aberration filter must only be disabled under lowfx");
+
+assert.doesNotMatch(ceilingCss, /ytSearchboxComponentInputBox[\s\S]*?--yt-sys-color-baseline--tonal-background/, "opacity-ceiling must not clobber Search Bar Liquid Glass tint/opacity");
+assert.doesNotMatch(ceilingCss, /ytSearchboxComponentSearchButton[\s\S]*?--yt-sys-color-baseline--tonal-background/, "opacity-ceiling must not paint a separate box on Search Button");
+
+const liquidCss = fs.readFileSync(path.join(root,'src/styles/liquid-components.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\.ytp-left-controls > :is\(\.ytp-prev-button,\s*\.ytp-next-button\)\s*\{[^}]*border-radius:\s*999px\s*!important/);
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\.ytSearchboxComponentInputBox,[\s\S]*?\.ytp-chrome-bottom \.ytp-right-controls,[\s\S]*?\.ytp-chrome-bottom \.ytp-volume-area\s*\{[\s\S]*?background-color:\s*rgba\(var\(--ylg-surface-tint-light\),\s*calc\(var\(--ylg-opacity\)\s*\*\s*0\.65\)\)\s*!important[\s\S]*?backdrop-filter:\s*blur\(var\(--ylg-blur-s\)\)\s*saturate\(1\.1\)\s*!important/, "Search Bar and Player Control Bar capsules must share identical Liquid Glass tint, opacity, and blur");
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\.ytSearchboxComponentSearchButton[\s\S]*?background-color:\s*transparent\s*!important/, "Search Button must remain a transparent single-painter overlay");
+assert.match(liquidCss, /@layer ylg-states\s*\{[\s\S]*?data-ylg-fill="none"[\s\S]*?\.ytSearchboxComponentInputBox,[\s\S]*?\.ytp-chrome-bottom \.ytp-volume-area\s*\{[\s\S]*?background:\s*transparent\s*!important/, "Clear mode must strip both Search Bar and Player Control Bar capsules cleanly");
+assert.match(liquidCss, /@layer ylg-states\s*\{[\s\S]*?data-ylg-opacity-pale="true"[\s\S]*?\.ytSearchboxComponentInputBox,[\s\S]*?\.ytp-chrome-bottom \.ytp-volume-area\s*\{[\s\S]*?var\(--ylg-search-scrim\)/, "Pale high-opacity mode must sync Search Bar and Player Control Bar capsules");
+assert.match(liquidCss, /@layer ylg-states\s*\{[\s\S]*?data-ylg-opacity-pale="true"[\s\S]*?svg :is\(path,\s*rect,\s*circle,\s*polygon,\s*use\)[\s\S]*?fill:\s*#111827\s*!important/, "Pale mode must enforce dark #111827 fill on child SVG shapes");
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\[data-ylg-lens="1"\][^{]*\.ytSearchboxComponentInputBox[^{]*\{[^}]*var\(--ylg-interface-lens/, "Search Bar Snell refraction lens must remain active inside @layer ylg-components");
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\[data-ylg-lens="1"\][^{]*\.ytp-right-controls[^{]*\{[^}]*url\(#ylg-lens-player\)/, "Player capsule Snell refraction lens must remain active inside @layer ylg-components");
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\[data-ylg-lens="1"\]\[data-ylg-control-lens="1"\][^{]*\.ytp-volume-area[^{]*\{[^}]*url\(#ylg-lens-control\)/, "Volume capsule must use real #ylg-lens-control filter under control lens");
+assert.doesNotMatch(liquidCss, /ylg-lens-well/, "liquid-components.css must not reference unbuilt #ylg-lens-well");
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\[data-ylg-optics-aberration="1"\][^{]*\{[^}]*var\(--ylg-lens-ab/, "Capsules must render chromatic aberration edge fringe driven by --ylg-lens-ab");
+assert.doesNotMatch(liquidCss, /\[data-ylg-ambient="on"\][^{]*\{[^}]*backdrop-filter:/, "Ambient Light mode must not strip optics lenses");
+assert.match(liquidCss, /@layer ylg-states\s*\{[\s\S]*?data-ylg-opacity-pale="true"[\s\S]*?\.ytp-chrome-bottom \.ytp-autonav-toggle-button\s*\{[^}]*background-color:\s*rgba\(17,\s*24,\s*39,\s*0\.22\)\s*!important/, "Pale mode must keep .ytp-autonav-toggle-button track visible");
+console.log('Chrome surface regressions: 48/48 assertions passed (source contracts only; browser rendering requires separate verification).');

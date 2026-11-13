@@ -41,6 +41,12 @@
   function onSystemThemeChange() {
     if (current && current.theme === "auto") syncPopupTheme("auto");
   }
+  function isSystemReducedMotion() {
+    if (typeof window.matchMedia !== "function") return false;
+    var mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!mql || !mql.matches) return false;
+    return typeof mql.media === "string" && mql.media.indexOf("prefers-reduced-motion") !== -1;
+  }
   if (systemTheme && systemTheme.addEventListener) {
     systemTheme.addEventListener("change", onSystemThemeChange);
     window.addEventListener("pagehide", function () {
@@ -398,6 +404,9 @@
           btn.addEventListener("click", function () {
             if (btn.disabled || !current || typeof S.applyStyleProfile !== "function") return;
             var next = S.applyStyleProfile(current, profileKey);
+            if (next.ambientLight && next.ambientLight.enabled && next.respectReducedMotion && isSystemReducedMotion()) {
+              next = S.normalizeSettings(Object.assign({}, next, { respectReducedMotion: false }));
+            }
             render(next);
             scheduleSave();
             flushSave(t("statusProfileApplied", "Profile applied"));
@@ -478,11 +487,25 @@
     var ambEnabled = $("ylg-ambient-enabled");
     if (ambEnabled) {
       ambEnabled.addEventListener("change", function () {
-        update({ ambientLight: Object.assign({}, current.ambientLight, { enabled: this.checked }) });
+        var patch = { ambientLight: Object.assign({}, current.ambientLight, { enabled: this.checked }) };
+        if (this.checked && current.respectReducedMotion && isSystemReducedMotion()) {
+          patch.respectReducedMotion = false;
+          render(S.normalizeSettings(Object.assign({}, current, patch)));
+          scheduleSave();
+          return;
+        }
+        update(patch);
       });
     }
     bindSeg("ylg-ambient-quality", function (v) {
-      update({ ambientLight: Object.assign({}, current.ambientLight, { quality: v }) });
+      var next = (typeof S.applyAmbientQualityTier === "function")
+        ? S.applyAmbientQualityTier(current, v)
+        : S.normalizeSettings(Object.assign({}, current, { ambientLight: Object.assign({}, current.ambientLight, { quality: v }) }));
+      if (next.respectReducedMotion && isSystemReducedMotion()) {
+        next = S.normalizeSettings(Object.assign({}, next, { respectReducedMotion: false }));
+      }
+      render(next);
+      scheduleSave();
     });
     bindSlider("ylg-amb-blur", "ylg-amb-blur-v", function (v) {
       update({ ambientLight: Object.assign({}, current.ambientLight, { blur: v }) });

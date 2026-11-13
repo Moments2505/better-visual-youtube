@@ -4,10 +4,16 @@
 /* YouTube keeps the sheet in the DOM but gives it .none on watch pages.
    Presence-based child resets still apply there, so ensure the sole painter
    actually displays. Respect fullscreen, which owns the entire viewport. */
+html[data-ylg-enabled="true"]:not(:fullscreen):not(:has(:fullscreen)) ytd-app:not([fullscreen]) #frosted-glass,
 html[data-ylg-enabled="true"]:not(:fullscreen):not(:has(:fullscreen)) ytd-app[is-watch-page]:not([fullscreen]) #frosted-glass {
   display: block !important;
 }
 html[data-ylg-enabled="true"] #frosted-glass {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
   z-index: 1999 !important;
   pointer-events: none !important;
   /* YouTube grows this native sheet to 112px when chips are present. The
@@ -80,6 +86,7 @@ html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass::before {
 }
 /* The bounded sheet owns the only headbar painter. */
 html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container#masthead-container ytd-masthead.ylg-glass,
+html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container :is(ytd-masthead, #masthead, #background, ytd-searchbox, yt-searchbox),
 html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
 html[data-ylg-enabled="true"]:has(#frosted-glass) :is(#chips-wrapper, ytd-feed-filter-chip-bar-renderer),
 html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-searchbox.ylg-glass {
@@ -88,6 +95,9 @@ html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-search
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   box-shadow: none !important;
+}
+html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #background {
+  opacity: 0 !important;
 }
 html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-masthead.ylg-glass::before,
 html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-masthead.ylg-glass::after {

@@ -482,22 +482,36 @@ html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] tp-yt-paper-item,
 html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] tp-yt-paper-item {
   background-color: transparent;
 }
-/* Active navigation pill: neutral frosted Liquid Glass capsule + 3px left
-   accent bar so --ylg-accent never turns blue/sky backgrounds muddy brown. */
+/* Active navigation pill: token-synced Liquid Glass capsule (--ylg-opacity,
+   --ylg-surface-tint-light, --ylg-radius-s, --ylg-highlight) + 3px accent bar. */
 html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] a,
 html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] .yt-simple-endpoint,
 html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] a,
-html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] .yt-simple-endpoint {
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] .yt-simple-endpoint,
+html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[active] a,
+html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[aria-selected="true"] a {
+  --ylg-nav-pill-alpha: clamp(0.05, calc(var(--ylg-opacity, 0.25) * 0.52), 0.44);
+  --ylg-nav-sheen-alpha: calc(var(--ylg-highlight, 0.6) * clamp(0.06, calc(var(--ylg-opacity, 0.25) * 0.42), 0.30));
+  --ylg-nav-rim-alpha: calc(var(--ylg-highlight, 0.6) * clamp(0.14, calc(var(--ylg-opacity, 0.25) * 0.85), 0.56));
   position: relative;
-  background-color: rgba(255, 255, 255, 0.14);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
-  border-radius: 12px;
+  background-color: color-mix(
+    in srgb,
+    color-mix(in srgb, rgb(var(--ylg-surface-tint-light)) 72%, rgba(255, 255, 255, 0.96) 28%) calc(var(--ylg-nav-pill-alpha) * 100%),
+    transparent
+  );
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, var(--ylg-nav-sheen-alpha)) 0%,
+    color-mix(in srgb, rgb(var(--ylg-surface-tint-light)) calc(var(--ylg-nav-sheen-alpha) * 45%), transparent) 100%
+  );
+  border-radius: var(--ylg-radius-s, 12px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.44),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.20),
-    0 4px 14px rgba(8, 15, 28, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, var(--ylg-nav-rim-alpha)),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-rim-light) calc(clamp(0.22, var(--ylg-opacity, 0.25) * 1.4, 1) * 100%), transparent),
+    0 4px 14px rgba(8, 15, 28, calc(clamp(0, var(--ylg-opacity, 0.25) * 0.32, 0.20)));
   transition:
     background-color var(--ylg-dur-fast) var(--ylg-ease-glass),
+    border-radius var(--ylg-dur-fast) var(--ylg-ease-glass),
     box-shadow var(--ylg-dur-fast) var(--ylg-ease-glass);
 }
 html[data-ylg-enabled="true"] ytd-guide-entry-renderer[active] > a::before,
@@ -513,37 +527,6 @@ html[data-ylg-enabled="true"] ytd-guide-entry-renderer[aria-selected="true"] > a
   box-shadow: 0 0 8px color-mix(in srgb, var(--ylg-accent, #3ea6ff) 70%, transparent);
   pointer-events: none;
 }
-html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer[active] a,
-html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer[active] .yt-simple-endpoint,
-html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer[aria-selected="true"] a,
-html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer[aria-selected="true"] .yt-simple-endpoint {
-  background-color: rgba(255, 255, 255, 0.80);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(241, 245, 249, 0.72) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.96),
-    inset 0 0 0 1px rgba(15, 23, 42, 0.10),
-    0 3px 10px rgba(15, 23, 42, 0.08);
-}
-html[data-ylg-enabled="true"] ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) a:hover,
-html[data-ylg-enabled="true"] ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) .yt-simple-endpoint:hover {
-  background-color: rgba(255, 255, 255, 0.10);
-  border-radius: 12px;
-}
-html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) a:hover,
-html[data-ylg-enabled="true"][data-ylg-theme="light"]:not([data-ylg-daylight]) ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) .yt-simple-endpoint:hover {
-  background-color: rgba(15, 23, 42, 0.06);
-}
-html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[active] a,
-html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[aria-selected="true"] a {
-  position: relative;
-  background-color: rgba(255, 255, 255, 0.14);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
-  border-radius: 12px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.44),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.20),
-    0 4px 12px rgba(8, 15, 28, 0.16);
-}
 html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[active] a::before,
 html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[aria-selected="true"] a::before {
   content: "";
@@ -556,6 +539,40 @@ html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer[aria-selected="true"
   background: var(--ylg-accent, #3ea6ff);
   box-shadow: 0 0 6px color-mix(in srgb, var(--ylg-accent, #3ea6ff) 70%, transparent);
   pointer-events: none;
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-guide-entry-renderer[active] a,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-guide-entry-renderer[active] .yt-simple-endpoint,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-guide-entry-renderer[aria-selected="true"] a,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-guide-entry-renderer[aria-selected="true"] .yt-simple-endpoint,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-mini-guide-entry-renderer[active] a,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-mini-guide-entry-renderer[aria-selected="true"] a {
+  background-color: transparent;
+  background-image: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight, 0.6) * 0.28)),
+    inset 0 0 0 1px color-mix(in srgb, var(--ylg-accent, #3ea6ff) 36%, rgba(255, 255, 255, 0.14));
+}
+html[data-ylg-enabled="true"]:is([data-ylg-theme="light"]:not([data-ylg-daylight]), [data-ylg-opacity-pale="true"]):not([data-ylg-fill="none"]) :is(ytd-guide-entry-renderer[active], ytd-guide-entry-renderer[aria-selected="true"]) :is(a, .yt-simple-endpoint),
+html[data-ylg-enabled="true"]:is([data-ylg-theme="light"]:not([data-ylg-daylight]), [data-ylg-opacity-pale="true"]):not([data-ylg-fill="none"]) :is(ytd-mini-guide-entry-renderer[active], ytd-mini-guide-entry-renderer[aria-selected="true"]) a {
+  background-color: color-mix(in srgb, rgb(var(--ylg-surface-tint-light)) 24%, rgba(15, 23, 42, 0.07));
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, calc(var(--ylg-highlight, 0.6) * 0.65)) 0%, rgba(15, 23, 42, 0.03) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--ylg-highlight, 0.6) * 0.92)),
+    inset 0 0 0 1px rgba(15, 23, 42, 0.12),
+    0 3px 10px rgba(15, 23, 42, 0.07);
+}
+html[data-ylg-enabled="true"] ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) > a#endpoint:hover,
+html[data-ylg-enabled="true"] ytd-mini-guide-entry-renderer:not([active]):not([aria-selected="true"]) > a#endpoint:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: var(--ylg-radius-s, 12px);
+}
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) > a#endpoint:hover,
+html[data-ylg-enabled="true"][data-ylg-fill="none"] ytd-mini-guide-entry-renderer:not([active]):not([aria-selected="true"]) > a#endpoint:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+html[data-ylg-enabled="true"]:is([data-ylg-theme="light"]:not([data-ylg-daylight]), [data-ylg-opacity-pale="true"]):not([data-ylg-fill="none"]) ytd-guide-entry-renderer:not([active]):not([aria-selected="true"]) > a#endpoint:hover,
+html[data-ylg-enabled="true"]:is([data-ylg-theme="light"]:not([data-ylg-daylight]), [data-ylg-opacity-pale="true"]):not([data-ylg-fill="none"]) ytd-mini-guide-entry-renderer:not([active]):not([aria-selected="true"]) > a#endpoint:hover {
+  background-color: rgba(15, 23, 42, 0.06);
 }
 
 /* ------------------------------------------------------------------ */
@@ -630,12 +647,36 @@ html[data-ylg-enabled="true"] .ytp-player-content {
   -webkit-backdrop-filter: none !important;
   filter: none !important;
 }
-/* only the player surface itself must stay an exact rectangle */
+/* only the watch/embed player surface itself must stay an exact rectangle */
 html[data-ylg-enabled="true"] #movie_player,
-html[data-ylg-enabled="true"] .html5-video-player,
+html[data-ylg-enabled="true"] .html5-video-player:not(#shorts-player),
 html[data-ylg-enabled="true"] .ytp-chrome-bottom,
 html[data-ylg-enabled="true"] .ytp-chrome-top {
   border-radius: 0;
+}
+/* Shorts keep #player-container 12px radius and synced glass panels/controls */
+html[data-ylg-enabled="true"] ytd-shorts #shorts-player {
+  border-radius: 12px;
+  overflow: hidden;
+}
+html[data-ylg-enabled="true"] ytd-shorts ytd-engagement-panel-section-list-renderer {
+  background-color: var(--ylg-chrome-scrim);
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s, 12px)) saturate(var(--ylg-saturate, 1.5));
+  backdrop-filter: blur(var(--ylg-blur-s, 12px)) saturate(var(--ylg-saturate, 1.5));
+  border-radius: var(--ylg-radius, 18px);
+  border: 1px solid rgba(var(--ylg-ambient-rim, 255, 255, 255), calc(var(--ylg-highlight, 0.62) * 0.24));
+  box-shadow:
+    inset 0 1px 0 rgba(var(--ylg-ambient-rim, 255, 255, 255), calc(var(--ylg-highlight, 0.62) * 0.45)),
+    var(--ylg-shadow-ambient);
+}
+html[data-ylg-enabled="true"] ytd-shorts :is(#actions, reel-action-bar-view-model, .navigation-container) :is(button.yt-spec-button-shape-next--tonal, button.yt-spec-button-shape-next--overlay) {
+  background-color: var(--ylg-chrome-scrim);
+  -webkit-backdrop-filter: blur(var(--ylg-blur-s, 12px)) saturate(var(--ylg-saturate, 1.5));
+  backdrop-filter: blur(var(--ylg-blur-s, 12px)) saturate(var(--ylg-saturate, 1.5));
+  border: 1px solid rgba(var(--ylg-ambient-rim, 255, 255, 255), calc(var(--ylg-highlight, 0.62) * 0.28));
+  box-shadow:
+    inset 0 1px 0 rgba(var(--ylg-ambient-rim, 255, 255, 255), calc(var(--ylg-highlight, 0.62) * 0.48)),
+    var(--ylg-shadow-contact);
 }
 
 /* ------------------------------------------------------------------ */

@@ -73,10 +73,23 @@ html[data-ylg-ambient="off"] #ylg-shorts-glow {
 
 /* ---------------------------------------------------------------------------
    YOUTUBE NATIVE AMBIENT (cinematic lighting) COMPATIBILITY
-   When our engine is active we suppress ONLY the native ambient visual layer
-   to avoid double illumination. Scoped strictly under html[data-ylg-ambient="on"]
-   so removing the attribute restores native behavior with zero persistence changes.
+   While the extension is enabled we suppress YouTube's native #cinematics
+   visual layer (both when our engine is active and when the user turns
+   Ambient Light off) so native glow never double-paints or pops back on when
+   Ambient Light is disabled. Turning the extension Master Switch off removes
+   data-ylg-enabled="true" and restores native YouTube behavior cleanly.
    --------------------------------------------------------------------------- */
+html[data-ylg-enabled="true"] #cinematics,
+html[data-ylg-enabled="true"] #cinematics-container,
+html[data-ylg-enabled="true"] #cinematics-wide-container,
+html[data-ylg-enabled="true"] #cinematics-full-bleed-container,
+html[data-ylg-enabled="true"] ytd-cinematics,
+html[data-ylg-enabled="true"] #shorts-cinematic-container,
+html[data-ylg-enabled="true"] #cinematic-shorts-scrim,
+html[data-ylg-enabled="true"] ytd-shorts #cinematic-container,
+html[data-ylg-enabled="true"] #movie_player .ytp-cinematic-container,
+html[data-ylg-enabled="true"] #movie_player .ytp-ambient-mode-overlay,
+html[data-ylg-enabled="true"] ytd-app[ambient] #cine-data,
 html[data-ylg-ambient="on"] #movie_player .ytp-cinematic-container,
 html[data-ylg-ambient="on"] #movie_player .ytp-ambient-mode-overlay,
 html[data-ylg-ambient="on"] ytd-app[ambient] #cine-data {
@@ -102,21 +115,40 @@ html[data-ylg-enabled="true"][data-ylg-ambient="on"] #ylg-shorts-glow {
   inset: 0;
   width: 100vw;
   height: 100vh;
+  display: block;
   pointer-events: none;
   z-index: -1;
-  object-fit: cover;
   opacity: var(--ylg-shorts-glow-opacity, 0.68);
   transform: translateZ(0);
 }
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-page-manager:has(ytd-shorts > #ylg-shorts-glow),
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
 html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) {
   isolation: isolate;
-  background-color: transparent !important;
 }
-html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) :is(#shorts-container, #shorts-inner-container, .navigation-container, ytd-reel-video-renderer, #player-container) {
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) :is(#shorts-container, #shorts-inner-container, .navigation-container, ytd-reel-video-renderer, #player-container, .player-wrapper, .reel-video-in-sequence-thumbnail, #shorts-player) {
   background-color: transparent !important;
+  background-image: none !important;
 }
-html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) #cinematics {
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts[data-ylg-shorts-cropped="1"] video.html5-main-video {
+  clip-path: inset(
+    var(--ylg-shorts-crop-top, 0%)
+    var(--ylg-shorts-crop-right, 0%)
+    var(--ylg-shorts-crop-bottom, 0%)
+    var(--ylg-shorts-crop-left, 0%)
+    round 12px
+  );
+}
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts[data-ylg-shorts-cropped="1"] .reel-video-in-sequence-thumbnail:not(:has(video)) {
   display: none !important;
+}
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) :is(#cinematics, #cinematic-container, #shorts-cinematic-container, #cinematic-shorts-scrim) {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 /* Reduced motion: disable decorative ambient unless system-motion opt-out is set.

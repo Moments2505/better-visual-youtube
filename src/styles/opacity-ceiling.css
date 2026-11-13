@@ -16,6 +16,37 @@
     html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid][data-ylg-fill="none"] #frosted-glass::before {
       content: none !important;
       background: none !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
+    html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container :is(ytd-masthead, #masthead, #background, ytd-searchbox, yt-searchbox) {
+      background: transparent !important;
+      background-color: transparent !important;
+      background-image: none !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      box-shadow: none !important;
+    }
+    html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #background {
+      opacity: 0 !important;
+    }
+    html[data-ylg-enabled="true"] #masthead-container {
+      --ytal-image-opacity: 1 !important;
+    }
+    html[data-ylg-enabled="true"] #masthead-container :is(#logo.ytd-topbar-logo-renderer, #buttons.ytd-masthead ytd-topbar-menu-button-renderer, .gsst_e) {
+      opacity: 1 !important;
+    }
+    html[data-ylg-enabled="true"] #masthead-container :is(#country-code.ytd-topbar-logo-renderer, #voice-search-button, #search-button-narrow, ytd-topbar-menu-button-renderer, ytd-notification-topbar-button-renderer, ytd-button-renderer),
+    html[data-ylg-enabled="true"] #masthead-container :is(#guide-button, #back-button, #search-button-narrow, #voice-search-button) button yt-icon,
+    html[data-ylg-enabled="true"] #masthead-container #buttons.ytd-masthead :is(ytd-topbar-menu-button-renderer, ytd-notification-topbar-button-renderer, ytd-button-renderer, .ytd-masthead[is-icon-button]) button yt-icon,
+    html[data-ylg-enabled="true"] #masthead-container :is(ytd-searchbox, yt-searchbox) :is(#search, .ytSearchboxComponentInput, #search-clear-button yt-icon, .ytSearchboxComponentClearButton yt-icon, #search-icon-legacy yt-icon, .ytSearchboxComponentSearchButton yt-icon),
+    html[data-ylg-enabled="true"] #masthead-container .yt-spec-button-shape-next--outline:not(.yt-spec-button-shape-next--call-to-action) {
+      color: var(--ylg-chrome-text) !important;
+      fill: currentColor !important;
+    }
+    html[data-ylg-enabled="true"] #masthead-container :is(ytd-searchbox, yt-searchbox) :is(#search, .ytSearchboxComponentInput)::placeholder {
+      color: var(--ylg-chrome-muted, var(--ylg-chrome-text)) !important;
+      opacity: 0.78 !important;
     }
   }
 }
@@ -37,8 +68,11 @@
     color: #111827;
     text-shadow: none !important;
   }
-  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"] .ylg-glass :where(h1, #video-title, #content-text, #author-text, #channel-name, #owner-name, #count, #simplebox-placeholder, .ytd-channel-name#text, .yt-lockup-metadata-view-model__title, .yt-lockup-metadata-view-model-wiz__title, #description, .ytd-playlist-panel-renderer#title) {
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"] .ylg-glass :where(h1, #video-title, #content-text, #author-text, #channel-name, #owner-name, #count, #simplebox-placeholder, .ytd-channel-name#text, .yt-lockup-metadata-view-model__title, .yt-lockup-metadata-view-model-wiz__title, #description, .ytd-playlist-panel-renderer#title, .title.ytd-guide-entry-renderer, yt-formatted-string.ytd-guide-entry-renderer, .title.ytd-mini-guide-entry-renderer),
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"] :is(ytd-guide-entry-renderer, ytd-mini-guide-entry-renderer) :where(.title, yt-icon),
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"] #masthead-container #voice-search-button :where(button, yt-icon, svg) {
     color: #111827 !important;
+    fill: currentColor !important;
     text-shadow: none !important;
   }
   html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"] .ylg-glass :where(#byline, #metadata-line, #owner-sub-count, #publisher-container, .yt-lockup-metadata-view-model__metadata) {

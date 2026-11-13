@@ -65,21 +65,21 @@ html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-app .ambientlight__con
    unify scrim + backdrop blur across #frosted-glass::before and open guide,
    and fuse their y=56px left joint when tp-yt-app-drawer#guide[opened] is docked. */
 @media (forced-colors: none) {
-  html[data-ylg-enabled="true"][data-ylg-daylight] #frosted-glass::before {
+  html[data-ylg-enabled="true"][data-ylg-daylight]:not([data-ylg-fill="none"]) #frosted-glass::before {
     content: "";
     background: var(--ylg-chrome-scrim);
     -webkit-backdrop-filter: blur(var(--ylg-daylight-chrome-blur)) saturate(1);
     backdrop-filter: blur(var(--ylg-daylight-chrome-blur)) saturate(1);
   }
-  html[dark][data-ylg-enabled="true"][data-ylg-daylight] #frosted-glass::before {
+  html[dark][data-ylg-enabled="true"][data-ylg-daylight]:not([data-ylg-fill="none"]) #frosted-glass::before {
     background: var(--ylg-chrome-scrim);
   }
-  html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-lowfx="true"] #frosted-glass::before {
+  html[data-ylg-enabled="true"][data-ylg-daylight][data-ylg-lowfx="true"]:not([data-ylg-fill="none"]) #frosted-glass::before {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     background: var(--ylg-chrome-scrim);
   }
-  html[dark][data-ylg-enabled="true"][data-ylg-daylight][data-ylg-lowfx="true"] #frosted-glass::before {
+  html[dark][data-ylg-enabled="true"][data-ylg-daylight][data-ylg-lowfx="true"]:not([data-ylg-fill="none"]) #frosted-glass::before {
     background: var(--ylg-chrome-scrim);
   }
   html[data-ylg-enabled="true"][data-ylg-daylight]:not([data-ylg-fill="none"]) :is(#guide, #guide-inner-content).ylg-glass,

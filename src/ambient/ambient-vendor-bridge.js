@@ -215,10 +215,19 @@
     } else if (!vendorSettings.enabled || activeEngine.isHidden) {
       vendorSettings.set("enabled", true, true, true);
       await activeEngine.start();
-    } else if (changed.length && !document.hidden && document.visibilityState !== "hidden") {
-      // Paused videos may refresh once through the engine's own optional-frame
-      // path. Hidden tabs never get a bridge-forced draw; upstream resumes them.
-      await activeEngine.optionalFrame(true);
+    } else if (changed.length) {
+      if ((changed.indexOf("resolution") !== -1 || changed.indexOf("blur2") !== -1 || changed.indexOf("spread") !== -1) &&
+          typeof activeEngine.updateSizes === "function") {
+        await activeEngine.updateSizes();
+      }
+      if (typeof activeEngine.resetAverageVideoFramesDifference === "function") {
+        activeEngine.resetAverageVideoFramesDifference();
+      }
+      if (!document.hidden && document.visibilityState !== "hidden") {
+        // Paused videos may refresh once through the engine's own optional-frame
+        // path. Hidden tabs never get a bridge-forced draw; upstream resumes them.
+        await activeEngine.optionalFrame(true);
+      }
     }
     return engine === activeEngine && vendorSettings.enabled === on;
   }
