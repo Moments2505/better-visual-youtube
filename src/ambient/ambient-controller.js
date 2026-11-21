@@ -299,6 +299,7 @@
     video: null, videoHandlers: null, cropHost: null,
     lastSrc: "", lastPath: "",
     rvfcId: null, pollTimer: null, lastDraw: 0, lastCropScan: 0,
+    cropScanPending: false, cropScanGen: 0,
     stableCropScans: 0, haloCache: null,
     crop: { top: 0, bottom: 0, left: 0, right: 0 }
   };
@@ -622,7 +623,7 @@
     return { startPx: startPx, endPx: endPx, startPct: startPct, endPct: endPct };
   }
 
-  function detectShortsBars(v) {
+  function ensureShortsProbeCtx() {
     if (!sg.probe) {
       var p = document.createElement("canvas");
       p.width = SG_PROBE_W;
@@ -630,56 +631,75 @@
       sg.probe = p;
       sg.probeCtx = p.getContext ? p.getContext("2d", { willReadFrequently: true }) : null;
     }
-    if (!sg.probeCtx || !sg.probeCtx.drawImage || !sg.probeCtx.getImageData) return null;
+    return sg.probeCtx;
+  }
+
+  function analyzeShortsProbeData(data) {
+    if (!data || data.length < SG_PROBE_W * SG_PROBE_H * 4) return null;
+    var globalLit = 0;
+    for (var ggy = 1; ggy <= 5; ggy++) {
+      var gpy = Math.min(SG_PROBE_H - 1, Math.max(0, Math.round((SG_PROBE_H * ggy) / 6)));
+      for (var ggx = 1; ggx <= 5; ggx++) {
+        var gpx = Math.min(SG_PROBE_W - 1, Math.max(0, Math.round((SG_PROBE_W * ggx) / 6)));
+        if (!isDarkBarPixel(data, (gpy * SG_PROBE_W + gpx) * 4)) globalLit++;
+      }
+    }
+    if (globalLit < 2) return null;
+    // Single-pass by default: scan vertical across full width, then horizontal clipped inside vertical bars.
+    // Conditional Pass 2 re-scans vertical only when horizontal pillarboxes exist.
+    var vBars = scanBarAxis(data, SG_PROBE_W, SG_PROBE_H, true, 0, SG_PROBE_W - 1);
+    var hCross0 = vBars.startPx > 0 ? vBars.startPx + 2 : 0;
+    var hCross1 = vBars.endPx > 0 ? (SG_PROBE_H - 3 - vBars.endPx) : (SG_PROBE_H - 1);
+    var hBars = (hCross1 - hCross0 >= 4) ? scanBarAxis(data, SG_PROBE_W, SG_PROBE_H, false, hCross0, hCross1) : { startPx: 0, endPx: 0, startPct: 0, endPct: 0 };
+    if (hBars.startPx > 0 || hBars.endPx > 0) {
+      var vCross0 = hBars.startPx > 0 ? hBars.startPx + 2 : 0;
+      var vCross1 = hBars.endPx > 0 ? (SG_PROBE_W - 3 - hBars.endPx) : (SG_PROBE_W - 1);
+      if (vCross1 - vCross0 >= 4) {
+        vBars = scanBarAxis(data, SG_PROBE_W, SG_PROBE_H, true, vCross0, vCross1);
+      }
+    }
+    if (!vBars.startPct && !vBars.endPct && !hBars.startPct && !hBars.endPct) {
+      return { top: 0, bottom: 0, left: 0, right: 0 };
+    }
+    // Verify active interior contains visible non-bar content (reject fade-to-black frames -> hold previous crop)
+    var x0 = hBars.startPx, x1 = SG_PROBE_W - 1 - hBars.endPx;
+    var y0 = vBars.startPx, y1 = SG_PROBE_H - 1 - vBars.endPx;
+    if (x1 - x0 < 3 || y1 - y0 < 3) return null;
+    var lit = 0;
+    for (var gy = 1; gy <= 5; gy++) {
+      var py = Math.min(y1, Math.max(y0, Math.round(y0 + ((y1 - y0) * gy) / 6)));
+      for (var gx = 1; gx <= 5; gx++) {
+        var px = Math.min(x1, Math.max(x0, Math.round(x0 + ((x1 - x0) * gx) / 6)));
+        if (!isDarkBarPixel(data, (py * SG_PROBE_W + px) * 4)) lit++;
+      }
+    }
+    if (lit < 3) return null;
+    return {
+      top: vBars.startPct,
+      bottom: vBars.endPct,
+      left: hBars.startPct,
+      right: hBars.endPct
+    };
+  }
+
+  function detectShortsBars(v) {
+    var pCtx = ensureShortsProbeCtx();
+    if (!pCtx || !pCtx.drawImage || !pCtx.getImageData) return null;
     try {
-      sg.probeCtx.drawImage(v, 0, 0, SG_PROBE_W, SG_PROBE_H);
-      var img = sg.probeCtx.getImageData(0, 0, SG_PROBE_W, SG_PROBE_H);
-      var data = img && img.data;
-      if (!data || data.length < SG_PROBE_W * SG_PROBE_H * 4) return null;
-      var globalLit = 0;
-      for (var ggy = 1; ggy <= 5; ggy++) {
-        var gpy = Math.min(SG_PROBE_H - 1, Math.max(0, Math.round((SG_PROBE_H * ggy) / 6)));
-        for (var ggx = 1; ggx <= 5; ggx++) {
-          var gpx = Math.min(SG_PROBE_W - 1, Math.max(0, Math.round((SG_PROBE_W * ggx) / 6)));
-          if (!isDarkBarPixel(data, (gpy * SG_PROBE_W + gpx) * 4)) globalLit++;
-        }
-      }
-      if (globalLit < 2) return null;
-      // Pass 1: estimate orthogonal bars within the guaranteed-interior [40%..60%] central band
-      var estH = scanBarAxis(data, SG_PROBE_W, SG_PROBE_H, false, Math.floor(SG_PROBE_H * 0.40), Math.ceil(SG_PROBE_H * 0.60));
-      var estV = scanBarAxis(data, SG_PROBE_W, SG_PROBE_H, true, Math.floor(SG_PROBE_W * 0.40), Math.ceil(SG_PROBE_W * 0.60));
-      // Pass 2: verify full active span strictly inside orthogonal bars (+2px clears 1px backoff boundary)
-      var vCross0 = estH.startPx > 0 ? estH.startPx + 2 : 0;
-      var vCross1 = estH.endPx > 0 ? (SG_PROBE_W - 3 - estH.endPx) : (SG_PROBE_W - 1);
-      var hCross0 = estV.startPx > 0 ? estV.startPx + 2 : 0;
-      var hCross1 = estV.endPx > 0 ? (SG_PROBE_H - 3 - estV.endPx) : (SG_PROBE_H - 1);
-      var vBars = (vCross1 - vCross0 >= 4) ? scanBarAxis(data, SG_PROBE_W, SG_PROBE_H, true, vCross0, vCross1) : { startPx: 0, endPx: 0, startPct: 0, endPct: 0 };
-      var hBars = (hCross1 - hCross0 >= 4) ? scanBarAxis(data, SG_PROBE_W, SG_PROBE_H, false, hCross0, hCross1) : { startPx: 0, endPx: 0, startPct: 0, endPct: 0 };
-      if (!vBars.startPct && !vBars.endPct && !hBars.startPct && !hBars.endPct) {
-        return { top: 0, bottom: 0, left: 0, right: 0 };
-      }
-      // Verify active interior contains visible non-bar content (reject fade-to-black frames -> hold previous crop)
-      var x0 = hBars.startPx, x1 = SG_PROBE_W - 1 - hBars.endPx;
-      var y0 = vBars.startPx, y1 = SG_PROBE_H - 1 - vBars.endPx;
-      if (x1 - x0 < 3 || y1 - y0 < 3) return null;
-      var lit = 0;
-      for (var gy = 1; gy <= 5; gy++) {
-        var py = Math.min(y1, Math.max(y0, Math.round(y0 + ((y1 - y0) * gy) / 6)));
-        for (var gx = 1; gx <= 5; gx++) {
-          var px = Math.min(x1, Math.max(x0, Math.round(x0 + ((x1 - x0) * gx) / 6)));
-          if (!isDarkBarPixel(data, (py * SG_PROBE_W + px) * 4)) lit++;
-        }
-      }
-      if (lit < 3) return null;
-      return {
-        top: vBars.startPct,
-        bottom: vBars.endPct,
-        left: hBars.startPct,
-        right: hBars.endPct
-      };
+      pCtx.drawImage(v, 0, 0, SG_PROBE_W, SG_PROBE_H);
+      var img = pCtx.getImageData(0, 0, SG_PROBE_W, SG_PROBE_H);
+      return analyzeShortsProbeData(img && img.data);
     } catch (e) {
       return null;
     }
+  }
+
+  function applyDetectedShortsCrop(detected) {
+    if (!detected) return; // inconclusive/fade: preserve sg.crop AND sg.stableCropScans
+    var sameCrop = sg.crop.top === detected.top && sg.crop.bottom === detected.bottom &&
+      sg.crop.left === detected.left && sg.crop.right === detected.right;
+    sg.stableCropScans = sameCrop ? Math.min(20, sg.stableCropScans + 1) : 0;
+    applyShortsCrop(detected);
   }
 
   function ensureShortsVignette(cx, cy, r0, r1) {
@@ -712,6 +732,10 @@
       if (c.setAttribute) c.setAttribute("aria-hidden", "true");
       sg.canvas = c;
       sg.ctx = c.getContext ? c.getContext("2d", { willReadFrequently: false }) : null;
+      if (sg.ctx) {
+        sg.ctx.imageSmoothingEnabled = true;
+        sg.ctx.imageSmoothingQuality = "medium";
+      }
     }
     if (!sg.tiny) {
       var t = document.createElement("canvas");
@@ -791,15 +815,43 @@
     if (now - sg.lastDraw < minMs) return false;
     sg.lastDraw = now;
     if (amb.detectBarSize === true) {
-      var scanInterval = sg.stableCropScans >= 4 ? 1000 : 350;
-      if (sg.lastCropScan === 0 || (now - sg.lastCropScan >= scanInterval)) {
+      var interacting = (document.documentElement && document.documentElement.getAttribute && document.documentElement.getAttribute("data-ylg-scrubbing") === "1") ||
+        !!document.querySelector('[data-ylg-dragging="1"]');
+      var scanInterval = sg.stableCropScans < 3 ? 700 : (sg.stableCropScans < 6 ? 2500 : 4000);
+      if (!interacting && !sg.cropScanPending && (sg.lastCropScan === 0 || (now - sg.lastCropScan >= scanInterval))) {
         sg.lastCropScan = now;
-        var detected = detectShortsBars(v);
-        if (detected) {
-          var sameCrop = sg.crop.top === detected.top && sg.crop.bottom === detected.bottom &&
-            sg.crop.left === detected.left && sg.crop.right === detected.right;
-          sg.stableCropScans = sameCrop ? Math.min(20, sg.stableCropScans + 1) : 0;
-          applyShortsCrop(detected);
+        if (typeof root.createImageBitmap === "function") {
+          sg.cropScanPending = true;
+          var scanGen = sg.cropScanGen;
+          var scanVideo = v;
+          try {
+            root.createImageBitmap(v, {
+              resizeWidth: SG_PROBE_W,
+              resizeHeight: SG_PROBE_H,
+              resizeQuality: "low"
+            }).then(function (bmp) {
+              sg.cropScanPending = false;
+              try {
+                if (sg.active && sg.video === scanVideo && scanGen === sg.cropScanGen && bmp) {
+                  var pCtx = ensureShortsProbeCtx();
+                  if (pCtx && pCtx.drawImage && pCtx.getImageData) {
+                    pCtx.drawImage(bmp, 0, 0, SG_PROBE_W, SG_PROBE_H);
+                    var img = pCtx.getImageData(0, 0, SG_PROBE_W, SG_PROBE_H);
+                    applyDetectedShortsCrop(analyzeShortsProbeData(img && img.data));
+                  }
+                }
+              } catch (eBmpDraw) {
+              } finally {
+                if (bmp && bmp.close) { try { bmp.close(); } catch (eClose) {} }
+              }
+            }, function () {
+              sg.cropScanPending = false;
+            });
+          } catch (eBmpCall) {
+            sg.cropScanPending = false;
+          }
+        } else {
+          applyDetectedShortsCrop(detectShortsBars(v));
         }
       }
     } else if (sg.crop.top || sg.crop.bottom || sg.crop.left || sg.crop.right || sg.cropHost) {
@@ -823,8 +875,6 @@
       }
       var halo = resolveHaloBox(v, now);
       sg.ctx.globalCompositeOperation = "source-over";
-      sg.ctx.imageSmoothingEnabled = true;
-      sg.ctx.imageSmoothingQuality = "high";
       sg.ctx.clearRect(0, 0, SG_W, SG_H);
       sg.ctx.drawImage(sg.tiny, halo.dx, halo.dy, halo.dw, halo.dh);
       var mask = ensureShortsVignette(halo.cx, halo.cy, halo.r0, halo.r1);
@@ -857,6 +907,8 @@
       sg.lastPath = safePathname();
       sg.lastDraw = 0;
       sg.lastCropScan = 0;
+      sg.cropScanPending = false;
+      sg.cropScanGen++;
       sg.stableCropScans = 0;
       sg.haloCache = null;
       drawShortsFrame();
@@ -866,6 +918,8 @@
       sg.lastSrc = "";
       sg.lastDraw = 0;
       sg.lastCropScan = 0;
+      sg.cropScanPending = false;
+      sg.cropScanGen++;
       sg.stableCropScans = 0;
       sg.haloCache = null;
       clearShortsCrop();
@@ -893,6 +947,8 @@
     sg.video = null;
     sg.lastSrc = "";
     sg.lastPath = "";
+    sg.cropScanPending = false;
+    sg.cropScanGen++;
     sg.stableCropScans = 0;
     sg.haloCache = null;
   }
@@ -907,6 +963,8 @@
         sg.lastPath = path;
         sg.lastDraw = 0;
         sg.lastCropScan = 0;
+        sg.cropScanPending = false;
+        sg.cropScanGen++;
         sg.stableCropScans = 0;
         sg.haloCache = null;
         clearShortsCrop();
@@ -941,6 +999,8 @@
     sg.active = false;
     sg.lastDraw = 0;
     sg.lastCropScan = 0;
+    sg.cropScanPending = false;
+    sg.cropScanGen++;
     sg.stableCropScans = 0;
     sg.haloCache = null;
     if (sg.pollTimer !== null) { clearInterval(sg.pollTimer); sg.pollTimer = null; }
@@ -973,13 +1033,19 @@
     if (sg.pollTimer === null) {
       sg.pollTimer = setInterval(function () {
         if (!sg.active || document.hidden) return;
+        var v = sg.video;
+        if (v && v.isConnected !== false && !v.paused && !v.ended && sg.rvfcId !== null &&
+            sg.canvas && sg.canvas.parentNode &&
+            (v.currentSrc || v.src || "") === sg.lastSrc && safePathname() === sg.lastPath) {
+          return;
+        }
         var host = getShortsHost();
         if (host && sg.canvas && sg.canvas.parentNode !== host) ensureShortsCanvas();
         bindShortsVideo(null);
         if (sg.rvfcId === null || (sg.video && sg.video.paused)) {
           drawShortsFrame();
         }
-      }, 600);
+      }, 1000);
     }
   }
 

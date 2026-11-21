@@ -1,5 +1,14 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.7.3 — 2026-11-22
+
+- Fixed Watch & Shorts playback lag and restored the Liquid Glass progress-bar scrubber pill across hover and active drag (`src/styles/interaction-performance.css`, `src/styles/liquid-components.css`, `vendor/ambient/content-main.js`, `src/ambient/ambient-controller.js`, `src/content/tint-sampler.js`):
+  - Excluded `.ytp-scrubber-button` from `[data-ylg-scrubbing="1"]` `backdrop-filter: none`, anchored `.ytp-scrubber-button` with `position: relative`, added `.html5-video-player:is(.ytp-progress-bar-hover, .ytp-drag)` compatibility for `ytp-delhi-modern`, and tuned scrubber pill specular contrast so the `44×28` clear `#ylg-lens-seek` pill stays visible during both hover and drag.
+  - Downscaled Watch `BarDetection` to `128×128`, enabled off-thread `createImageBitmap` on `FallbackWorker`, switched both Watch and Shorts detectors to single-pass-by-default scanning, bounded warmup (`warmupRuns < 3`), relaxed steady-state scan intervals (`900/1500/2500/4000ms` Watch; `700/2500/4000ms` Shorts + `1000ms` fast-path `pollTimer`), paused bar/tint scans while scrubbing/hovering, fixed `resetVideoParentElemStyle()` width cleanup, and widened `tint-sampler.js` async interval to `1500ms`.
+- Sửa triệt để lỗi giật lag trên Watch & Shorts và khôi phục nút trượt kính lỏng Liquid Glass trên thanh tiến trình khi rê chuột lẫn kéo tua (`src/styles/interaction-performance.css`, `src/styles/liquid-components.css`, `vendor/ambient/content-main.js`, `src/ambient/ambient-controller.js`, `src/content/tint-sampler.js`):
+  - Giữ `#ylg-lens-seek` trên `.ytp-scrubber-button::after` khi đang kéo tua (`data-ylg-scrubbing="1"`), thêm `position: relative` + selector `.html5-video-player:is(.ytp-progress-bar-hover, .ytp-drag)` cho giao diện `ytp-delhi-modern` và tăng độ nổi viền sáng để viên kính `44×28` luôn sắc nét khi rê chuột lẫn kéo tua.
+  - Hạ `BarDetection` trên Watch xuống `128×128`, bật `createImageBitmap` bất đồng bộ trên `FallbackWorker`, tối ưu quét 1-pass mặc định cho cả Watch và Shorts, giới hạn warmup (`warmupRuns < 3`), nới chu kỳ quét ổn định (`900/1500/2500/4000ms` ở Watch; `700/2500/4000ms` + `pollTimer` `1000ms` có fast-path ở Shorts), tạm ngưng quét khi đang tua/rê chuột, sửa reset `width` ở `resetVideoParentElemStyle()` và nâng nhịp lấy màu nền bất đồng bộ `tint-sampler.js` lên `1500ms`.
+
 ## 0.7.2 — 2026-11-22
 
 - Renamed the extension display identity to **Better Visual for YouTube** (`manifest.json`, `_locales/*/messages.json`, `popup.html`, `service-worker.js`, `docs/index.html`, `docs/uninstall/`), removed the inherited upstream Google Form link in `vendor/ambient/content-main.js` (`getFeedbackFormLink`), and added the Chrome Web Store submission guide (`docs/store/CHROME-WEB-STORE-LISTING.md`).

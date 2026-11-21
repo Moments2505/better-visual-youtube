@@ -41,6 +41,7 @@ assert.doesNotMatch(perfCss, /playing-mode:not\(\.ytp-autohide\)[^{]*\{[^}]*back
 assert.match(perfCss, /playing-mode:not\(\.ytp-autohide\)[\s\S]*?\.ytp-button svg\s*\{[^}]*filter:\s*none\s*!important/);
 assert.match(perfCss, /\[data-ylg-lens-hover="1"\][^{]*:not\(:hover\):not\(:focus-visible\)[^}]*backdrop-filter:\s*none\s*!important/, "hover lens should suppress backdrop-filter only when idle");
 assert.match(perfCss, /\[data-ylg-lens="1"\][^{]*\.ytp-progress-bar-container:not\(:hover\):not\(:focus-within\):not\(\[data-ylg-dragging="1"\]\)\s+\.ytp-scrubber-button::after/, "scrubber lens should remain active on hover/focus/drag");
+assert.match(perfCss, /\[data-ylg-scrubbing="1"\]\s+\.html5-video-player\s+\.ytp-chrome-bottom\s+:not\(\.ytp-scrubber-button\)::after/, "scrubbing performance rule must preserve #ylg-lens-seek on .ytp-scrubber-button::after");
 assert.match(perfCss, /\[data-ylg-lowfx="true"\]\[data-ylg-optics-aberration="1"\][^{]*\.ylg-glass\[data-ylg-level="panel"\]::before\s*\{[^}]*filter:\s*none\s*!important/, "panel optics aberration filter must only be disabled under lowfx");
 
 assert.doesNotMatch(ceilingCss, /ytSearchboxComponentInputBox[\s\S]*?--yt-sys-color-baseline--tonal-background/, "opacity-ceiling must not clobber Search Bar Liquid Glass tint/opacity");
@@ -60,4 +61,7 @@ assert.doesNotMatch(liquidCss, /ylg-lens-well/, "liquid-components.css must not 
 assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\[data-ylg-optics-aberration="1"\][^{]*\{[^}]*var\(--ylg-lens-ab/, "Capsules must render chromatic aberration edge fringe driven by --ylg-lens-ab");
 assert.doesNotMatch(liquidCss, /\[data-ylg-ambient="on"\][^{]*\{[^}]*backdrop-filter:/, "Ambient Light mode must not strip optics lenses");
 assert.match(liquidCss, /@layer ylg-states\s*\{[\s\S]*?data-ylg-opacity-pale="true"[\s\S]*?\.ytp-chrome-bottom \.ytp-autonav-toggle-button\s*\{[^}]*background-color:\s*rgba\(17,\s*24,\s*39,\s*0\.22\)\s*!important/, "Pale mode must keep .ytp-autonav-toggle-button track visible");
-console.log('Chrome surface regressions: 48/48 assertions passed (source contracts only; browser rendering requires separate verification).');
+assert.match(liquidCss, /html\[data-ylg-enabled="true"\]\s+\.ytp-scrubber-button\s*\{[^}]*position:\s*relative\s*;/, "scrubber button must establish positioning context over ytp-delhi-modern");
+assert.match(liquidCss, /\.html5-video-player:is\(\.ytp-progress-bar-hover,\s*\.ytp-drag\)\s+\.ytp-scrubber-button\s*\{\s*transform:\s*scale\(1\)\s*!important;\s*\}/, "player hover/drag classes must reveal liquid-glass scrubber");
+assert.match(liquidCss, /\.html5-video-player:is\(\.ytp-progress-bar-hover,\s*\.ytp-drag\)\s+\.ytp-scrubber-button::after[\s\S]*?opacity:\s*1\s*;/, "player hover/drag classes must reveal scrubber glass pill ::after");
+console.log('Chrome surface regressions: 52/52 assertions passed (source contracts only; browser rendering requires separate verification).');

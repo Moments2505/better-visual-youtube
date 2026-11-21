@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Free and open source, made for desktop Microsoft Edge and Google Chrome.
 
-**Latest release: [0.7.2](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.7.2).** Renames the extension to **Better Visual for YouTube**, adopts curated Liquid Glass & Ambient Light defaults out of the box, aligns Privacy Policies with `chrome.storage.sync` alongside a public GitHub Pages privacy page, cleans up the upstream Google Form URL, and adds Chrome Web Store submission assets. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.7.2.md)
+**Latest release: [0.7.3](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.7.3).** Eliminates `0.7.2` Watch & Shorts frame-time regressions (128×128 off-thread `createImageBitmap` bar detection, single-pass-by-default scanning, lighter adaptive scan/tint cadences) and restores the Liquid Glass progress-bar scrubber pill across both hover and active drag. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.7.3.md)
 
 ## A little more depth
 

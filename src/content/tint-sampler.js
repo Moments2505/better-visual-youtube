@@ -33,6 +33,7 @@
   var ctx = null;
   var allowThumbFallback = false;
   var MIN_INTERVAL = 700;      // ≤ ~1.4 Hz; a colour wash does not need more
+  var ASYNC_MIN_INTERVAL = 1500; // lighter ~0.67 Hz async budget during active playback
   function onPointerMove() { lastPointerAt = Date.now(); }
   var firstVisibleThumb = function () {
     var list = document.querySelectorAll(
@@ -147,17 +148,19 @@
   }
 
   function sampleAsync() {
-    if (!active || inFlight) return;
+    if (!active || inFlight || document.hidden) return;
     var now = Date.now();
     if (now - lastPointerAt < 450) return;
-    if (now - lastRun < MIN_INTERVAL) return;
+    if (now - lastRun < ASYNC_MIN_INTERVAL) return;
+    var docEl = document.documentElement;
+    if (docEl && docEl.getAttribute && (docEl.getAttribute("data-ylg-scrubbing") === "1" || docEl.getAttribute("data-ylg-player-transition") === "1")) return;
     lastRun = now;
     if ((video && video.seeking) || document.querySelector(
       '.ytp-progress-bar-container:hover, .ytp-volume-area:hover, [data-ylg-dragging="1"]')) return;
     if (video && video.readyState >= 2 && !video.paused && !video.ended) {
       inFlight = true;
       try {
-        root.createImageBitmap(video, { resizeWidth: W, resizeHeight: H }).then(function (bmp) {
+        root.createImageBitmap(video, { resizeWidth: W, resizeHeight: H, resizeQuality: "low" }).then(function (bmp) {
           inFlight = false;
           if (!active || !bmp) {
             if (bmp && bmp.close) { try { bmp.close(); } catch (e0) {} }

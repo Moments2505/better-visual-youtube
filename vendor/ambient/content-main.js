@@ -1598,7 +1598,7 @@ Click on the questionmark for more and updated information about these artifacts
   };
 
   const workerCode$1 = function () {
-    const DETECT_SIZE = 256;
+    const DETECT_SIZE = 128;
     const SCANLINES = 11;
     class ImageHelper {
       constructor() {
@@ -1706,7 +1706,7 @@ Click on the questionmark for more and updated information about these artifacts
     const sampleBuf = new Uint8Array(4);
     const getSideEdgeColor = (yAxis, isEnd, crossMin, crossMax, detectColored) => {
       const axisLen = image[yAxis];
-      const rows = isEnd ? [axisLen - 5, axisLen - 3] : [2, 4];
+      const rows = axisLen >= 192 ? (isEnd ? [axisLen - 5, axisLen - 3] : [2, 4]) : (isEnd ? [axisLen - 3, axisLen - 2] : [1, 2]);
       const samples = [];
       const span = Math.max(1, crossMax - crossMin);
       const step = Math.max(1, Math.floor(span / 24));
@@ -1733,9 +1733,9 @@ Click on the questionmark for more and updated information about these artifacts
     };
     const scanSide = (yAxis, isEnd, crossMin, crossMax, detectColored, xOffset, offsetPercentage) => {
       const axisLen = image[yAxis];
-      const ignoreEdge = 2;
+      const ignoreEdge = axisLen >= 192 ? 2 : 1;
       const maxDepth = Math.floor(axisLen * 0.42);
-      const minRawPx = Math.max(4, Math.round(axisLen * 0.015));
+      const minRawPx = Math.max(2, Math.round(axisLen * 0.015));
       const sideColor = getSideEdgeColor(yAxis, isEnd, crossMin, crossMax, detectColored);
       if (!detectColored && !isBlackBarColor(sideColor[0], sideColor[1], sideColor[2])) {
         return { pct: 0, depthPx: 0, clusterCount: 0, shallowCount: 0, flatRatio: 0, avgContrast: 0, edges: [], color: sideColor, brightEdge: true, inconclusive: false };
@@ -1804,7 +1804,7 @@ Click on the questionmark for more and updated information about these artifacts
       if (bounded.length < 4) {
         return { pct: 0, depthPx: 0, clusterCount: bounded.length, shallowCount: anyBounded.length - bounded.length, flatRatio: 0, avgContrast: 0, edges, color: sideColor, brightEdge: brightEdgeCount >= 3, inconclusive: brightEdgeCount < 3 };
       }
-      const clusterTol = Math.max(2, Math.round(axisLen * 0.008));
+      const clusterTol = Math.max(2, Math.round(axisLen * 0.012));
       let best = null;
       for (let i = 0; i < bounded.length; i++) {
         const d = bounded[i].depth;
@@ -1967,23 +1967,25 @@ Click on the questionmark for more and updated information about these artifacts
         ctx.imageSmoothingEnabled = false;
       };
       const createCanvas = (width, height) => {
-        canvas = new OffscreenCanvas(width, height);
-        canvas.addEventListener('contextlost', () => {
-          try {
-            canvas.width = 1;
-            canvas.height = 1;
-          } catch (ex) {
-            postError(ex);
-          }
-        });
-        canvas.addEventListener('contextrestored', () => {
-          try {
-            canvas.width = 1;
-            canvas.height = 1;
-          } catch (ex) {
-            postError(ex);
-          }
-        });
+        canvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(width, height) : new SafeOffscreenCanvas(width, height);
+        if (canvas.addEventListener) {
+          canvas.addEventListener('contextlost', () => {
+            try {
+              canvas.width = 1;
+              canvas.height = 1;
+            } catch (ex) {
+              postError(ex);
+            }
+          });
+          canvas.addEventListener('contextrestored', () => {
+            try {
+              canvas.width = 1;
+              canvas.height = 1;
+            } catch (ex) {
+              postError(ex);
+            }
+          });
+        }
         canvasIsCreatedInWorker = true;
         createContext();
       };
@@ -2014,15 +2016,18 @@ Click on the questionmark for more and updated information about these artifacts
           } = e.data;
           if (canvasInfo.bitmap) {
             const bitmap = canvasInfo.bitmap;
-            if (!canvas) {
-              createCanvas(DETECT_SIZE, DETECT_SIZE);
-            } else if (canvas.width !== DETECT_SIZE || canvas.height !== DETECT_SIZE) {
-              canvas.width = DETECT_SIZE;
-              canvas.height = DETECT_SIZE;
-              createContext();
+            try {
+              if (!canvas) {
+                createCanvas(DETECT_SIZE, DETECT_SIZE);
+              } else if (canvas.width !== DETECT_SIZE || canvas.height !== DETECT_SIZE) {
+                canvas.width = DETECT_SIZE;
+                canvas.height = DETECT_SIZE;
+                createContext();
+              }
+              ctx.drawImage(bitmap, 0, 0, DETECT_SIZE, DETECT_SIZE);
+            } finally {
+              if (bitmap.close) bitmap.close();
             }
-            ctx.drawImage(bitmap, 0, 0, DETECT_SIZE, DETECT_SIZE);
-            bitmap.close();
           } else {
             canvas = canvasInfo.canvas;
             canvasIsCreatedInWorker = false;
@@ -2035,40 +2040,32 @@ Click on the questionmark for more and updated information about these artifacts
           if (globalXOffsetIndex >= xOffsetSize) globalXOffsetIndex = 0;
           const xOffset = xOffsetSize <= 1 ? 0.5 : xOffsetSize === 2 ? globalXOffsetIndex : (Math.ceil(globalXOffsetIndex / 2) + globalXOffsetIndex % 2) / (xOffsetSize - 1);
 
-          // Pass 1: estimate orthogonal bars within the central [30%..70%] interior band so windowboxed 2-axis videos work cleanly
-          let estLeftPx = 0, estRightPx = 0, estTopPx = 0, estBottomPx = 0;
-          if (detectHorizontal && detectVertical) {
-            const midY0 = Math.floor(imgH * 0.3);
-            const midY1 = Math.ceil(imgH * 0.7);
-            const midX0 = Math.floor(imgW * 0.3);
-            const midX1 = Math.ceil(imgW * 0.7);
-            const pLeft = scanSide('width', false, midY0, midY1, detectColored, xOffset, 0);
-            const pRight = scanSide('width', true, midY0, midY1, detectColored, xOffset, 0);
-            const pTop = scanSide('height', false, midX0, midX1, detectColored, xOffset, 0);
-            const pBottom = scanSide('height', true, midX0, midX1, detectColored, xOffset, 0);
-            if (pLeft.pct > 0) estLeftPx = pLeft.depthPx;
-            if (pRight.pct > 0) estRightPx = pRight.depthPx;
-            if (pTop.pct > 0) estTopPx = pTop.depthPx;
-            if (pBottom.pct > 0) estBottomPx = pBottom.depthPx;
-          }
-
-          // Pass 2: full span scan strictly inside orthogonal bar bounds
+          // Single-pass by default (4 side scans instead of 8); only re-scan horizontal if vertical pillarboxes exist
           let hTop = null, hBot = null, vLeft = null, vRight = null;
           let horizontalBarSizeInfo;
           let verticalBarSizeInfo;
           if (detectHorizontal) {
-            const hx0 = estLeftPx > 0 ? Math.min(imgW - 12, estLeftPx + 4) : 0;
-            const hx1 = estRightPx > 0 ? Math.max(hx0 + 10, imgW - 1 - estRightPx - 4) : (imgW - 1);
-            hTop = scanSide('height', false, hx0, hx1, detectColored, xOffset, offsetPercentage);
-            hBot = scanSide('height', true, hx0, hx1, detectColored, xOffset, offsetPercentage);
+            hTop = scanSide('height', false, 0, imgW - 1, detectColored, xOffset, offsetPercentage);
+            hBot = scanSide('height', true, 0, imgW - 1, detectColored, xOffset, offsetPercentage);
             horizontalBarSizeInfo = combineAxisSides(hTop, hBot);
           }
           if (detectVertical) {
-            const vy0 = estTopPx > 0 ? Math.min(imgH - 12, estTopPx + 4) : 0;
-            const vy1 = estBottomPx > 0 ? Math.max(vy0 + 10, imgH - 1 - estBottomPx - 4) : (imgH - 1);
+            const topClip = (horizontalBarSizeInfo && horizontalBarSizeInfo.topPercentage > 0 && hTop) ? hTop.depthPx : 0;
+            const botClip = (horizontalBarSizeInfo && horizontalBarSizeInfo.bottomPercentage > 0 && hBot) ? hBot.depthPx : 0;
+            const vy0 = topClip > 0 ? Math.min(imgH - 12, topClip + 3) : 0;
+            const vy1 = botClip > 0 ? Math.max(vy0 + 10, imgH - 1 - botClip - 3) : (imgH - 1);
             vLeft = scanSide('width', false, vy0, vy1, detectColored, xOffset, offsetPercentage);
             vRight = scanSide('width', true, vy0, vy1, detectColored, xOffset, offsetPercentage);
             verticalBarSizeInfo = combineAxisSides(vLeft, vRight);
+          }
+          if (detectHorizontal && detectVertical && ((vLeft && vLeft.pct > 0) || (vRight && vRight.pct > 0))) {
+            const leftClip = (vLeft && vLeft.pct > 0) ? vLeft.depthPx : 0;
+            const rightClip = (vRight && vRight.pct > 0) ? vRight.depthPx : 0;
+            const hx0 = leftClip > 0 ? Math.min(imgW - 12, leftClip + 3) : 0;
+            const hx1 = rightClip > 0 ? Math.max(hx0 + 10, imgW - 1 - rightClip - 3) : (imgW - 1);
+            hTop = scanSide('height', false, hx0, hx1, detectColored, xOffset, offsetPercentage);
+            hBot = scanSide('height', true, hx0, hx1, detectColored, xOffset, offsetPercentage);
+            horizontalBarSizeInfo = combineAxisSides(hTop, hBot);
           }
 
           // Reject all-dark fade-to-black frames as inconclusive (never poison history with 0 or false-crop)
@@ -2124,6 +2121,8 @@ Click on the questionmark for more and updated information about these artifacts
       this.canvas = void 0;
       this.ctx = void 0;
       this.catchedDetectBarSizeError = false;
+      this.warmupRuns = 0;
+      this.stableRuns = 0;
       this.changes = [];
       this.history = {
         horizontal: [],
@@ -2159,6 +2158,8 @@ Click on the questionmark for more and updated information about these artifacts
           left: undefined,
           right: undefined
         };
+        this.warmupRuns = 0;
+        this.stableRuns = 0;
         this.changes = [];
       };
       this.clear = () => {
@@ -2228,7 +2229,7 @@ Click on the questionmark for more and updated information about these artifacts
         requestIdleCallback(async function detectIdleCallback() {
           await this.idleHandler(runId, buffer, detectColored, offsetPercentage, detectHorizontal, currentHorizontalPercentage, detectVertical, currentVerticalPercentage, ratio, allowedToTransfer, averageHistorySize, allowedAnomaliesPercentage, allowedUnevenBarsPercentage, callback);
         }.bind(this), {
-          timeout: 1
+          timeout: 250
         }, true);
       };
       this.maxDivergencePercentage = 0.75;
@@ -2240,11 +2241,11 @@ Click on the questionmark for more and updated information about these artifacts
         try {
           const start = performance.now();
           if (this.worker.isFallbackWorker || !allowedToTransfer || !buffer.transferToImageBitmap || !buffer.getContext) {
-            if (!this.worker.isFallbackWorker && typeof createImageBitmap === 'function') {
+            if (typeof createImageBitmap === 'function') {
               try {
                 const bitmap = await createImageBitmap(buffer, {
-                  resizeWidth: 256,
-                  resizeHeight: 256,
+                  resizeWidth: 128,
+                  resizeHeight: 128,
                   resizeQuality: 'low'
                 });
                 if (bitmap) {
@@ -2257,7 +2258,7 @@ Click on the questionmark for more and updated information about these artifacts
             if (!canvasInfo) {
               var _this$ctx;
               if (!this.canvas) {
-                this.canvas = new SafeOffscreenCanvas(256, 256);
+                this.canvas = new SafeOffscreenCanvas(128, 128);
                 this.ctx = undefined;
               }
               if (!this.ctx || (_this$ctx = this.ctx) !== null && _this$ctx !== void 0 && _this$ctx.isContextLost && this.ctx.isContextLost()) {
@@ -2365,13 +2366,13 @@ Click on the questionmark for more and updated information about these artifacts
                   (leftPct !== undefined && leftPct !== prevLeft) ||
                   (rightPct !== undefined && rightPct !== prevRight)
                 );
+                this.warmupRuns++;
                 const barsChanged = barsFound && (hChanged || vChanged);
-                const detectedLargeChange = (horizontalBarSizeInfo.percentage > minPercentage && Math.abs(horizontalBarSizeInfo.percentage - (currentHorizontalPercentage || 0)) > 0.5) || (verticalBarSizeInfo.percentage > minPercentage && Math.abs(verticalBarSizeInfo.percentage - (currentVerticalPercentage || 0)) > 0.5);
-                if (barsChanged || detectedLargeChange) {
-                  const now = performance.now();
-                  if (barsChanged || !this.changes.length || this.changes[this.changes.length - 1] < now - 3000) {
-                    this.changes.push(now);
-                  }
+                if (barsChanged) {
+                  this.stableRuns = 0;
+                  this.changes.push(performance.now());
+                } else {
+                  this.stableRuns = Math.min(20, this.stableRuns + 1);
                 }
                 if (horizontalPercentage !== undefined) {
                   this.current.horizontal = { percentage: horizontalPercentage, color: horizontalBarSizeInfo.color };
@@ -2422,11 +2423,11 @@ Click on the questionmark for more and updated information about these artifacts
           } else if (!this.changes.length) {
             this.changes.push(now - 3001);
           }
-          const warmingUp = (detectHorizontal && this.history.top.length < 2) || (detectVertical && this.history.left.length < 2);
+          const warmingUp = this.warmupRuns < 3 && ((detectHorizontal && this.history.top.length < 2) || (detectVertical && this.history.left.length < 2));
           const lastChange = this.changes[this.changes.length - 1];
-          const recentChange = (now - lastChange) < 3000;
-          const baseThrottle = (warmingUp || recentChange) ? 400 : 1500;
-          const throttle = Math.max(baseThrottle, Math.min(4000, Math.pow(duration, 1.2) - 250));
+          const recentChange = (now - lastChange) < 4000;
+          const baseThrottle = warmingUp ? 900 : recentChange ? 1500 : (this.stableRuns >= 4 ? 4000 : 2500);
+          const throttle = Math.max(baseThrottle, Math.min(5000, Math.pow(duration, 1.2) - 250));
           this.ambientlight.stats.updateBarDetectionInfo(throttle, this.changes[this.changes.length - 1]);
           this.timeout = setTimeout(wrapErrorHandler(() => {
             this.timeout = undefined;
@@ -7259,7 +7260,7 @@ Ambient rendering budget: ${ambientlightBudgetRange[0]}ms to ${ambientlightBudge
         return realFramerateLimit;
       };
       this.isBarDetectionWarmingUp = () => {
-        if (!this.barDetection || this.isVrVideo) return false;
+        if (!this.barDetection || this.isVrVideo || this.barDetection.warmupRuns >= 3) return false;
         const hWarm = this.settings.detectHorizontalBarSizeEnabled && this.barDetection.history.top.length < 2;
         const vWarm = this.settings.detectVerticalBarSizeEnabled && this.barDetection.history.left.length < 2;
         return hWarm || vWarm;
@@ -7367,9 +7368,13 @@ Ambient rendering budget: ${ambientlightBudgetRange[0]}ms to ${ambientlightBudge
       this.shouldShow = () => this.settings.enabled && this.isOnVideoPage && !(this.isVrVideo && !this.settings.enableInVRVideos) && this.isInEnabledView();
       this.scheduleBarSizeDetection = async () => {
         try {
+          if (document.hidden) return;
+          const docEl = document.documentElement;
+          if (docEl && (docEl.getAttribute('data-ylg-scrubbing') === '1' || docEl.getAttribute('data-ylg-player-transition') === '1')) return;
+          if (document.querySelector('.ytp-progress-bar-container:hover, .ytp-volume-area:hover, [data-ylg-dragging="1"]')) return;
           this.checkGetImageDataAllowed();
           if (!this.getImageDataAllowed) return;
-          await this.barDetection.detect(this.shouldDrawDirectlyFromVideoElem() || (this.projectorBuffer.elem.height < 256 || this.projectorBuffer.elem.width < 256) && this.projectorBuffer.elem.height < this.videoElem.videoHeight ? this.videoElem : this.projectorBuffer.elem, this.settings.detectColoredHorizontalBarSizeEnabled, this.settings.detectHorizontalBarSizeOffsetPercentage, this.settings.detectHorizontalBarSizeEnabled, this.settings.horizontalBarsClipPercentage, this.settings.detectVerticalBarSizeEnabled, this.settings.verticalBarsClipPercentage, this.p ? this.p.h / this.p.w : 1, !this.settings.frameBlending, this.settings.barSizeDetectionAverageHistorySize || 1, this.settings.barSizeDetectionAllowedElementsPercentage || 20, this.settings.barSizeDetectionAllowedUnevenBarsPercentage || 20, wrapErrorHandler(this.scheduleBarSizeDetectionCallback));
+          await this.barDetection.detect(this.shouldDrawDirectlyFromVideoElem() || (this.projectorBuffer.elem.height < 128 || this.projectorBuffer.elem.width < 128) && this.projectorBuffer.elem.height < this.videoElem.videoHeight ? this.videoElem : this.projectorBuffer.elem, this.settings.detectColoredHorizontalBarSizeEnabled, this.settings.detectHorizontalBarSizeOffsetPercentage, this.settings.detectHorizontalBarSizeEnabled, this.settings.horizontalBarsClipPercentage, this.settings.detectVerticalBarSizeEnabled, this.settings.verticalBarsClipPercentage, this.p ? this.p.h / this.p.w : 1, !this.settings.frameBlending, this.settings.barSizeDetectionAverageHistorySize || 1, this.settings.barSizeDetectionAllowedElementsPercentage || 20, this.settings.barSizeDetectionAllowedUnevenBarsPercentage || 20, wrapErrorHandler(this.scheduleBarSizeDetectionCallback));
         } catch (ex) {
           if (!this.showedDetectBarSizeWarning) {
             this.showedDetectBarSizeWarning = true;
@@ -8505,6 +8510,7 @@ Video ready state: ${readyStateToString(videoElem === null || videoElem === void
       if (videoParentElem) {
         videoParentElem.style.transform = '';
         videoParentElem.style.overflow = '';
+        videoParentElem.style.width = '';
         videoParentElem.style.height = '';
         videoParentElem.style.marginBottom = '';
         setStyleProperty(videoParentElem, '--video-transform', '');
@@ -8712,7 +8718,7 @@ Video ready state: ${readyStateToString(videoElem === null || videoElem === void
           top: videoElemRect.top + topExtraOffset,
           left: videoElemRect.left + leftExtraOffset
         };
-        if (Math.abs(projectorsElemRect.height - expectedProjectorsRect.height) > 1 || Math.abs(projectorsElemRect.width - expectedProjectorsRect.width) > 1 || Math.abs(projectorsElemRect.top - expectedProjectorsRect.top) > 2 || Math.abs(projectorsElemRect.left - expectedProjectorsRect.left) > 2) {
+        if (Math.abs(projectorsElemRect.height - expectedProjectorsRect.height) > 2 || Math.abs(projectorsElemRect.width - expectedProjectorsRect.width) > 2 || Math.abs(projectorsElemRect.top - expectedProjectorsRect.top) > 2 || Math.abs(projectorsElemRect.left - expectedProjectorsRect.left) > 2) {
           return true;
         }
       }

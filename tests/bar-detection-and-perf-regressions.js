@@ -67,7 +67,7 @@ function createWatchBarWorkerHarness() {
 
   let runId = 0;
   async function detectFrame(rgbaFn, opts = {}) {
-    const size = opts.size || 256;
+    const size = opts.size || 128;
     const data = new Uint8ClampedArray(size * size * 4);
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
@@ -104,10 +104,17 @@ function createWatchBarWorkerHarness() {
   return { detectFrame, BarDetection, mainSource: main };
 }
 
-test("Watch BarDetection uses 256x256 lightweight canvas and fixes bottom out-of-bounds + ignoreEdge bug", () => {
+test("Watch BarDetection uses 128x128 lightweight canvas, off-thread FallbackWorker bitmap, bounded warmup, and interaction pause", () => {
   const main = read("vendor/ambient/content-main.js");
   assert.doesNotMatch(main, /for\s*\(\s*let\s+y\s*=\s*maxY\s*-\s*1\s*\+\s*ignoreEdge/, "bottom scanline must not start out of bounds at maxY - 1 + ignoreEdge");
-  assert.match(main, /new SafeOffscreenCanvas\(\s*256\s*,\s*256\s*\)/, "BarDetection should use 256x256 canvas for 4x lighter main-thread GPU readback");
+  assert.match(main, /const DETECT_SIZE = 128;/, "workerCode$1 must downsample bar detection to 128x128");
+  assert.match(main, /new SafeOffscreenCanvas\(\s*128\s*,\s*128\s*\)/, "BarDetection should use 128x128 fallback canvas for 16x lighter readback");
+  assert.doesNotMatch(main, /!this\.worker\.isFallbackWorker\s*&&\s*typeof createImageBitmap/, "FallbackWorker must be allowed to use off-thread createImageBitmap");
+  assert.match(main, /timeout:\s*250\s*\}/, "BarDetection.detect should schedule requestIdleCallback with 250ms timeout instead of 1ms");
+  assert.match(main, /this\.warmupRuns\s*<\s*3/, "Warmup must be bounded so dark intros never lock energy saver");
+  assert.match(main, /baseThrottle\s*=\s*warmingUp\s*\?\s*900\s*:\s*recentChange\s*\?\s*1500\s*:\s*\(this\.stableRuns\s*>=\s*4\s*\?\s*4000\s*:\s*2500\)/, "Adaptive Watch bar scan throttle must use 900/1500/2500/4000ms cadence");
+  assert.match(main, /scheduleBarSizeDetection[\s\S]{0,400}data-ylg-scrubbing/, "scheduleBarSizeDetection must skip scans while scrubbing");
+  assert.match(main, /resetVideoParentElemStyle\(\)[\s\S]{0,260}videoParentElem\.style\.width\s*=\s*''/, "resetVideoParentElemStyle must reset inline width");
 });
 
 test("Watch worker detects limited-range studio-black (rgb 16,16,16) + noisy compressed 21:9 bars", async () => {
@@ -400,22 +407,22 @@ test("Shorts bar detector handles studio-black (16,16,16), dark-edge scenes, asy
 
   // 2. Fade-to-black frame must HOLD previous crop (zero flicker!)
   mode = "fade-black";
-  clock += 500;
+  clock += 800;
   rvfcCb();
   const cFade = A.stats().shorts.crop;
   assert.deepEqual({ ...cFade }, { ...c1 }, "fade-to-black frame must preserve active crop without flashing black bars");
 
   // 3. Bright full-bleed frame must immediately clear crop
   mode = "clean";
-  clock += 500;
+  clock += 800;
   rvfcCb();
   assert.deepEqual({ ...A.stats().shorts.crop }, { top: 0, bottom: 0, left: 0, right: 0 }, "bright full-bleed frame must immediately un-crop");
 
   // 4. Asymmetric caption header (5% above caption + 12.5% bottom black bar): protect top caption (top===0) while cropping bottom ~11.5%!
   mode = "asymmetric-caption";
-  clock += 1200;
+  clock += 2600;
   rvfcCb();
-  clock += 500;
+  clock += 800;
   rvfcCb();
   const cAsym = A.stats().shorts.crop;
   assert.equal(cAsym.top, 0, "top baked-in caption at y=5% must never be sliced");
@@ -423,7 +430,7 @@ test("Shorts bar detector handles studio-black (16,16,16), dark-edge scenes, asy
 
   // 4b. Dim-scene asymmetric frame (luma ~13.7 just above bar) must keep cropping bottom bar without flickering to 0
   mode = "dim-asymmetric-caption";
-  clock += 1200;
+  clock += 2600;
   rvfcCb();
   const cDimAsym = A.stats().shorts.crop;
   assert.equal(cDimAsym.top, 0, "top baked-in caption must stay protected during dim scenes");
@@ -431,7 +438,7 @@ test("Shorts bar detector handles studio-black (16,16,16), dark-edge scenes, asy
 
   // 5. Ultrawide 2.39:1 inside 9:16 (~39% bars)
   mode = "ultrawide-39";
-  clock += 1200;
+  clock += 2600;
   rvfcCb();
   const cUltra = A.stats().shorts.crop;
   assert.ok(cUltra.top >= 37 && cUltra.bottom >= 37, `expected ~38.5% crop on ultrawide Short, got ${JSON.stringify(cUltra)}`);
@@ -443,6 +450,11 @@ test("Shorts bar detector handles studio-black (16,16,16), dark-edge scenes, asy
     rvfcCb();
   }
   assert.ok(rectReads - readsBefore <= 1, `resolveHaloBox must cache layout rect across frames (got ${rectReads - readsBefore} reads for 10 frames)`);
+
+  // 7. Shorts pollTimer uses 1000ms interval and includes fast-path guard
+  const ambientSrc = read("src/ambient/ambient-controller.js");
+  assert.match(ambientSrc, /sg\.pollTimer\s*=\s*setInterval\([\s\S]*?,\s*1000\s*\)/, "Shorts pollTimer must run at 1000ms cadence");
+  assert.match(ambientSrc, /sg\.rvfcId\s*!==\s*null[\s\S]{0,200}safePathname\(\)\s*===\s*sg\.lastPath\)\s*\{\s*return;\s*\}/, "Shorts pollTimer must fast-path when playback is healthy");
 
   A.teardown();
 });

@@ -2,9 +2,9 @@
    sampling across the control strip. Never change native seek geometry. */
 @layer ylg-states {
   html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom,
-  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom *,
-  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom *::before,
-  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom *::after,
+  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom :not(.ytp-scrubber-button),
+  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom :not(.ytp-scrubber-button)::before,
+  html[data-ylg-enabled="true"][data-ylg-scrubbing="1"] .html5-video-player .ytp-chrome-bottom :not(.ytp-scrubber-button)::after,
   html[data-ylg-enabled="true"] .html5-video-player .ytp-tooltip {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
@@ -140,7 +140,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
     backdrop-filter: none !important;
   }
   /* Keep scrubber seeker lens active during hover/focus/drag while saving backdrop samples at rest. */
-  html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-progress-bar-container:not(:hover):not(:focus-within):not([data-ylg-dragging="1"]) .ytp-scrubber-button::after {
+  html[data-ylg-enabled="true"][data-ylg-lens="1"] .html5-video-player:not(.ytp-progress-bar-hover):not(.ytp-drag) .ytp-progress-bar-container:not(:hover):not(:focus-within):not([data-ylg-dragging="1"]) .ytp-scrubber-button::after {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
