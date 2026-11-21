@@ -187,7 +187,7 @@ test("all popup switches commit independently and preserve the other groups", ()
     h.change(id,false);
     const snapshot=h.writes.at(-1).settings;
     assert.equal(path.split('.').reduce((v,k)=>v[k],snapshot),false,id);
-    assert.equal(snapshot.enabled,true);assert.equal(snapshot.optics.lensPx,92);
+    assert.equal(snapshot.enabled,true);assert.equal(snapshot.optics.lensPx,213);
   }
 });
 
@@ -254,14 +254,14 @@ test("hover off persists independently of motion and preserves static glass opti
   assert.equal(page.doc.documentElement.getAttribute("data-ylg-hover"),"on");
 });
 
-test("system motion preference defaults to follow, persists opt-out and follows external updates", () => {
+test("system motion preference defaults to opt-out, persists opt-in and follows external updates", () => {
   const h = loaded();
-  assert.equal(h.$("ylg-system-motion").checked, true);
-  h.change("ylg-system-motion", false);
+  assert.equal(h.$("ylg-system-motion").checked, false);
+  h.change("ylg-system-motion", true);
   const saved = h.writes.at(-1).settings;
-  assert.equal(saved.respectReducedMotion, false);
-  assert.equal(loaded(saved).$("ylg-system-motion").checked, false);
-  assert.equal(loaded().$("ylg-system-motion").checked, true);
+  assert.equal(saved.respectReducedMotion, true);
+  assert.equal(loaded(saved).$("ylg-system-motion").checked, true);
+  assert.equal(loaded().$("ylg-system-motion").checked, false);
 });
 
 test("Motion off keeps Ambient Light on and suspends hover without losing its saved choice", () => {
@@ -296,7 +296,8 @@ test("Motion off keeps Ambient Light on and suspends hover without losing its sa
 });
 
 test("sky controls save independently, gate children and restore the selected scene", () => {
-  const h = loaded();
+  assert.equal(loaded().$("ylg-daylight-enabled").checked, true);
+  const h = loaded({ daylightBackground: { enabled: false } });
   assert.equal(h.$("ylg-daylight-enabled").checked, false);
   assert.equal(h.$("ylg-daylight-intensity").disabled, true);
   assert.equal(h.$("ylg-daylight-animate").disabled, true);
@@ -409,12 +410,12 @@ test("RAIN defaults opt-in, rejects non-booleans and preserves existing sky pref
   }
 });
 
-test("sky schema defaults are opt-in and validate without resetting other settings", () => {
+test("sky schema defaults validate without resetting other settings", () => {
   const h=sandbox(), S=h.context.YLG_SETTINGS;
   const old=S.normalizeSettings({motion:false,ambientLight:{spread:199}});
-  assert.equal(old.daylightBackground.enabled,false);
+  assert.equal(old.daylightBackground.enabled,S.DEFAULT_SETTINGS.daylightBackground.enabled);
   assert.equal(old.motion,false); assert.equal(old.ambientLight.spread,199);
-  for(const [raw,expected] of [[NaN,.45],[Infinity,.45],[-1,0],[3,1],[.7,.7]]) {
+  for(const [raw,expected] of [[NaN,1],[Infinity,1],[-1,0],[3,1],[.7,.7]]) {
     const settings=S.normalizeSettings({...old,daylightBackground:{enabled:true,scene:"bad",intensity:raw}});
     assert.equal(settings.daylightBackground.intensity,expected);
     assert.equal(settings.daylightBackground.scene,"auto");
@@ -424,7 +425,7 @@ test("sky schema defaults are opt-in and validate without resetting other settin
 test("bootstrap starts sky independently of Motion and ambient, and tears down when disabled", () => {
   const h=sandbox(), S=h.context.YLG_SETTINGS, calls=[]; let changed;
   h.context.YLG_DAYLIGHT={init(){calls.push("init");},updateSettings(s){calls.push(s);},teardown(){calls.push("teardown");}};
-  S.getStoredSettings=cb=>cb(S.normalizeSettings({})); S.onSettingsChanged=cb=>{changed=cb;};
+  S.getStoredSettings=cb=>cb(S.normalizeSettings({daylightBackground:{enabled:false}})); S.onSettingsChanged=cb=>{changed=cb;};
   h.load("src/content/bootstrap.js"); assert.equal(calls.at(-1),"teardown");
   changed({motion:false,ambientLight:{enabled:false},daylightBackground:{enabled:true,scene:"morning"}});
   assert.equal(calls.at(-2),"init"); assert.equal(calls.at(-1).daylightBackground.scene,"morning");

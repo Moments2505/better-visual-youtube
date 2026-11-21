@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Better visual Youtube",
-  "short_name": "Better visual",
-  "version": "0.7.1",
+  "name": "Better Visual for YouTube",
+  "short_name": "Better Visual",
+  "version": "0.7.2",
   "default_locale": "en",
   "description": "Give YouTube a new look with Liquid Glass, Ambient Light and customizable animations.",
   "minimum_chrome_version": "121",
@@ -107,7 +107,7 @@
   ],
   "action": {
     "default_popup": "src/popup/popup.html",
-    "default_title": "Better visual Youtube",
+    "default_title": "Better Visual for YouTube",
     "default_icon": {
       "16": "assets/icons/icon16.png",
       "32": "assets/icons/icon32.png",

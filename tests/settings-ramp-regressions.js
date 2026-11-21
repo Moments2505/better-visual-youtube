@@ -339,8 +339,8 @@ test("tint custom refuses junk instead of painting an invalid triplet", () => {
   // A value normalization itself rejects becomes the default accent, and the
   // surface then follows that default (never a broken value).
   const script = applyOn({ tint: "custom", accent: "javascript:alert(1)" });
-  assert.equal(script.el.props["--ylg-accent"], "#3ea6ff");
-  assert.equal(script.el.props["--ylg-surface-tint-light"], "62, 166, 255");
+  assert.equal(script.el.props["--ylg-accent"], "#2dd4bf");
+  assert.equal(script.el.props["--ylg-surface-tint-light"], "45, 212, 191");
 });
 
 test("black/white change only the surface; the stored accent is untouched", () => {

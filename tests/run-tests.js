@@ -106,7 +106,7 @@ const ALL = ["src/shared/settings.js", "src/ambient/ambient-vendor-bridge.js",
   check("settings rejects bad enum", n.tint === S.DEFAULT_SETTINGS.tint, "got " + n.tint);
   check("settings drops the schema-8 removed keys",
     !("preset" in n) && !("renderMode" in n));
-  check("settings sanitizes accent", n.accent === "#3ea6ff", "got " + n.accent);
+  check("settings sanitizes accent", n.accent === "#2dd4bf", "got " + n.accent);
   const m = S.normalizeSettings({ enabled: true, blur: 25 }); // v1.0 shape: no ambientLight
   check("v1.0 settings migrate with ambient defaults", m.ambientLight && m.ambientLight.quality === "auto" && m.ambientLight.blur === S.DEFAULT_SETTINGS.ambientLight.blur);
   const amb = S.normalizeSettings({ ambientLight: { quality: "ultra", intensity: 9, blur: -5, fpsLimit: 500 } }).ambientLight;
@@ -122,23 +122,23 @@ const ALL = ["src/shared/settings.js", "src/ambient/ambient-vendor-bridge.js",
   const lensDef = S.normalizeSettings({}).optics.lensPx;
   // 92/400 = k 0.23, and 1/(1-0.23) = 1.2987x. 400*(1 - 1/1.3) = 92.31, so 92 is
   // the whole-number dial that lands closest to the requested 1.30x.
-  check("stored capsule strength default remains 92", 
-    lensDef === 92, "got " + lensDef);
-  check("legacy raw mapping of 92 is 1.30x before player calibration",
-    Number((1 / (1 - 92 / 400)).toFixed(2)) === 1.3, "got " + (1 / (1 - 92 / 400)).toFixed(3));
+  check("stored capsule strength default remains 213", 
+    lensDef === 213, "got " + lensDef);
+  check("legacy raw mapping of 213 is 2.14x before player calibration",
+    Number((1 / (1 - 213 / 400)).toFixed(2)) === 2.14, "got " + (1 / (1 - 213 / 400)).toFixed(3));
   // Every install that ran v1.3.3-1.3.5 has 300 in storage and every install that
   // ran v1.3.6 has 200, because those builds WROTE their default on first run.
   // Lowering DEFAULT_SETTINGS alone would leave them at 4.00x / 2.00x.
   const mig300 = S.normalizeSettings({ schemaVersion: 4, optics: { lensPx: 300 } }).optics.lensPx;
-  check("stored 300 (v1.3.5 default) migrates to 92", mig300 === 92, "got " + mig300);
+  check("stored 300 (v1.3.5 default) migrates to 213", mig300 === 213, "got " + mig300);
   const mig200 = S.normalizeSettings({ schemaVersion: 5, optics: { lensPx: 200 } }).optics.lensPx;
-  check("stored 200 (v1.3.6 default) migrates to 92", mig200 === 92, "got " + mig200);
+  check("stored 200 (v1.3.6 default) migrates to 213", mig200 === 213, "got " + mig200);
   const migKeep = S.normalizeSettings({ schemaVersion: 4, optics: { lensPx: 150 } }).optics.lensPx;
   check("a deliberately chosen lensPx is preserved", migKeep === 150, "got " + migKeep);
   const migDone = S.normalizeSettings({ schemaVersion: 6, optics: { lensPx: 300 } }).optics.lensPx;
   check("migration is not re-applied once at schema 6", migDone === 300, "got " + migDone);
-  const migNew = S.normalizeSettings({ schemaVersion: 6, optics: { lensPx: 92 } }).optics.lensPx;
-  check("current default survives a schema-6 round trip", migNew === 92, "got " + migNew);
+  const migNew = S.normalizeSettings({ schemaVersion: 6, optics: { lensPx: 213 } }).optics.lensPx;
+  check("current default survives a schema-6 round trip", migNew === 213, "got " + migNew);
     const ambOff = S.normalizeSettings({ enabled: true, ambientLight: { enabled: false } }).ambientLight;
   check("ambient boolean enabled survives normalization (regression)", ambOff.enabled === false, "got " + ambOff.enabled);
   // Schema 8 removed S.PRESETS / S.applyPreset entirely, so this block now pins
@@ -160,7 +160,7 @@ const ALL = ["src/shared/settings.js", "src/ambient/ambient-vendor-bridge.js",
   const attrs = {}; const vars = {};
   S.applySettingsToDocument({ documentElement: { style: { setProperty: (k, v) => { vars[k] = v; } }, setAttribute: (k, v) => { attrs[k] = v; }, removeAttribute: (k) => { delete attrs[k]; } } }, { enabled: true });
   check("document activation attributes", attrs["data-ylg-enabled"] === "true" && attrs["data-ylg-ambient"] === "on");
-  check("css vars mapped", vars["--ylg-blur"] === S.DEFAULT_SETTINGS.blur + "px" && vars["--ylg-accent"] === "#3ea6ff");
+  check("css vars mapped", vars["--ylg-blur"] === S.DEFAULT_SETTINGS.blur + "px" && vars["--ylg-accent"] === "#2dd4bf");
   const themedDoc = { documentElement: w.html };
   w.html.setAttribute("dark", "");
   check("Auto theme follows YouTube dark Appearance", S.applyThemeToDocument(themedDoc, "auto") === "dark");

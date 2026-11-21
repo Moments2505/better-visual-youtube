@@ -1,6 +1,6 @@
-![Better visual Youtube — Liquid Glass và Ambient Light](https://raw.githubusercontent.com/Moments2505/better-visual-youtube/main/docs/media/liquid-glass-banner.png)
+![Better Visual for YouTube — Liquid Glass và Ambient Light](https://raw.githubusercontent.com/Moments2505/better-visual-youtube/main/docs/media/liquid-glass-banner.png)
 
-# Better visual Youtube
+# Better Visual for YouTube
 
 Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng theo video và chuyển động trên giao diện.
 
@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Tiện ích miễn phí, mã nguồn mở, dành cho Microsoft Edge và Google Chrome trên máy tính.
 
-**Bản chính thức mới nhất: [0.7.1](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.7.1).** Nâng cấp tự cắt viền đen trên `/watch` và `/shorts` (hỗ trợ viền đen studio, cắt độc lập 4 cạnh, ổn định trong cảnh tối, bảo vệ phụ đề và đặt lại ngay khi tắt), giảm tải GPU/CPU lẫn tab nền (canvas dò viền `256x256`, cache hình học halo Shorts, dừng đối chiếu tab ẩn) và loại viền đen khi lấy màu kính. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.7.1.md)
+**Bản chính thức mới nhất: [0.7.2](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.7.2).** Đổi tên chuẩn **Better Visual for YouTube** để nộp Chrome Web Store, áp dụng bộ cài đặt tinh chỉnh cá nhân làm mặc định mới, đồng bộ Chính sách quyền riêng tư với `chrome.storage.sync` kèm trang privacy GitHub Pages, dọn liên kết Google Form upstream và bổ sung trọn bộ ảnh + mô tả CWS. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.7.2.md)
 
 ## Thêm chiều sâu cho giao diện
 
@@ -18,11 +18,11 @@ Liquid Glass mang lớp kính trong và viền bắt sáng đến thanh đầu t
 
 Ambient Light mở rộng màu sắc từ video ra xung quanh trình phát. Độ lan, độ sáng và chất lượng đều có thể điều chỉnh ngay trong bảng cài đặt của tiện ích.
 
-![Better visual Youtube — hình giới thiệu Ambient Light](https://raw.githubusercontent.com/Moments2505/better-visual-youtube/main/docs/media/ambient-light-banner.png)
+![Better Visual for YouTube — hình giới thiệu Ambient Light](https://raw.githubusercontent.com/Moments2505/better-visual-youtube/main/docs/media/ambient-light-banner.png)
 
 ## Tuỳ chỉnh theo cách bạn thích
 
-**Follow system reduced motion** mặc định bật. Nếu trình duyệt báo giảm chuyển động ngoài ý muốn, bỏ chọn mục này trong popup, rồi bật **Motion effects** và **Ambient Light** theo nhu cầu. **Animate sky** vẫn có công tắc riêng. Tùy chọn này không thay đổi cài đặt Windows hay trình duyệt.
+**Follow system reduced motion** mặc định tắt để hiệu ứng kính, Ambient Light và nền trời hoạt động ngay sau khi cài; bạn có thể bật lại trong popup bất cứ lúc nào để tuân theo thiết lập giảm chuyển động của hệ thống. **Animate sky** vẫn có công tắc riêng và không thay đổi cài đặt Windows hay trình duyệt.
 
 Chọn giao diện sáng hoặc tối, tinh chỉnh hiệu ứng kính và bật tắt các chuyển động. Các lựa chọn được lưu ngay trong trình duyệt của bạn.
 

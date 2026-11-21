@@ -5,9 +5,9 @@ const UNINSTALL_URL = "https://moments2505.github.io/better-visual-youtube/unins
 function registerUninstallSurvey() {
   try {
     const pending = chrome.runtime.setUninstallURL(UNINSTALL_URL);
-    if (pending && pending.catch) pending.catch(() => console.warn("[Better visual Youtube] Could not register uninstall feedback."));
+    if (pending && pending.catch) pending.catch(() => console.warn("[Better Visual for YouTube] Could not register uninstall feedback."));
   } catch (_) {
-    console.warn("[Better visual Youtube] Could not register uninstall feedback.");
+    console.warn("[Better Visual for YouTube] Could not register uninstall feedback.");
   }
 }
 chrome.runtime.onInstalled.addListener(registerUninstallSurvey);

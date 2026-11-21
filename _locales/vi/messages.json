@@ -1,15 +1,15 @@
 {
   "extName": {
-    "message": "Better visual Youtube"
+    "message": "Better Visual for YouTube"
   },
   "extShortName": {
-    "message": "Better visual"
+    "message": "Better Visual"
   },
   "extDescription": {
     "message": "Khoác diện mạo mới cho YouTube với hiệu ứng kính lỏng Liquid Glass, ánh sáng môi trường Ambient Light và chuyển động tùy chỉnh."
   },
   "popupTitle": {
-    "message": "Better visual Youtube"
+    "message": "Better Visual for YouTube"
   },
   "enableExtension": {
     "message": "Bật tiện ích"

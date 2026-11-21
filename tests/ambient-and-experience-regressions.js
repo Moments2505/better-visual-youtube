@@ -59,18 +59,18 @@ test("settings schema keeps v8 and normalizes all #1-#9 fields safely", () => {
 
   assert.equal(S.SCHEMA_VERSION, 8);
   const def = S.normalizeSettings({});
-  assert.equal(def.ambientLight.flickerReduction, 35);
-  assert.equal(def.ambientLight.detectBarSize, false);
+  assert.equal(def.ambientLight.flickerReduction, 55);
+  assert.equal(def.ambientLight.detectBarSize, true);
   assert.equal(def.ambientLight.glassSync, true);
   assert.equal(def.ambientLight.directionMode, "full");
-  assert.equal(def.ambientLight.videoShadow, 25);
-  assert.equal(def.ambientLight.energySaver, true);
-  assert.equal(def.ambientLight.vibrance, 1);
+  assert.equal(def.ambientLight.videoShadow, 55);
+  assert.equal(def.ambientLight.energySaver, false);
+  assert.equal(def.ambientLight.vibrance, 1.3);
   assert.equal(def.ambientLight.contrast, 1);
-  assert.equal(def.immersiveCinema, false);
+  assert.equal(def.immersiveCinema, true);
   assert.equal(def.hotkeys, true);
   assert.equal(def.hideShortsShelf, false);
-  assert.equal(def.zenWatch, false);
+  assert.equal(def.zenWatch, true);
 
   const clamped = S.normalizeSettings({
     immersiveCinema: true,
@@ -527,13 +527,13 @@ test("Eco / Balanced / High / Auto quality presets differentiate parameters, res
   assert.ok(bridgeCalls.includes("resetDiff"), "changing quality must reset frame-diff cache so redraw is immediate");
 });
 
-test("STYLE_PROFILES enables modes.shorts on crystal/frosted/cinema while DEFAULT_SETTINGS preserves false", () => {
+test("STYLE_PROFILES enables modes.shorts on crystal/frosted/cinema and DEFAULT_SETTINGS preserves personal Edge defaults", () => {
   const ctx = vm.createContext({ URL, Math });
   ctx.window = ctx;
   vm.runInNewContext(read("src/shared/settings.js"), ctx, { filename: "src/shared/settings.js" });
   const S = ctx.YLG_SETTINGS;
 
-  assert.equal(S.DEFAULT_SETTINGS.ambientLight.modes.shorts, false, "DEFAULT_SETTINGS.ambientLight.modes.shorts must stay false");
+  assert.equal(S.DEFAULT_SETTINGS.ambientLight.modes.shorts, true, "DEFAULT_SETTINGS.ambientLight.modes.shorts follows personal Edge defaults");
   const customBase = {
     ...S.DEFAULT_SETTINGS,
     ambientLight: {

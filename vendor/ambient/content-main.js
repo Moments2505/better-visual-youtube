@@ -480,13 +480,7 @@ Another possible workaround could be to turn off the "Quality" > "WebGL renderer
       return null;
     }
   };
-  const getFeedbackFormLink = version => {
-    version = version || getVersion() || '';
-    const os = getOS() || '';
-    const browser = getBrowser() || '';
-    const browserVersion = getBrowserVersion();
-    return `https://docs.google.com/forms/d/e/1FAIpQLSe5lenJCbDFgJKwYuK_7U_s5wN3D78CEP5LYf2lghWwoE9IyA/viewform?usp=pp_url&entry.1590539866=${version}&entry.1676661118=${os}&entry.964326861=${browser}&entry.908541589=${browserVersion}`;
-  };
+  const getFeedbackFormLink = () => 'https://github.com/Moments2505/better-visual-youtube/issues';
 
   const SettingsConfig = [{
     type: 'section',

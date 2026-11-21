@@ -687,7 +687,7 @@ test("exportSettingsPayload and parseImportedSettingsPayload round-trip and reje
   }));
   assert.equal(sanitized.blur, 40);
   assert.equal(sanitized.tint, "auto");
-  assert.equal(sanitized.accent, "#3ea6ff");
+  assert.equal(sanitized.accent, "#2dd4bf");
   assert.equal(sanitized.ambientLight.spread, 180);
   assert.equal(sanitized.ambientLight.fpsLimit, 30);
 

@@ -1,6 +1,6 @@
-![Better visual Youtube — Liquid Glass and Ambient Light](https://raw.githubusercontent.com/Moments2505/better-visual-youtube/main/docs/media/liquid-glass-banner.png)
+![Better Visual for YouTube — Liquid Glass and Ambient Light](https://raw.githubusercontent.com/Moments2505/better-visual-youtube/main/docs/media/liquid-glass-banner.png)
 
-# Better visual Youtube
+# Better Visual for YouTube
 
 A fresh look for YouTube, with transparent glass surfaces, colour that follows your video, and animations throughout the interface.
 
@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Free and open source, made for desktop Microsoft Edge and Google Chrome.
 
-**Latest release: [0.7.1](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.7.1).** Upgrades Watch and `/shorts` black-bar auto-crop (studio-black tolerance, 4-sided independent cropping, dark-edge & dim-scene stability, subtitle safety, and instant turn-off reset), cuts GPU readback and background-tab work (`256x256` probe, cached halo layout, hidden-tab reconcile skip), and excludes black bars from media glass tinting. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.7.1.md)
+**Latest release: [0.7.2](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.7.2).** Renames the extension to **Better Visual for YouTube**, adopts curated Liquid Glass & Ambient Light defaults out of the box, aligns Privacy Policies with `chrome.storage.sync` alongside a public GitHub Pages privacy page, cleans up the upstream Google Form URL, and adds Chrome Web Store submission assets. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.7.2.md)
 
 ## A little more depth
 
@@ -21,7 +21,7 @@ Ambient Light extends colours beyond the player. Choose how far the light spread
 
 ## Make it yours
 
-**Follow system reduced motion** is enabled by default. If the browser reports reduced motion unexpectedly, uncheck it in the popup, then enable **Motion effects** and **Ambient Light** as desired. **Animate sky** remains a separate switch. This setting does not change Windows or browser preferences.
+**Follow system reduced motion** is off by default so Liquid Glass animations, Ambient Light, and Time-of-day sky effects work out of the box. Enable it in the popup at any time to match your OS reduced-motion setting. **Animate sky** remains a separate switch, and this setting never alters Windows or browser preferences.
 
 Choose a light or dark theme, tune the glass effects, and turn interface animations on or off. Your preferences are saved in your browser.
 

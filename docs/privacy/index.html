@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Privacy Policy for Better Visual for YouTube Chrome and Edge extension.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>Better Visual for YouTube — Privacy Policy</title>
+  <link rel="icon" href="../uninstall/icon128.png">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --ink: #141c2c;
+      --muted: #52607a;
+      --line: rgba(20, 28, 44, 0.12);
+      --accent: #2457c8;
+      --pill: #eef2ff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0f17;
+        --card: #121826;
+        --ink: #e9eef9;
+        --muted: #9aa7bf;
+        --line: rgba(233, 238, 249, 0.14);
+        --accent: #7aa7ff;
+        --pill: rgba(122, 167, 255, 0.14);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px 16px 56px;
+      font: 15.5px/1.65 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    .wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px 32px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+    }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 24px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+      font-weight: 700;
+      font-size: 17px;
+    }
+    .brand img { border-radius: 10px; }
+    .nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav a {
+      text-decoration: none;
+      color: var(--accent);
+      background: var(--pill);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    h1 { font-size: 24px; margin: 0 0 6px; line-height: 1.25; }
+    h2 { font-size: 17.5px; margin: 24px 0 8px; }
+    .meta { color: var(--muted); font-size: 13.5px; margin: 0 0 18px; }
+    p, li { margin: 0 0 10px; }
+    ul { padding-left: 20px; margin: 0 0 14px; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9em;
+      padding: 1px 5px;
+      border-radius: 5px;
+      background: var(--pill);
+    }
+    a { color: var(--accent); }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 36px 0; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="topbar">
+      <a class="brand" href="https://github.com/Moments2505/better-visual-youtube">
+        <img src="../uninstall/icon128.png" width="36" height="36" alt="">
+        <span>Better Visual for YouTube</span>
+      </a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#en">English</a>
+        <a href="#vi">Tiếng Việt</a>
+        <a href="../uninstall/">Feedback</a>
+      </nav>
+    </header>
+
+    <section id="en" lang="en">
+      <h1>Privacy Policy</h1>
+      <p class="meta">Developer: QuanNguyen · Last updated: 21 November 2026</p>
+      <p>Better Visual for YouTube adds Liquid Glass surfaces, Ambient Light, optional procedural sky backgrounds, and interface animations to desktop YouTube. You can use the extension without creating any developer account.</p>
+
+      <h2>Information processed on your device</h2>
+      <p>The extension reads desktop YouTube page structure and player layout locally in your browser to apply glass styles and visual effects. When colour-reactive features are enabled, Ambient Light, video tint sampling, and black-bar auto-cropping sample rendered video/thumbnail pixels solely on your device in memory.</p>
+      <p>Better Visual for YouTube does <strong>not</strong> collect or transmit browsing history, YouTube account credentials, watch lists, search queries, or video frames to any developer-operated server. There is no third-party analytics SDK, ad tracking, or remote crash telemetry.</p>
+
+      <h2>Storage &amp; browser profile synchronization</h2>
+      <p>Your preferences, active style profile, and optional chosen city name/coordinates are saved locally via <code>chrome.storage.local</code>. When your browser enables profile sync, appearance preferences, style profiles, and your optional chosen city/coordinates are also mirrored to <code>chrome.storage.sync</code> so settings stay consistent across your signed-in Chrome or Edge browsers. Weather caches and failure backoff timestamps stay strictly local in <code>chrome.storage.local</code>. Sync is handled exclusively by your browser vendor; QuanNguyen operates no backend server and cannot access your synced settings.</p>
+
+      <h2>Optional weather requests &amp; third parties</h2>
+      <ul>
+        <li><strong>Optional Live sun &amp; weather:</strong> Disabled by default. Only after you grant optional host permission and enable Live sun &amp; weather, the extension requests forecast data from <code>https://api.open-meteo.com/*</code> using your chosen city's latitude and longitude, or searches city names via <code>https://geocoding-api.open-meteo.com/*</code> when you submit a search. Requests omit credentials and referrers and contain no YouTube URLs or user identifiers. The extension never requests GPS location.</li>
+        <li><strong>Open-Meteo caching:</strong> One recent forecast response is cached locally and refreshed at most about once every 15 minutes while visible on YouTube Home, Search, or Channel pages. See <a href="https://open-meteo.com/en/terms" rel="noopener noreferrer">Open-Meteo terms and privacy</a>.</li>
+        <li><strong>Optional uninstall page:</strong> Uninstalling opens the static feedback page on GitHub Pages (<code>https://moments2505.github.io/better-visual-youtube/uninstall/</code>) with no tracking query parameters or automatic form submission; responses are only shared if you choose to send an email.</li>
+      </ul>
+
+      <h2>Permissions declared</h2>
+      <ul>
+        <li><code>storage</code>: Saves preferences in <code>chrome.storage.local</code> and mirrors preferences across your signed-in browser profile via <code>chrome.storage.sync</code>.</li>
+        <li><code>https://www.youtube.com/*</code>: Applies styles, discovers the video player, and renders on-device Ambient Light and visual effects on desktop YouTube.</li>
+        <li>Optional <code>https://api.open-meteo.com/*</code> &amp; <code>https://geocoding-api.open-meteo.com/*</code>: Requested strictly on opt-in for Live sun &amp; weather and city lookup.</li>
+      </ul>
+
+      <h2>Control &amp; contact</h2>
+      <p>You can toggle any feature off, revoke optional weather access in Chrome/Edge site settings, or uninstall the extension at any time. Privacy inquiries or support requests can be sent to <a href="mailto:quannguyenproducer2505@gmail.com">quannguyenproducer2505@gmail.com</a>.</p>
+    </section>
+
+    <hr>
+
+    <section id="vi" lang="vi">
+      <h1>Chính sách quyền riêng tư</h1>
+      <p class="meta">Nhà phát triển: QuanNguyen · Cập nhật: 21 tháng 11 năm 2026</p>
+      <p>Better Visual for YouTube bổ sung hiệu ứng kính lỏng Liquid Glass, ánh sáng viền Ambient Light, nền trời tùy chọn và chuyển động giao diện cho YouTube trên máy tính. Tiện ích không yêu cầu đăng ký tài khoản.</p>
+
+      <h2>Dữ liệu xử lý ngay trên thiết bị</h2>
+      <p>Tiện ích đọc cấu trúc trang YouTube máy tính và kích thước trình phát ngay tại trình duyệt để áp dụng hiệu ứng kính. Khi bật tính năng theo màu (Ambient Light, lấy màu kính theo video, tự động cắt viền đen), việc lấy mẫu pixel được thực hiện hoàn toàn trên thiết bị.</p>
+      <p>Better Visual for YouTube <strong>không</strong> thu thập hay gửi lịch sử xem, thông tin tài khoản YouTube, nội dung tìm kiếm hay khung hình video về bất kỳ máy chủ nào của nhà phát triển; không chứa mã theo dõi quảng cáo hay báo cáo lỗi từ xa.</p>
+
+      <h2>Lưu trữ và đồng bộ hồ sơ trình duyệt</h2>
+      <p>Cài đặt giao diện, cấu hình nhanh và thành phố/tọa độ tùy chọn được lưu cục bộ qua <code>chrome.storage.local</code> và được sao lưu sang <code>chrome.storage.sync</code> để tự đồng bộ giữa các thiết bị đã đăng nhập cùng hồ sơ trình duyệt Chrome/Edge. Dữ liệu đệm thời tiết chỉ lưu cục bộ trong <code>chrome.storage.local</code>. Quá trình đồng bộ hoàn toàn do trình duyệt thực hiện; nhà phát triển không có máy chủ trung gian và không thể đọc dữ liệu cài đặt của bạn.</p>
+
+      <h2>Kết nối thời tiết tùy chọn và bên thứ ba</h2>
+      <ul>
+        <li><strong>Thời tiết trực tuyến tùy chọn:</strong> Tắt theo mặc định. Chỉ khi bạn chủ động cấp quyền truy cập tùy chọn và bật Live sun &amp; weather hoặc tìm kiếm thành phố, tiện ích mới gửi tên thành phố hoặc tọa độ đã chọn tới <code>https://api.open-meteo.com/*</code> và <code>https://geocoding-api.open-meteo.com/*</code>. Yêu cầu bỏ thông tin đăng nhập/referrer và không chứa URL YouTube hay thông tin định danh cá nhân; tiện ích không dùng GPS.</li>
+        <li><strong>Trang góp ý khi gỡ cài đặt:</strong> Mở trang tĩnh trên GitHub Pages (<code>https://moments2505.github.io/better-visual-youtube/uninstall/</code>) với URL cố định không gắn mã định danh và không tự động gửi dữ liệu nếu bạn không chủ động gửi email.</li>
+      </ul>
+
+      <h2>Liên hệ</h2>
+      <p>Mọi thắc mắc về quyền riêng tư hoặc yêu cầu hỗ trợ, vui lòng liên hệ <a href="mailto:quannguyenproducer2505@gmail.com">quannguyenproducer2505@gmail.com</a>.</p>
+    </section>
+  </main>
+</body>
+</html>

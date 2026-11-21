@@ -1,15 +1,15 @@
 {
   "extName": {
-    "message": "Better visual Youtube"
+    "message": "Better Visual for YouTube"
   },
   "extShortName": {
-    "message": "Better visual"
+    "message": "Better Visual"
   },
   "extDescription": {
     "message": "Give YouTube a new look with Liquid Glass, Ambient Light and customizable animations."
   },
   "popupTitle": {
-    "message": "Better visual Youtube"
+    "message": "Better Visual for YouTube"
   },
   "enableExtension": {
     "message": "Enable extension"
