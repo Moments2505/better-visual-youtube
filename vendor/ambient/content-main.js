@@ -1604,6 +1604,8 @@ Click on the questionmark for more and updated information about these artifacts
   };
 
   const workerCode$1 = function () {
+    const DETECT_SIZE = 256;
+    const SCANLINES = 11;
     class ImageHelper {
       constructor() {
         this.imageData = void 0;
@@ -1625,18 +1627,28 @@ Click on the questionmark for more and updated information about these artifacts
         let returnValue = !data;
         if (returnValue) data = new Uint8Array(4);
         if (!dataOffset) dataOffset = 0;
-        const offset = this.getDataOffset(x, y);
-        if (offset < 0 || offset > (((_this$imageData3 = this.imageData) === null || _this$imageData3 === void 0 ? void 0 : (_this$imageData3$data = _this$imageData3.data) === null || _this$imageData3$data === void 0 ? void 0 : _this$imageData3$data.length) ?? 0)) {
+        const w = this.width;
+        const h = this.height;
+        if (x < 0 || y < 0 || x >= w || y >= h) {
+          data[dataOffset + 0] = 0;
+          data[dataOffset + 1] = 0;
+          data[dataOffset + 2] = 0;
+          if (alpha) data[dataOffset + 3] = 0;
+          if (returnValue) return data;
+          return;
+        }
+        const offset = (y * w + x) * this.channels;
+        const buf = (_this$imageData3 = this.imageData) === null || _this$imageData3 === void 0 ? void 0 : (_this$imageData3$data = _this$imageData3.data) === null || _this$imageData3$data === void 0 ? void 0 : _this$imageData3$data;
+        if (!buf || offset + 3 >= buf.length) {
           data[dataOffset + 0] = 0;
           data[dataOffset + 1] = 0;
           data[dataOffset + 2] = 0;
           if (alpha) data[dataOffset + 3] = 0;
         } else {
-          var _this$imageData4, _this$imageData4$data, _this$imageData5, _this$imageData5$data, _this$imageData6, _this$imageData6$data, _this$imageData7, _this$imageData7$data;
-          data[dataOffset + 0] = (_this$imageData4 = this.imageData) === null || _this$imageData4 === void 0 ? void 0 : (_this$imageData4$data = _this$imageData4.data) === null || _this$imageData4$data === void 0 ? void 0 : _this$imageData4$data[offset];
-          data[dataOffset + 1] = (_this$imageData5 = this.imageData) === null || _this$imageData5 === void 0 ? void 0 : (_this$imageData5$data = _this$imageData5.data) === null || _this$imageData5$data === void 0 ? void 0 : _this$imageData5$data[offset + 1];
-          data[dataOffset + 2] = (_this$imageData6 = this.imageData) === null || _this$imageData6 === void 0 ? void 0 : (_this$imageData6$data = _this$imageData6.data) === null || _this$imageData6$data === void 0 ? void 0 : _this$imageData6$data[offset + 2];
-          if (alpha) data[dataOffset + 3] = (_this$imageData7 = this.imageData) === null || _this$imageData7 === void 0 ? void 0 : (_this$imageData7$data = _this$imageData7.data) === null || _this$imageData7$data === void 0 ? void 0 : _this$imageData7$data[offset + 3];
+          data[dataOffset + 0] = buf[offset];
+          data[dataOffset + 1] = buf[offset + 1];
+          data[dataOffset + 2] = buf[offset + 2];
+          if (alpha) data[dataOffset + 3] = buf[offset + 3];
         }
         if (returnValue) return data;
       }
@@ -1648,7 +1660,6 @@ Click on the questionmark for more and updated information about these artifacts
     let globalRunId = 0;
     let globalXOffsetIndex = 0;
     let image = new ImageHelper();
-    const scanlinesAmount = 5;
     const postError = ex => {
       if (!catchedWorkerCreationError) {
         catchedWorkerCreationError = true;
@@ -1658,452 +1669,302 @@ Click on the questionmark for more and updated information about these artifacts
         });
       }
     };
-    const sortSizes = averageSize => (a, b) => {
-      const aGap = Math.abs(averageSize - a.yIndex);
-      const bGap = Math.abs(averageSize - b.yIndex);
-      return aGap === bGap ? 0 : aGap > bGap ? 1 : -1;
+    const isBlackBarColor = (r, g, b) => {
+      const sum = r + g + b;
+      const maxC = r > g ? (r > b ? r : b) : (g > b ? g : b);
+      const minC = r < g ? (r < b ? r : b) : (g < b ? g : b);
+      return sum <= 54 && maxC <= 22 && (maxC - minC) <= 8;
     };
-    const colorChannels = image.channels - 1;
-    const colorsLength = 116;
-    const averageColorColorsData = new Uint8Array(colorsLength * colorChannels);
-    const averageColorsIndexes = new Uint8Array(colorsLength);
-    const averageColorsIndexesDiffs = new Uint16Array(colorsLength);
-    const averageColorsLength = Math.floor(colorsLength * 0.25);
-    const averageColor = new Uint32Array(colorChannels);
-    function sortAverageColors(ai, bi) {
-      return averageColorsIndexesDiffs[ai] - averageColorsIndexesDiffs[bi];
-    }
-    function getAverageColor(yAxis) {
-      const colors = averageColorColorsData;
-      const colorsIndexes = averageColorsIndexes;
-      const colorsIndexesDiffs = averageColorsIndexesDiffs;
-      for (let i = 0, yMax = image[yAxis], linesY = [2, 4, yMax - 4, yMax - 2], xStep = 16, offset = xStep * 2, xMax = image[yAxis === 'height' ? 'width' : 'height'], colorsOffset = 0; i < linesY.length; i++) {
-        for (let x = offset, y = linesY[i]; x <= xMax - offset; x += xStep) {
-          if (yAxis === 'height') {
-            image.getPixel(x, y, colors, colorsOffset, false);
-          } else {
-            image.getPixel(y, x, colors, colorsOffset, false);
-          }
-          colorsOffset += colorChannels;
-        }
+    const isPixelInBar = (r, g, b, barColor, detectColored) => {
+      const dr = Math.abs(r - barColor[0]);
+      const dg = Math.abs(g - barColor[1]);
+      const db = Math.abs(b - barColor[2]);
+      if (!detectColored) {
+        const barSum = barColor[0] + barColor[1] + barColor[2];
+        const barMax = Math.max(barColor[0], barColor[1], barColor[2]);
+        const sum = r + g + b;
+        const maxC = r > g ? (r > b ? r : b) : (g > b ? g : b);
+        const minC = r < g ? (r < b ? r : b) : (g < b ? g : b);
+        return dr <= 12 && dg <= 12 && db <= 12 && sum <= Math.max(45, barSum + 24) && maxC <= Math.max(24, barMax + 10) && (maxC - minC) <= 12;
       }
-      for (let i = 0; i < colorsIndexes.length; i++) {
-        colorsIndexes[i] = i;
-      }
-      const shrinkBy = Math.floor(averageColorsLength / 2);
-      for (let includedColorsLength = colorsLength; includedColorsLength >= averageColorsLength; includedColorsLength -= shrinkBy) {
-        for (let iRGB = 0; iRGB < colorChannels; iRGB++) {
-          averageColor[iRGB] = 0;
-          for (let i = 0; i < includedColorsLength; i++) {
-            const colorsIndex = colorsIndexes[i];
-            const colorOffset = colorsIndex * colorChannels + iRGB;
-            averageColor[iRGB] += colors[colorOffset];
-          }
-          averageColor[iRGB] = Math.round(averageColor[iRGB] / includedColorsLength);
-        }
-        if (includedColorsLength - shrinkBy < averageColorsLength) break;
-        for (let i = 0; i < colorsIndexesDiffs.length; i++) {
-          const colorsIndex = colorsIndexes[i];
-          if (i < includedColorsLength) {
-            const pixelOffset = colorsIndex * colorChannels;
-            const diff = Math.abs(averageColor[0] - colors[pixelOffset]) + Math.abs(averageColor[1] - colors[pixelOffset + 1]) + Math.abs(averageColor[2] - colors[pixelOffset + 2]);
-            colorsIndexesDiffs[colorsIndex] = diff;
-          } else {
-            colorsIndexesDiffs[colorsIndex] += 1000;
-          }
-        }
-        colorsIndexes.sort(sortAverageColors);
-      }
-      return Array.from(averageColor);
-    }
-    function getHueDeviation(a, b) {
-      return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
-    }
-    function getBrightnessDeviation(a, b) {
-      return Math.abs(a[0] + a[1] + a[2] - (b[0] + b[1] + b[2]));
-    }
-    const maxBlackDeviation = {
-      hue: 16,
-      brightness: 8,
-      sum: 20,
-      score: 155 * 3 + 155 * 3
+      const hueDev = dr + dg + db;
+      const brightDev = Math.abs((r + g + b) - (barColor[0] + barColor[1] + barColor[2]));
+      const barSum = barColor[0] + barColor[1] + barColor[2];
+      if (barSum > 500) return hueDev <= 32 && brightDev <= 64 && hueDev + brightDev <= 86;
+      if (barSum > 20) return hueDev <= 22 && brightDev <= 22 && hueDev + brightDev <= 36;
+      return hueDev <= 22 && brightDev <= 16 && hueDev + brightDev <= 32;
     };
-    const maxDarkDeviation = {
-      hue: 22,
-      brightness: 22,
-      sum: 36,
-      score: 155 * 3 + 155 * 3
+    const isStrongBreakPixel = (r, g, b, barColor, detectColored) => {
+      const dr = Math.abs(r - barColor[0]);
+      const dg = Math.abs(g - barColor[1]);
+      const db = Math.abs(b - barColor[2]);
+      if (!detectColored) {
+        const maxC = r > g ? (r > b ? r : b) : (g > b ? g : b);
+        const minC = r < g ? (r < b ? r : b) : (g < b ? g : b);
+        return (r + g + b) > 78 || maxC > 30 || (maxC - minC) > 14 || dr > 22 || dg > 22 || db > 22;
+      }
+      return (dr + dg + db) > 48;
     };
-    const maxLightDeviation = {
-      hue: 32,
-      brightness: 64,
-      sum: 86,
-      score: 255 * 3 + 255 * 3
+    const readRGB = (yAxis, crossPos, axisPos, out) => {
+      if (yAxis === 'height') image.getPixel(crossPos, axisPos, out, 0, false);
+      else image.getPixel(axisPos, crossPos, out, 0, false);
     };
-    function getMaxDeviationLimits(color) {
-      const brightness = color[0] + color[1] + color[2];
-      return brightness > 500 ? maxLightDeviation : brightness > 20 ? maxDarkDeviation : maxBlackDeviation;
-    }
-    function isColorWithinMaxDeviation(currentColor, referenceColor) {
-      const hueDeviation = getHueDeviation(currentColor, referenceColor);
-      const brightnessDeviation = getBrightnessDeviation(currentColor, referenceColor);
-      const maxDeviation = getMaxDeviationLimits(referenceColor);
-      return hueDeviation <= maxDeviation.hue && brightnessDeviation <= maxDeviation.brightness && hueDeviation + brightnessDeviation <= maxDeviation.sum;
-    }
-    const minDeviationScore = 0.25 ;
-    const edgePointXRange = 32;
-    const edgePointYRange = 8 ;
-    const edgePointYCenter = 2 / edgePointYRange;
-    const easeInOutQuad = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
-    const getCertaintyColorData = new Uint8Array(4);
-    const getCertainty = (pointX, pointY, yAxis, yDirection, color) => {
-      const x = pointX - (edgePointXRange );
-      const y = pointY - edgePointYRange * 2 * (yDirection === 1 ? edgePointYCenter : 1 - edgePointYCenter);
-      const xLength = 1 + (edgePointXRange * 2 );
-      const yLength = 1 + edgePointYRange * 2;
-      let score = 0;
-      for (let dx = 0; dx < xLength; dx += 2) {
-        for (let dy = 0; dy < yLength; dy += 2) {
-          const dy2 = yDirection === 1 ? dy : yLength - 1 - dy;
-          let iColor = getCertaintyColorData;
-          if (yAxis === 'height') {
-            image.getPixel(x + dx, y + dy2, iColor);
-          } else {
-            image.getPixel(y + dy2, x + dx, iColor);
-          }
-          if (iColor[3] === 0) iColor = color;
-          const expectWithinDeviation = dy < Math.floor(1 + edgePointYRange * 2 * edgePointYCenter);
-          if (!expectWithinDeviation) {
-            const maxDeviation = getMaxDeviationLimits(color);
-            const hueDeviation = getHueDeviation(iColor, color);
-            const brightnessDeviation = getBrightnessDeviation(iColor, color);
-            const deviationScore = Math.max(0, Math.min(1 - minDeviationScore, (hueDeviation + brightnessDeviation) / maxDeviation.score / 0.05));
-            score += minDeviationScore + deviationScore;
-          } else {
-            const within = isColorWithinMaxDeviation(iColor, color);
-            if (within) score += 1;
-          }
+    const sampleBuf = new Uint8Array(4);
+    const getSideEdgeColor = (yAxis, isEnd, crossMin, crossMax, detectColored) => {
+      const axisLen = image[yAxis];
+      const rows = isEnd ? [axisLen - 5, axisLen - 3] : [2, 4];
+      const samples = [];
+      const span = Math.max(1, crossMax - crossMin);
+      const step = Math.max(1, Math.floor(span / 24));
+      for (let ri = 0; ri < rows.length; ri++) {
+        const ay = Math.max(0, Math.min(axisLen - 1, rows[ri]));
+        for (let cx = crossMin; cx <= crossMax; cx += step) {
+          readRGB(yAxis, cx, ay, sampleBuf);
+          samples.push([sampleBuf[0], sampleBuf[1], sampleBuf[2], sampleBuf[0] + sampleBuf[1] + sampleBuf[2]]);
         }
       }
-      const length = (1 + (xLength - 1) / 2) * (1 + (yLength - 1) / 2);
-      const certainty = (score - length / 2) / (length / 2);
-      return easeInOutQuad(certainty);
+      if (!samples.length) return [0, 0, 0];
+      samples.sort((a, b) => a[3] - b[3]);
+      // Use the lower 60% darkest cluster for black bars (immune to corner logos/tickers), or central 50% for colored bars.
+      const startIdx = detectColored ? Math.floor(samples.length * 0.25) : 0;
+      const endIdx = Math.max(startIdx + 1, Math.floor(samples.length * (detectColored ? 0.75 : 0.6)));
+      let sr = 0, sg = 0, sb = 0;
+      for (let i = startIdx; i < endIdx; i++) {
+        sr += samples[i][0];
+        sg += samples[i][1];
+        sb += samples[i][2];
+      }
+      const n = endIdx - startIdx;
+      return [Math.round(sr / n), Math.round(sg / n), Math.round(sb / n)];
     };
-    const largeStep = 4;
-    const ignoreEdge = 2;
-    const middleYOffset = 10;
-    const minCertainty = 0.65;
-    const maxCertaintyChecks = 3 ;
-    const sureCertainty = 0.65 ;
-    const getAverageLineColorRange = 9;
-    const getAverageLineColorRangeOffset = (getAverageLineColorRange - 1) / 2;
-    const getAverageLineColorData = new Uint8Array(4 * getAverageLineColorRange);
-    function getAverageLineColor(x, y, yAxis, iColor) {
-      const iColors = getAverageLineColorData;
-      const range = getAverageLineColorRange;
-      const rangeOffset = getAverageLineColorRangeOffset;
-      for (let i = 0; i < range; i++) {
-        const x2 = x + (i - rangeOffset) * 2;
-        const iColorsOffset = i * 4;
-        if (yAxis === 'height') {
-          image.getPixel(x2, y, iColors, iColorsOffset);
-        } else {
-          image.getPixel(y, x2, iColors, iColorsOffset);
-        }
+    const scanSide = (yAxis, isEnd, crossMin, crossMax, detectColored, xOffset, offsetPercentage) => {
+      const axisLen = image[yAxis];
+      const ignoreEdge = 2;
+      const maxDepth = Math.floor(axisLen * 0.42);
+      const minRawPx = Math.max(4, Math.round(axisLen * 0.015));
+      const sideColor = getSideEdgeColor(yAxis, isEnd, crossMin, crossMax, detectColored);
+      if (!detectColored && !isBlackBarColor(sideColor[0], sideColor[1], sideColor[2])) {
+        return { pct: 0, depthPx: 0, clusterCount: 0, shallowCount: 0, flatRatio: 0, avgContrast: 0, edges: [], color: sideColor, brightEdge: true, inconclusive: false };
       }
-      for (let i = 0; i < 4; i++) {
-        let sum = 0;
-        for (let j = 0; j < range; j++) {
-          sum += iColors[j * 4 + i];
-        }
-        iColor[i] = Math.round(sum / range);
+      const span = crossMax - crossMin;
+      if (span < 8) {
+        return { pct: 0, depthPx: 0, clusterCount: 0, shallowCount: 0, flatRatio: 0, avgContrast: 0, edges: [], color: sideColor, brightEdge: false, inconclusive: true };
       }
-    }
-    const detectEdgesColorData = new Uint8Array(4);
-    function detectEdges(linesX, color, yAxis) {
-      const maxY = image[yAxis];
-      const middleY = maxY / 2;
-      const topEdges = [];
-      const bottomEdges = [];
-      const iColor = detectEdgesColorData;
-      for (const x of linesX) {
-        let step = largeStep;
-        let wasDeviating = false;
-        let wasUncertain = false;
-        let mostCertainEdge;
-        let detectedEdges = 0;
-        for (let y = ignoreEdge; y < maxY; y += step) {
-          if (wasUncertain) {
-            wasUncertain = false;
-            step = 1;
-          }
-          getAverageLineColor(x, y, yAxis, iColor);
-          const limitNotReached = y < middleY - middleYOffset - 1;
-          if (!limitNotReached || detectedEdges > maxCertaintyChecks) {
-            var _mostCertainEdge;
-            if (((_mostCertainEdge = mostCertainEdge) === null || _mostCertainEdge === void 0 ? void 0 : _mostCertainEdge.certainty) > minCertainty) {
-              topEdges.find(edge => x === edge.xIndex && mostCertainEdge.yIndex === edge.yIndex).deviates = false;
-            } else {
-              topEdges.push({
-                xIndex: x,
-                yIndex: 0,
-                certainty: 0,
-                deviates: true
-              });
+      const margin = Math.max(2, Math.floor(span * 0.04));
+      const usableMin = crossMin + margin;
+      const usableMax = Math.max(usableMin, crossMax - margin);
+      const stepX = (usableMax - usableMin) / (SCANLINES - 1);
+      const jitter = Math.round((xOffset - 0.5) * Math.min(4, stepX * 0.35));
+      const linesX = new Uint16Array(SCANLINES);
+      for (let i = 0; i < SCANLINES; i++) {
+        linesX[i] = Math.max(crossMin, Math.min(crossMax, Math.round(usableMin + i * stepX + jitter)));
+      }
+      const scanResults = [];
+      const edges = [];
+      const nextBuf = new Uint8Array(4);
+      let brightEdgeCount = 0;
+      for (let i = 0; i < SCANLINES; i++) {
+        const cx = linesX[i];
+        let foundDepth = maxDepth;
+        let hitMax = true;
+        let contrast = 0;
+        for (let d = ignoreEdge; d < maxDepth; d++) {
+          const pos = isEnd ? (axisLen - 1 - d) : d;
+          readRGB(yAxis, cx, pos, sampleBuf);
+          if (!isPixelInBar(sampleBuf[0], sampleBuf[1], sampleBuf[2], sideColor, detectColored)) {
+            let confirmed = isStrongBreakPixel(sampleBuf[0], sampleBuf[1], sampleBuf[2], sideColor, detectColored);
+            if (!confirmed && d + 1 < maxDepth) {
+              const nextPos = isEnd ? (axisLen - 2 - d) : (d + 1);
+              readRGB(yAxis, cx, nextPos, nextBuf);
+              confirmed = !isPixelInBar(nextBuf[0], nextBuf[1], nextBuf[2], sideColor, detectColored);
             }
-            break;
-          }
-          const isDeviating = !isColorWithinMaxDeviation(iColor, color);
-          if (limitNotReached && wasDeviating && !isDeviating) {
-            wasDeviating = false;
-            continue;
-          }
-          if (limitNotReached && wasDeviating === isDeviating) continue;
-          if (y !== 0 && step === largeStep) {
-            y = Math.max(-1, y - 1 * step);
-            step = Math.ceil(1, Math.floor(step / 2));
-            continue;
-          }
-          const certainty = getCertainty(x, y / 1, yAxis, 1, color);
-          detectedEdges++;
-          if (limitNotReached && certainty < sureCertainty) {
-            var _mostCertainEdge2;
-            wasUncertain = true;
-            wasDeviating = true;
-            if (!(((_mostCertainEdge2 = mostCertainEdge) === null || _mostCertainEdge2 === void 0 ? void 0 : _mostCertainEdge2.certainty) >= certainty)) {
-              mostCertainEdge = {
-                yIndex: y,
-                certainty
-              };
+            if (confirmed) {
+              foundDepth = d;
+              hitMax = false;
+              // Measure contrast jump over the next 4 pixels into the active picture
+              let diffSum = 0;
+              let diffN = 0;
+              for (let k = 1; k <= 4 && (d + k) < axisLen - 1; k++) {
+                const probePos = isEnd ? (axisLen - 1 - (d + k)) : (d + k);
+                readRGB(yAxis, cx, probePos, nextBuf);
+                diffSum += Math.abs(nextBuf[0] - sideColor[0]) + Math.abs(nextBuf[1] - sideColor[1]) + Math.abs(nextBuf[2] - sideColor[2]);
+                diffN++;
+              }
+              contrast = diffN ? Math.min(1, (diffSum / diffN) / 180) : 0;
+              break;
             }
-            topEdges.push({
-              xIndex: x,
-              yIndex: y,
-              certainty: certainty,
-              deviates: true
-            });
-            continue;
           }
-          topEdges.push({
-            xIndex: x,
-            yIndex: y,
-            certainty
-          });
-          break;
         }
-        step = largeStep;
-        wasDeviating = false;
-        wasUncertain = false;
-        mostCertainEdge = undefined;
-        detectedEdges = 0;
-        for (let y = maxY - 1 + ignoreEdge; y >= 0; y -= step) {
-          if (wasUncertain) {
-            wasUncertain = false;
-            step = 1;
+        if (!hitMax && foundDepth <= ignoreEdge + 1) brightEdgeCount++;
+        scanResults.push({ cx, depth: foundDepth, hitMax, contrast });
+        edges.push({ xIndex: cx, yIndex: hitMax ? 0 : foundDepth, certainty: hitMax ? 0 : Math.max(0.2, contrast), deviates: hitMax });
+      }
+      if (brightEdgeCount >= Math.ceil(SCANLINES * 0.55)) {
+        return { pct: 0, depthPx: 0, clusterCount: 0, shallowCount: brightEdgeCount, flatRatio: 0, avgContrast: 0, edges, color: sideColor, brightEdge: true, inconclusive: false };
+      }
+      const bounded = scanResults.filter(r => !r.hitMax && r.depth >= minRawPx);
+      const anyBounded = scanResults.filter(r => !r.hitMax);
+      if (anyBounded.length === 0) {
+        return { pct: 0, depthPx: 0, clusterCount: 0, shallowCount: 0, flatRatio: 1, avgContrast: 0, edges, color: sideColor, brightEdge: false, inconclusive: true };
+      }
+      if (bounded.length < 4) {
+        return { pct: 0, depthPx: 0, clusterCount: bounded.length, shallowCount: anyBounded.length - bounded.length, flatRatio: 0, avgContrast: 0, edges, color: sideColor, brightEdge: brightEdgeCount >= 3, inconclusive: brightEdgeCount < 3 };
+      }
+      const clusterTol = Math.max(2, Math.round(axisLen * 0.008));
+      let best = null;
+      for (let i = 0; i < bounded.length; i++) {
+        const d = bounded[i].depth;
+        let clusterCount = 0;
+        let depthSum = 0;
+        let contrastSum = 0;
+        let shallowCount = 0;
+        for (let j = 0; j < anyBounded.length; j++) {
+          const other = anyBounded[j];
+          if (Math.abs(other.depth - d) <= clusterTol) {
+            clusterCount++;
+            depthSum += other.depth;
+            contrastSum += other.contrast;
+          } else if (other.depth < d - clusterTol) {
+            shallowCount++;
           }
-          getAverageLineColor(x, y, yAxis, iColor);
-          const limitNotReached = y > middleY + middleYOffset;
-          if (!limitNotReached || detectedEdges > maxCertaintyChecks) {
-            var _mostCertainEdge3;
-            if (((_mostCertainEdge3 = mostCertainEdge) === null || _mostCertainEdge3 === void 0 ? void 0 : _mostCertainEdge3.certainty) > minCertainty) {
-              bottomEdges.find(edge => x === edge.xIndex && mostCertainEdge.yIndex === edge.yIndex).deviates = false;
-            } else {
-              bottomEdges.push({
-                xIndex: x,
-                yIndex: 0,
-                certainty: 0,
-                deviates: true
-              });
-            }
-            break;
-          }
-          const isDeviating = !isColorWithinMaxDeviation(iColor, color);
-          if (limitNotReached && wasDeviating && !isDeviating) {
-            wasDeviating = false;
-            continue;
-          }
-          if (limitNotReached && wasDeviating === isDeviating) continue;
-          if (y !== maxY - 1 && step === largeStep) {
-            y = Math.min(maxY - 1, y + step);
-            step = Math.ceil(1, Math.floor(step / 2));
-            continue;
-          }
-          const certainty = getCertainty(x, y, yAxis, -1, color);
-          detectedEdges++;
-          if (limitNotReached && certainty < sureCertainty) {
-            var _mostCertainEdge4;
-            wasUncertain = true;
-            wasDeviating = true;
-            if (!(((_mostCertainEdge4 = mostCertainEdge) === null || _mostCertainEdge4 === void 0 ? void 0 : _mostCertainEdge4.certainty) >= certainty)) {
-              mostCertainEdge = {
-                yIndex: maxY - y,
-                certainty
-              };
-            }
-            bottomEdges.push({
-              xIndex: x,
-              yIndex: maxY - y,
-              certainty: certainty,
-              deviates: true
-            });
-            continue;
-          }
-          bottomEdges.push({
-            xIndex: x,
-            yIndex: maxY - y,
-            certainty
-          });
-          break;
+        }
+        // Protect wide burned-in subtitles/captions (2+ shallow scanlines) while tolerating at most 1 tiny corner logo.
+        if (shallowCount > 1) continue;
+        if (clusterCount < 5) continue;
+        const avgDepth = depthSum / clusterCount;
+        const avgContrast = contrastSum / clusterCount;
+        if (!best || clusterCount > best.clusterCount || (clusterCount === best.clusterCount && avgDepth < best.avgDepth)) {
+          best = { avgDepth, clusterCount, shallowCount, avgContrast };
         }
       }
+      if (!best) {
+        // Wide shallow element (e.g., subtitle inside bar): check if clean flat strip exists strictly BEFORE the shallowest obstacle.
+        const minObs = Math.min(...anyBounded.map(r => r.depth));
+        if (minObs >= Math.max(minRawPx, Math.round(axisLen * 0.03))) {
+          let shallowCluster = 0;
+          let contrastSum = 0;
+          for (let j = 0; j < anyBounded.length; j++) {
+            if (Math.abs(anyBounded[j].depth - minObs) <= clusterTol) {
+              shallowCluster++;
+              contrastSum += anyBounded[j].contrast;
+            }
+          }
+          if (shallowCluster >= 4) {
+            best = { avgDepth: Math.max(0, minObs - 1), clusterCount: shallowCluster, shallowCount: 0, avgContrast: contrastSum / shallowCluster, obstacleGuarded: true };
+          }
+        }
+      }
+      if (!best || best.avgContrast < 0.08) {
+        return { pct: 0, depthPx: 0, clusterCount: 0, shallowCount: 0, flatRatio: 0, avgContrast: 0, edges, color: sideColor, brightEdge: false, inconclusive: false };
+      }
+      // Verify the detected bar strip [ignoreEdge .. bestDepth - 2] is genuinely uniform dark across all scanlines
+      const checkEnd = Math.max(ignoreEdge + 1, Math.floor(best.avgDepth) - 1);
+      const stepD = Math.max(1, Math.floor((checkEnd - ignoreEdge) / 14));
+      let barPixels = 0;
+      let totalPixels = 0;
+      for (let i = 0; i < SCANLINES; i++) {
+        const cx = linesX[i];
+        for (let d = ignoreEdge; d < checkEnd; d += stepD) {
+          const pos = isEnd ? (axisLen - 1 - d) : d;
+          readRGB(yAxis, cx, pos, sampleBuf);
+          if (isPixelInBar(sampleBuf[0], sampleBuf[1], sampleBuf[2], sideColor, detectColored)) barPixels++;
+          totalPixels++;
+        }
+      }
+      const flatRatio = totalPixels ? (barPixels / totalPixels) : 1;
+      if (flatRatio < 0.88) {
+        return { pct: 0, depthPx: 0, clusterCount: best.clusterCount, shallowCount: best.shallowCount, flatRatio, avgContrast: best.avgContrast, edges, color: sideColor, brightEdge: false, inconclusive: false };
+      }
+      // Mark edges cleanly for stats compatibility
+      for (let i = 0; i < edges.length; i++) {
+        edges[i].deviates = scanResults[i].hitMax || Math.abs(scanResults[i].depth - best.avgDepth) > clusterTol;
+      }
+      const seamOffset = (best.shallowCount === 0 && !best.obstacleGuarded) ? 0.25 : 0;
+      let pct = Math.round(((best.avgDepth / axisLen) * 100 + seamOffset + (offsetPercentage || 0)) * 100) / 100;
+      pct = Math.max(0, Math.min(40, pct));
       return {
-        topEdges,
-        bottomEdges
+        pct,
+        depthPx: Math.round(best.avgDepth),
+        clusterCount: best.clusterCount,
+        shallowCount: best.shallowCount,
+        flatRatio,
+        avgContrast: best.avgContrast,
+        edges,
+        color: sideColor,
+        brightEdge: false,
+        inconclusive: false
       };
-    }
-    const reduceAverageSize = edges => edges.reduce((sum, edge) => sum + edge.yIndex, 0) / edges.length;
-    function getExceedsDeviationLimit(edges, topEdges, bottomEdges, linesX, maxSize, scale, allowedAnomaliesPercentage, allowedUnevenBarsPercentage) {
-      if (!topEdges.filter(e => !e.deviates).length || !bottomEdges.filter(e => !e.deviates).length) {
-        return true;
-      }
-      const threshold = linesX.length * 2 * (1 - (allowedAnomaliesPercentage - 10) / 100);
-      if (edges.filter(e => !e.deviates).length < threshold) {
-        return true;
-      }
-      while (edges.filter(e => !e.deviates).length > threshold) {
-        const nonDeviatingEdges = edges.filter(e => !e.deviates);
-        const averageSize = reduceAverageSize(nonDeviatingEdges);
-        nonDeviatingEdges.sort(sortSizes(averageSize));
-        const deviatingEdge = nonDeviatingEdges[nonDeviatingEdges.length - 1];
-        deviatingEdge.deviates = true;
-      }
-      const maxAllowedSideDeviation = maxSize * (0.008 * scale);
-      const nonDeviatingTopEdges = topEdges.filter(e => !e.deviates && !e.deviatesTop);
-      const maxTopDeviation = Math.abs(Math.max(...nonDeviatingTopEdges.map(e => e.yIndex)) - Math.min(...nonDeviatingTopEdges.map(e => e.yIndex)));
-      const topDeviationIsAllowed = maxTopDeviation <= maxAllowedSideDeviation;
-      const nonDeviatingBottomEdges = bottomEdges.filter(e => !e.deviates && !e.deviatesBottom);
-      const maxBottomDeviation = Math.abs(Math.max(...nonDeviatingBottomEdges.map(e => e.yIndex)) - Math.min(...nonDeviatingBottomEdges.map(e => e.yIndex)));
-      const bottomDeviationIsAllowed = maxBottomDeviation <= maxAllowedSideDeviation;
-      if (!topDeviationIsAllowed && !bottomDeviationIsAllowed) {
-        return true;
-      }
-      const averageTopSize = reduceAverageSize(nonDeviatingTopEdges);
-      const averageBottomSize = reduceAverageSize(nonDeviatingBottomEdges);
-      const sidesDeviation = Math.abs(averageTopSize - averageBottomSize);
-      const maxAllowedDeviation = maxSize * (0.003 + allowedUnevenBarsPercentage * 0.0008) * scale;
-      const minMaxAllowedSideDeviation = maxSize * (0.016 * scale);
-      let maxAllowedSidesDeviation = maxAllowedDeviation;
-      if (averageTopSize < minMaxAllowedSideDeviation || averageBottomSize < minMaxAllowedSideDeviation) {
-        maxAllowedSidesDeviation = 2;
-      }
-      if (sidesDeviation > maxAllowedSidesDeviation) {
-        return true;
-      }
-      const nonDeviatingEdgeSizes = edges.filter(e => !e.deviates).map(e => e.yIndex);
-      const maxDeviation = Math.abs(Math.max(...nonDeviatingEdgeSizes) - Math.min(...nonDeviatingEdgeSizes));
-      if (maxDeviation > maxAllowedDeviation) {
-        return true;
-      }
-    }
-    function getPercentage(exceedsDeviationLimit, maxSize, scale, edges, linesX, currentPercentage = 0, offsetPercentage = 0) {
-      const lowerSizeThreshold = maxSize * ((currentPercentage - 2) / 100);
-      const baseOffsetPercentage = 0.3 * ((1 + scale) / 2);
-      let certainty = 1;
-      let size;
-      if (exceedsDeviationLimit) {
-        const uncertainLowerEdges = edges.filter(e => e.certainty > 0.02 && e.yIndex < lowerSizeThreshold);
-        if (uncertainLowerEdges.length / (linesX.length * 2) < 0.3) return {
-          percentage: undefined,
-          certainty: 0
-        };
-        certainty = uncertainLowerEdges.reduce((sum, edge) => sum + edge.certainty, 0) / uncertainLowerEdges.length;
-        const lowestEdge = uncertainLowerEdges.sort((a, b) => a.yIndex - b.yIndex)[0];
-        size = lowestEdge.yIndex;
-        if (size < 0) {
-          size = 0;
-        } else {
-          size += maxSize * (offsetPercentage / 100);
-        }
-      } else {
-        const sortedEdges = edges.filter(e => !e.deviates).sort(sortSizes(0));
-        size = reduceAverageSize(sortedEdges.slice(Math.floor(sortedEdges.length / 2)));
-        if (size < 0) {
-          size = 0;
-        } else {
-          size += maxSize * ((baseOffsetPercentage + offsetPercentage) / 100);
-        }
-      }
-      let percentage = Math.round(size / maxSize * 10000) / 100;
-      const maxPercentage = 38;
-      percentage = Math.min(percentage, maxPercentage);
-      return {
-        percentage,
-        certainty
-      };
-    }
-    const workerDetectBarSizeLinesX = new Uint16Array(5);
-    try {
-      const workerDetectBarSize = (id, xLength, yAxis, scale, detectColored, offsetPercentage, currentPercentage, allowedAnomaliesPercentage, allowedUnevenBarsPercentage, xOffset) => {
-        const partSizeBorderMultiplier = -0.1 + 2 * allowedAnomaliesPercentage / 100;
-        const partSize = Math.floor(canvas[xLength] / (scanlinesAmount + partSizeBorderMultiplier * 2));
-        const linesX = workerDetectBarSizeLinesX;
-        let linesXIndex = 0;
-        for (let index = Math.ceil(partSize / 2) - 1 + partSizeBorderMultiplier * partSize; index < canvas[xLength] - partSizeBorderMultiplier * partSize; index += partSize) {
-          const xIndex = Math.min(Math.max(0, Math.round(index + Math.round(xOffset * (partSize / 2) - partSize / 4))), canvas[xLength] - 1);
-          linesX[linesXIndex] = xIndex;
-          linesXIndex++;
-        }
-        const color = getAverageColor(yAxis);
-        if (!detectColored && (color[0] + color[1] + color[2] > 16 || Math.abs(color[0] - color[1]) > 3 || Math.abs(color[1] - color[2]) > 3 || Math.abs(color[2] - color[0]) > 3)) {
-          const topEdges = linesX.map(x => ({
-            xIndex: x,
-            yIndex: 0,
-            deviates: true
-          }));
-          const bottomEdges = linesX.map(x => ({
-            xIndex: x,
-            yIndex: 0,
-            deviates: true
-          }));
-          return {
-            percentage: 0,
-            topEdges,
-            bottomEdges,
-            color
-          };
-        }
-        const {
-          topEdges,
-          bottomEdges
-        } = detectEdges(linesX, color, yAxis);
-        const maxSize = image[yAxis];
-        const edges = topEdges.concat(bottomEdges);
-        const exceedsDeviationLimit = getExceedsDeviationLimit(edges, topEdges, bottomEdges, linesX, maxSize, scale, allowedAnomaliesPercentage, allowedUnevenBarsPercentage);
-        const {
-          percentage,
-          certainty
-        } = getPercentage(exceedsDeviationLimit, maxSize, scale, edges, linesX, currentPercentage, offsetPercentage);
-        if (!(percentage < currentPercentage) && edges.filter(edge => !edge.deviates).length / (linesX.length * 2) < (100 - allowedAnomaliesPercentage) / 100) {
-          for (const edge of topEdges) {
-            edge.deviates = true;
-          }
-          for (const edge of bottomEdges) {
-            edge.deviates = true;
-          }
-          return {
-            topEdges,
-            bottomEdges,
-            color
-          };
-        }
+    };
+    const combineAxisSides = (startSide, endSide) => {
+      if (startSide.inconclusive && endSide.inconclusive) {
         return {
-          percentage,
-          certainty,
-          topEdges,
-          bottomEdges,
-          color
+          percentage: undefined,
+          topPercentage: undefined,
+          bottomPercentage: undefined,
+          certainty: 0,
+          topEdges: startSide.edges,
+          bottomEdges: endSide.edges,
+          color: startSide.color
         };
+      }
+      let sPct = startSide.pct || 0;
+      let ePct = endSide.pct || 0;
+      // Single-sided or strongly asymmetric bar requires stricter edge support + flatness to reject dark floors/skies
+      const asymmetric = Math.abs(sPct - ePct) > 1.5;
+      if (asymmetric) {
+        if (sPct > 0 && (sPct < 3.5 || startSide.clusterCount < 5 || startSide.flatRatio < 0.92 || (ePct === 0 && (startSide.clusterCount < 7 || startSide.shallowCount > 0 || startSide.flatRatio < 0.95)))) {
+          sPct = 0;
+        }
+        if (ePct > 0 && (ePct < 3.5 || endSide.clusterCount < 5 || endSide.flatRatio < 0.92 || (sPct === 0 && (endSide.clusterCount < 7 || endSide.shallowCount > 0 || endSide.flatRatio < 0.95)))) {
+          ePct = 0;
+        }
+      }
+      if (sPct + ePct >= 78) {
+        return {
+          percentage: undefined,
+          topPercentage: undefined,
+          bottomPercentage: undefined,
+          certainty: 0,
+          topEdges: startSide.edges,
+          bottomEdges: endSide.edges,
+          color: startSide.color
+        };
+      }
+      if (sPct > 0 && ePct > 0 && Math.abs(sPct - ePct) <= 1.2) {
+        const sym = Math.round(((sPct + ePct) / 2) * 100) / 100;
+        sPct = sym;
+        ePct = sym;
+      }
+      const avgPct = Math.round(((sPct + ePct) / 2) * 100) / 100;
+      const color = sPct >= ePct ? startSide.color : endSide.color;
+      return {
+        percentage: avgPct,
+        topPercentage: sPct,
+        bottomPercentage: ePct,
+        certainty: (sPct > 0 || ePct > 0) ? 1 : (startSide.brightEdge || endSide.brightEdge ? 1 : 0.8),
+        topEdges: startSide.edges,
+        bottomEdges: endSide.edges,
+        color
       };
+    };
+    const hasVisibleInterior = (leftPx, rightPx, topPx, bottomPx, barColor, detectColored) => {
+      const x0 = Math.max(0, leftPx);
+      const x1 = Math.min(image.width - 1, image.width - 1 - rightPx);
+      const y0 = Math.max(0, topPx);
+      const y1 = Math.min(image.height - 1, image.height - 1 - bottomPx);
+      if (x1 - x0 < 6 || y1 - y0 < 6) return false;
+      let lit = 0;
+      for (let gy = 1; gy <= 5; gy++) {
+        const py = Math.round(y0 + ((y1 - y0) * gy) / 6);
+        for (let gx = 1; gx <= 5; gx++) {
+          const px = Math.round(x0 + ((x1 - x0) * gx) / 6);
+          image.getPixel(px, py, sampleBuf, 0, false);
+          if (!isPixelInBar(sampleBuf[0], sampleBuf[1], sampleBuf[2], barColor, detectColored)) lit++;
+        }
+      }
+      return lit >= 3;
+    };
+    try {
       const createContext = () => {
         ctx = canvas.getContext('2d', {
           desynchronized: true,
@@ -2154,35 +2015,90 @@ Click on the questionmark for more and updated information about these artifacts
             detectHorizontal,
             detectVertical,
             offsetPercentage,
-            currentHorizontalPercentage,
-            currentVerticalPercentage,
-            allowedAnomaliesPercentage,
-            allowedUnevenBarsPercentage,
             canvasInfo,
             xOffsetSize
           } = e.data;
           if (canvasInfo.bitmap) {
             const bitmap = canvasInfo.bitmap;
             if (!canvas) {
-              createCanvas(512, 512);
-            } else if (canvas.width !== 512 || canvas.height !== 512) {
-              canvas.width = 512;
-              canvas.height = 512;
+              createCanvas(DETECT_SIZE, DETECT_SIZE);
+            } else if (canvas.width !== DETECT_SIZE || canvas.height !== DETECT_SIZE) {
+              canvas.width = DETECT_SIZE;
+              canvas.height = DETECT_SIZE;
               createContext();
             }
-            ctx.drawImage(bitmap, 0, 0, 512, 512);
+            ctx.drawImage(bitmap, 0, 0, DETECT_SIZE, DETECT_SIZE);
             bitmap.close();
           } else {
             canvas = canvasInfo.canvas;
             canvasIsCreatedInWorker = false;
             ctx = canvasInfo.ctx;
           }
-          image.imageData = ctx.getImageData(0, 0, 512, 512);
+          const imgW = canvas.width || DETECT_SIZE;
+          const imgH = canvas.height || DETECT_SIZE;
+          image.imageData = ctx.getImageData(0, 0, imgW, imgH);
           globalXOffsetIndex++;
           if (globalXOffsetIndex >= xOffsetSize) globalXOffsetIndex = 0;
-          const xOffset = xOffsetSize === 1 ? 0.5 : xOffsetSize === 2 ? globalXOffsetIndex : (Math.ceil(globalXOffsetIndex / 2) + globalXOffsetIndex % 2) / (xOffsetSize - 1);
-          let horizontalBarSizeInfo = detectHorizontal ? await workerDetectBarSize(id, 'width', 'height', 1, detectColored, offsetPercentage, currentHorizontalPercentage, allowedAnomaliesPercentage, allowedUnevenBarsPercentage, xOffset) : undefined;
-          let verticalBarSizeInfo = detectVertical ? await workerDetectBarSize(id, 'height', 'width', 1, detectColored, offsetPercentage, currentVerticalPercentage, allowedAnomaliesPercentage, allowedUnevenBarsPercentage, xOffset) : undefined;
+          const xOffset = xOffsetSize <= 1 ? 0.5 : xOffsetSize === 2 ? globalXOffsetIndex : (Math.ceil(globalXOffsetIndex / 2) + globalXOffsetIndex % 2) / (xOffsetSize - 1);
+
+          // Pass 1: estimate orthogonal bars within the central [30%..70%] interior band so windowboxed 2-axis videos work cleanly
+          let estLeftPx = 0, estRightPx = 0, estTopPx = 0, estBottomPx = 0;
+          if (detectHorizontal && detectVertical) {
+            const midY0 = Math.floor(imgH * 0.3);
+            const midY1 = Math.ceil(imgH * 0.7);
+            const midX0 = Math.floor(imgW * 0.3);
+            const midX1 = Math.ceil(imgW * 0.7);
+            const pLeft = scanSide('width', false, midY0, midY1, detectColored, xOffset, 0);
+            const pRight = scanSide('width', true, midY0, midY1, detectColored, xOffset, 0);
+            const pTop = scanSide('height', false, midX0, midX1, detectColored, xOffset, 0);
+            const pBottom = scanSide('height', true, midX0, midX1, detectColored, xOffset, 0);
+            if (pLeft.pct > 0) estLeftPx = pLeft.depthPx;
+            if (pRight.pct > 0) estRightPx = pRight.depthPx;
+            if (pTop.pct > 0) estTopPx = pTop.depthPx;
+            if (pBottom.pct > 0) estBottomPx = pBottom.depthPx;
+          }
+
+          // Pass 2: full span scan strictly inside orthogonal bar bounds
+          let hTop = null, hBot = null, vLeft = null, vRight = null;
+          let horizontalBarSizeInfo;
+          let verticalBarSizeInfo;
+          if (detectHorizontal) {
+            const hx0 = estLeftPx > 0 ? Math.min(imgW - 12, estLeftPx + 4) : 0;
+            const hx1 = estRightPx > 0 ? Math.max(hx0 + 10, imgW - 1 - estRightPx - 4) : (imgW - 1);
+            hTop = scanSide('height', false, hx0, hx1, detectColored, xOffset, offsetPercentage);
+            hBot = scanSide('height', true, hx0, hx1, detectColored, xOffset, offsetPercentage);
+            horizontalBarSizeInfo = combineAxisSides(hTop, hBot);
+          }
+          if (detectVertical) {
+            const vy0 = estTopPx > 0 ? Math.min(imgH - 12, estTopPx + 4) : 0;
+            const vy1 = estBottomPx > 0 ? Math.max(vy0 + 10, imgH - 1 - estBottomPx - 4) : (imgH - 1);
+            vLeft = scanSide('width', false, vy0, vy1, detectColored, xOffset, offsetPercentage);
+            vRight = scanSide('width', true, vy0, vy1, detectColored, xOffset, offsetPercentage);
+            verticalBarSizeInfo = combineAxisSides(vLeft, vRight);
+          }
+
+          // Reject all-dark fade-to-black frames as inconclusive (never poison history with 0 or false-crop)
+          const leftPx = (verticalBarSizeInfo && verticalBarSizeInfo.topPercentage > 0 && vLeft) ? vLeft.depthPx : 0;
+          const rightPx = (verticalBarSizeInfo && verticalBarSizeInfo.bottomPercentage > 0 && vRight) ? vRight.depthPx : 0;
+          const topPx = (horizontalBarSizeInfo && horizontalBarSizeInfo.topPercentage > 0 && hTop) ? hTop.depthPx : 0;
+          const bottomPx = (horizontalBarSizeInfo && horizontalBarSizeInfo.bottomPercentage > 0 && hBot) ? hBot.depthPx : 0;
+          const refColor = (horizontalBarSizeInfo && horizontalBarSizeInfo.color) || (verticalBarSizeInfo && verticalBarSizeInfo.color) || [0, 0, 0];
+          const anyBarDetected = (horizontalBarSizeInfo && horizontalBarSizeInfo.percentage > 0) || (verticalBarSizeInfo && verticalBarSizeInfo.percentage > 0);
+          if (anyBarDetected && !hasVisibleInterior(leftPx, rightPx, topPx, bottomPx, refColor, detectColored)) {
+            if (horizontalBarSizeInfo) {
+              horizontalBarSizeInfo.percentage = undefined;
+              horizontalBarSizeInfo.topPercentage = undefined;
+              horizontalBarSizeInfo.bottomPercentage = undefined;
+              horizontalBarSizeInfo.certainty = 0;
+            }
+            if (verticalBarSizeInfo) {
+              verticalBarSizeInfo.percentage = undefined;
+              verticalBarSizeInfo.topPercentage = undefined;
+              verticalBarSizeInfo.bottomPercentage = undefined;
+              verticalBarSizeInfo.certainty = 0;
+            }
+          }
+
           if (id !== globalRunId) {
             return;
           }
@@ -2217,21 +2133,37 @@ Click on the questionmark for more and updated information about these artifacts
       this.changes = [];
       this.history = {
         horizontal: [],
-        vertical: []
+        vertical: [],
+        top: [],
+        bottom: [],
+        left: [],
+        right: []
       };
       this.current = {
         horizontal: undefined,
-        vertical: undefined
+        vertical: undefined,
+        top: undefined,
+        bottom: undefined,
+        left: undefined,
+        right: undefined
       };
       this.reset = () => {
         this.clear();
         this.history = {
           horizontal: [],
-          vertical: []
+          vertical: [],
+          top: [],
+          bottom: [],
+          left: [],
+          right: []
         };
         this.current = {
           horizontal: undefined,
-          vertical: undefined
+          vertical: undefined,
+          top: undefined,
+          bottom: undefined,
+          left: undefined,
+          right: undefined
         };
         this.changes = [];
       };
@@ -2306,7 +2238,7 @@ Click on the questionmark for more and updated information about these artifacts
         }, true);
       };
       this.maxDivergencePercentage = 0.75;
-      this.groupByPercentage = 0.5;
+      this.groupByPercentage = 0.75;
       this.idleHandler = async (runId, buffer, detectColored, offsetPercentage, detectHorizontal, currentHorizontalPercentage, detectVertical, currentVerticalPercentage, ratio, allowedToTransfer, averageHistorySize, allowedAnomaliesPercentage, allowedUnevenBarsPercentage, callback) => {
         if (this.runId !== runId) return;
         let canvasInfo;
@@ -2317,8 +2249,8 @@ Click on the questionmark for more and updated information about these artifacts
             if (!this.worker.isFallbackWorker && typeof createImageBitmap === 'function') {
               try {
                 const bitmap = await createImageBitmap(buffer, {
-                  resizeWidth: 512,
-                  resizeHeight: 512,
+                  resizeWidth: 256,
+                  resizeHeight: 256,
                   resizeQuality: 'low'
                 });
                 if (bitmap) {
@@ -2331,7 +2263,7 @@ Click on the questionmark for more and updated information about these artifacts
             if (!canvasInfo) {
               var _this$ctx;
               if (!this.canvas) {
-                this.canvas = new SafeOffscreenCanvas(512, 512);
+                this.canvas = new SafeOffscreenCanvas(256, 256);
                 this.ctx = undefined;
               }
               if (!this.ctx || (_this$ctx = this.ctx) !== null && _this$ctx !== void 0 && _this$ctx.isContextLost && this.ctx.isContextLost()) {
@@ -2391,42 +2323,79 @@ Click on the questionmark for more and updated information about these artifacts
                   horizontalBarSizeInfo = {},
                   verticalBarSizeInfo = {}
                 } = e.data;
-                const firstDetection = this.history.horizontal.length === 0 && this.history.vertical.length === 0;
-                let horizontalPercentage = this.averagePercentage(horizontalBarSizeInfo, this.current.horizontal, minPercentage, this.history.horizontal, averageHistorySize);
-                let verticalPercentage = this.averagePercentage(verticalBarSizeInfo, this.current.vertical, minPercentage, this.history.vertical, averageHistorySize);
+                const hTopIn = horizontalBarSizeInfo.topPercentage !== undefined ? { percentage: horizontalBarSizeInfo.topPercentage, certainty: horizontalBarSizeInfo.certainty, color: horizontalBarSizeInfo.color } : horizontalBarSizeInfo;
+                const hBotIn = horizontalBarSizeInfo.bottomPercentage !== undefined ? { percentage: horizontalBarSizeInfo.bottomPercentage, certainty: horizontalBarSizeInfo.certainty, color: horizontalBarSizeInfo.color } : horizontalBarSizeInfo;
+                const vLeftIn = verticalBarSizeInfo.topPercentage !== undefined ? { percentage: verticalBarSizeInfo.topPercentage, certainty: verticalBarSizeInfo.certainty, color: verticalBarSizeInfo.color } : verticalBarSizeInfo;
+                const vRightIn = verticalBarSizeInfo.bottomPercentage !== undefined ? { percentage: verticalBarSizeInfo.bottomPercentage, certainty: verticalBarSizeInfo.certainty, color: verticalBarSizeInfo.color } : verticalBarSizeInfo;
+
+                let topPct = detectHorizontal ? this.averagePercentage(hTopIn, this.current.top, minPercentage, this.history.top, averageHistorySize) : undefined;
+                let bottomPct = detectHorizontal ? this.averagePercentage(hBotIn, this.current.bottom, minPercentage, this.history.bottom, averageHistorySize) : undefined;
+                let leftPct = detectVertical ? this.averagePercentage(vLeftIn, this.current.left, minPercentage, this.history.left, averageHistorySize) : undefined;
+                let rightPct = detectVertical ? this.averagePercentage(vRightIn, this.current.right, minPercentage, this.history.right, averageHistorySize) : undefined;
+
+                let horizontalPercentage = detectHorizontal ? this.averagePercentage(horizontalBarSizeInfo, this.current.horizontal, minPercentage, this.history.horizontal, averageHistorySize) : undefined;
+                let verticalPercentage = detectVertical ? this.averagePercentage(verticalBarSizeInfo, this.current.vertical, minPercentage, this.history.vertical, averageHistorySize) : undefined;
+
+                if (topPct !== undefined && bottomPct !== undefined) {
+                  horizontalPercentage = Math.round(((topPct + bottomPct) / 2) * 100) / 100;
+                } else if (topPct !== undefined || bottomPct !== undefined) {
+                  topPct = topPct !== undefined ? topPct : (this.current.top ? this.current.top.percentage : 0);
+                  bottomPct = bottomPct !== undefined ? bottomPct : (this.current.bottom ? this.current.bottom.percentage : 0);
+                  horizontalPercentage = Math.round(((topPct + bottomPct) / 2) * 100) / 100;
+                }
+                if (leftPct !== undefined && rightPct !== undefined) {
+                  verticalPercentage = Math.round(((leftPct + rightPct) / 2) * 100) / 100;
+                } else if (leftPct !== undefined || rightPct !== undefined) {
+                  leftPct = leftPct !== undefined ? leftPct : (this.current.left ? this.current.left.percentage : 0);
+                  rightPct = rightPct !== undefined ? rightPct : (this.current.right ? this.current.right.percentage : 0);
+                  verticalPercentage = Math.round(((leftPct + rightPct) / 2) * 100) / 100;
+                }
+
                 let barsFound = horizontalPercentage !== undefined || verticalPercentage !== undefined;
                 await this.ambientlight.stats.updateBarDetectionResult(barsFound, horizontalBarSizeInfo, verticalBarSizeInfo, horizontalPercentage ?? currentHorizontalPercentage ?? 0, verticalPercentage ?? currentVerticalPercentage ?? 0);
                 if (e.data.id !== this.runId) {
                   resolve();
                   return;
                 }
-                if (firstDetection) {
-                  if (horizontalPercentage === undefined) horizontalPercentage = 0;
-                  if (verticalPercentage === undefined) verticalPercentage = 0;
-                  barsFound = true;
-                }
-                const barsChanged = barsFound && horizontalPercentage !== undefined && horizontalPercentage !== currentHorizontalPercentage || verticalPercentage !== undefined && verticalPercentage !== currentVerticalPercentage;
-                const detectedLargeChange = horizontalBarSizeInfo.percentage > minPercentage && Math.abs(horizontalBarSizeInfo.percentage - (currentHorizontalPercentage || 0)) > 0.5 || verticalBarSizeInfo.percentage > minPercentage && Math.abs(verticalBarSizeInfo.percentage - (currentVerticalPercentage || 0)) > 0.5;
+                const prevTop = this.current.top ? this.current.top.percentage : 0;
+                const prevBottom = this.current.bottom ? this.current.bottom.percentage : 0;
+                const prevLeft = this.current.left ? this.current.left.percentage : 0;
+                const prevRight = this.current.right ? this.current.right.percentage : 0;
+                const hChanged = detectHorizontal && horizontalPercentage !== undefined && (
+                  horizontalPercentage !== currentHorizontalPercentage ||
+                  (topPct !== undefined && topPct !== prevTop) ||
+                  (bottomPct !== undefined && bottomPct !== prevBottom)
+                );
+                const vChanged = detectVertical && verticalPercentage !== undefined && (
+                  verticalPercentage !== currentVerticalPercentage ||
+                  (leftPct !== undefined && leftPct !== prevLeft) ||
+                  (rightPct !== undefined && rightPct !== prevRight)
+                );
+                const barsChanged = barsFound && (hChanged || vChanged);
+                const detectedLargeChange = (horizontalBarSizeInfo.percentage > minPercentage && Math.abs(horizontalBarSizeInfo.percentage - (currentHorizontalPercentage || 0)) > 0.5) || (verticalBarSizeInfo.percentage > minPercentage && Math.abs(verticalBarSizeInfo.percentage - (currentVerticalPercentage || 0)) > 0.5);
                 if (barsChanged || detectedLargeChange) {
                   const now = performance.now();
-                  if (barsChanged || this.changes[this.changes.length - 1] < now - 3000) {
+                  if (barsChanged || !this.changes.length || this.changes[this.changes.length - 1] < now - 3000) {
                     this.changes.push(now);
                   }
                 }
                 if (horizontalPercentage !== undefined) {
-                  this.current.horizontal = {
-                    percentage: horizontalPercentage,
-                    color: horizontalBarSizeInfo.color
-                  };
+                  this.current.horizontal = { percentage: horizontalPercentage, color: horizontalBarSizeInfo.color };
                 }
+                if (topPct !== undefined) this.current.top = { percentage: topPct, color: horizontalBarSizeInfo.color };
+                if (bottomPct !== undefined) this.current.bottom = { percentage: bottomPct, color: horizontalBarSizeInfo.color };
                 if (verticalPercentage !== undefined) {
-                  this.current.vertical = {
-                    percentage: verticalPercentage,
-                    color: verticalBarSizeInfo.color
-                  };
+                  this.current.vertical = { percentage: verticalPercentage, color: verticalBarSizeInfo.color };
                 }
+                if (leftPct !== undefined) this.current.left = { percentage: leftPct, color: verticalBarSizeInfo.color };
+                if (rightPct !== undefined) this.current.right = { percentage: rightPct, color: verticalBarSizeInfo.color };
                 if (barsChanged) {
-                  callback(horizontalPercentage, verticalPercentage);
+                  callback(horizontalPercentage, verticalPercentage, {
+                    top: topPct,
+                    bottom: bottomPct,
+                    left: leftPct,
+                    right: rightPct
+                  });
                 }
                 resolve();
               } catch (ex) {
@@ -2459,14 +2428,11 @@ Click on the questionmark for more and updated information about these artifacts
           } else if (!this.changes.length) {
             this.changes.push(now - 3001);
           }
-          let minThrottle;
+          const warmingUp = (detectHorizontal && this.history.top.length < 2) || (detectVertical && this.history.left.length < 2);
           const lastChange = this.changes[this.changes.length - 1];
-          if (this.changes.length >= 5) {
-            minThrottle = lastChange + 60000 < now ? 1000 : lastChange + 8000 < now ? 500 : 0;
-          } else {
-            minThrottle = lastChange + 15000 < now ? 1000 : lastChange + 3000 < now ? 500 : 0;
-          }
-          const throttle = Math.max(minThrottle, 1500, Math.min(5000, Math.pow(duration, 1.2) - 250));
+          const recentChange = (now - lastChange) < 3000;
+          const baseThrottle = (warmingUp || recentChange) ? 400 : 1500;
+          const throttle = Math.max(baseThrottle, Math.min(4000, Math.pow(duration, 1.2) - 250));
           this.ambientlight.stats.updateBarDetectionInfo(throttle, this.changes[this.changes.length - 1]);
           this.timeout = setTimeout(wrapErrorHandler(() => {
             this.timeout = undefined;
@@ -2544,51 +2510,47 @@ Click on the questionmark for more and updated information about these artifacts
           colorChanged = true;
         }
       }
+      // Inconclusive / fade-to-black frame: never poison history with 0 or flash bars back on.
       if (percentage === undefined) {
-        if (!history.length && !currentPercentage) {
-          history.push({
-            percentage: 0,
-            certainty: 1,
-            color
-          });
-          return 0;
-        }
         return;
       }
-      const detectedPercentage = percentage;
+      const detectedPercentage = percentage < minPercentage ? 0 : percentage;
       let percentages = [...history, {
         percentage: detectedPercentage,
         certainty,
         color
       }];
       for (const info of percentages) {
-        info.occurrences = percentages.filter(({
-          percentage
-        }) => Math.abs(info.percentage - percentage) < this.groupByPercentage).length;
+        info.occurrences = percentages.filter(item => Math.abs(info.percentage - item.percentage) <= this.groupByPercentage).length;
       }
-      if (!colorChanged) {
-        var _percentages$find, _percentages$find2;
-        percentage = parseFloat(percentages.reduce((a, b) => a.occurrences > b.occurrences ? a : b).percentage);
-        if (percentage !== currentPercentage && (((_percentages$find = percentages.find(info => info.percentage === percentage)) === null || _percentages$find === void 0 ? void 0 : _percentages$find.occurrences) ?? 0) - (((_percentages$find2 = percentages.find(info => info.percentage === currentPercentage)) === null || _percentages$find2 === void 0 ? void 0 : _percentages$find2.occurrences) ?? 0) <= history.length / 2) {
-          percentage = currentPercentage;
+      const bestEntry = percentages.reduce((a, b) => (b.occurrences > a.occurrences || (b.occurrences === a.occurrences && b.percentage < a.percentage)) ? b : a);
+      let chosen = parseFloat(bestEntry.percentage);
+      if (!colorChanged && currentPercentage !== undefined) {
+        const curOcc = (percentages.find(info => Math.abs(info.percentage - currentPercentage) <= this.groupByPercentage) || {}).occurrences || 0;
+        const bestOcc = bestEntry.occurrences || 0;
+        // Fast acquisition from 0 -> bar (2 matching frames) & fast un-crop from bar -> 0 (2 bright frames)
+        const fastAcquire = currentPercentage === 0 && chosen > 0 && bestOcc >= Math.min(2, averageHistorySize);
+        const fastUncrop = currentPercentage > 0 && chosen === 0 && detectedPercentage === 0 && bestOcc >= Math.min(2, averageHistorySize);
+        if (!fastAcquire && !fastUncrop && chosen !== currentPercentage && (bestOcc - curOcc) <= history.length / 2) {
+          chosen = currentPercentage;
         }
       }
-      let adjustment = percentage - currentPercentage;
-      if (percentage !== 0 && adjustment > -this.maxDivergencePercentage && adjustment <= 0) {
-        adjustment = detectedPercentage - currentPercentage;
+      if (currentPercentage !== undefined && chosen !== 0) {
+        const adjustment = chosen - currentPercentage;
         if (adjustment > -this.maxDivergencePercentage && adjustment <= 0) {
-          percentage = undefined;
-        } else {
-          percentage = currentPercentage;
+          const detAdj = detectedPercentage - currentPercentage;
+          if (detAdj > -this.maxDivergencePercentage && detAdj <= 0) {
+            chosen = undefined;
+          } else {
+            chosen = currentPercentage;
+          }
         }
       }
-      const ignoreRecurringLowerPercentage = percentage < currentPercentage && history.some(({
-        percentage: previousPercentage
-      }) => Math.abs(currentPercentage - previousPercentage) < this.groupByPercentage) && history.some(({
-        percentage: previousPercentage
-      }) => Math.abs(detectedPercentage - previousPercentage) < this.groupByPercentage);
-      if (colorChanged && percentage !== currentPercentage) {
-        const nonDeviatingPercentages = history.filter(info => Math.abs(info.percentage - percentage) < this.maxDivergencePercentage);
+      const ignoreRecurringLowerPercentage = currentPercentage !== undefined && chosen !== undefined && chosen > 0 && chosen < currentPercentage &&
+        history.some(h => Math.abs(currentPercentage - h.percentage) <= this.groupByPercentage) &&
+        history.some(h => Math.abs(detectedPercentage - h.percentage) <= this.groupByPercentage);
+      if (colorChanged && chosen !== currentPercentage) {
+        const nonDeviatingPercentages = history.filter(info => Math.abs(info.percentage - chosen) < this.maxDivergencePercentage);
         if (history.length !== nonDeviatingPercentages.length) {
           history.splice(0, history.length);
           history.push(...nonDeviatingPercentages);
@@ -2600,10 +2562,10 @@ Click on the questionmark for more and updated information about these artifacts
         color
       });
       if (history.length > averageHistorySize) history.splice(0, history.length - averageHistorySize);
-      if (ignoreRecurringLowerPercentage) {
+      if (ignoreRecurringLowerPercentage || chosen === undefined) {
         return;
       }
-      return percentage < minPercentage ? 0 : percentage;
+      return chosen < minPercentage ? 0 : chosen;
     }
   }
 
@@ -4297,10 +4259,15 @@ But if this happens frequently, here are some possible causes:
     draw(src) {
       const srcWidth = src.videoWidth || src.width;
       const srcHeight = src.videoHeight || src.height;
-      const croppedSrcX = srcWidth * this.crop[0];
-      const croppedSrcY = srcHeight * this.crop[1];
-      const croppedSrcWidth = srcWidth * (1 - this.crop[0] * 2);
-      const croppedSrcHeight = srcHeight * (1 - this.crop[1] * 2);
+      const crop = this.crop || [0, 0, 0, 0];
+      const cL = crop[0] || 0;
+      const cT = crop[1] || 0;
+      const cR = crop.length >= 4 ? (crop[2] || 0) : cL;
+      const cB = crop.length >= 4 ? (crop[3] || 0) : cT;
+      const croppedSrcX = srcWidth * cL;
+      const croppedSrcY = srcHeight * cT;
+      const croppedSrcWidth = srcWidth * Math.max(0.1, 1 - cL - cR);
+      const croppedSrcHeight = srcHeight * Math.max(0.1, 1 - cT - cB);
       for (const projector of this.projectors) {
         projector.ctx.drawImage(src, croppedSrcX, croppedSrcY, croppedSrcWidth, croppedSrcHeight, 0, 0, projector.elem.width, projector.elem.height);
       }
@@ -5104,12 +5071,19 @@ But if this happens frequently, here are some possible causes:
         this.fScaleStep = this.scaleStep;
         this.ctx.uniform2fv(this.fScaleStepLoc, new Float32Array([(_this$fScaleStep3 = this.fScaleStep) === null || _this$fScaleStep3 === void 0 ? void 0 : _this$fScaleStep3.x, (_this$fScaleStep4 = this.fScaleStep) === null || _this$fScaleStep4 === void 0 ? void 0 : _this$fScaleStep4.y]));
       }
-      const crop = this.crop || [0, 0];
-      const fCropChanged = crop.some((crop, i) => crop !== (this.fCrop || [undefined, undefined])[i]);
+      const crop = this.crop || [0, 0, 0, 0];
+      const cL = crop[0] || 0;
+      const cT = crop[1] || 0;
+      const cR = crop.length >= 4 ? (crop[2] || 0) : cL;
+      const cB = crop.length >= 4 ? (crop[3] || 0) : cT;
+      const nextCrop = [cL, cT, cR, cB];
+      const fCropChanged = nextCrop.some((val, i) => val !== (this.fCrop || [undefined, undefined, undefined, undefined])[i]);
       if (fCropChanged) {
-        this.fCrop = crop;
-        const fCropScaleUV = crop.map(crop => 1 / (1 - crop * 2));
-        const fCropOffsetUV = fCropScaleUV.map((cropScale, i) => crop[i] + 1 / (cropScale * 2));
+        this.fCrop = nextCrop;
+        const wFrac = Math.max(0.1, 1 - cL - cR);
+        const hFrac = Math.max(0.1, 1 - cT - cB);
+        const fCropScaleUV = [1 / wFrac, 1 / hFrac];
+        const fCropOffsetUV = [cL + wFrac / 2, cT + hFrac / 2];
         this.ctx.uniform2fv(this.fCropOffsetUVLoc, new Float32Array(fCropOffsetUV));
         this.ctx.uniform2fv(this.fCropScaleUVLoc, new Float32Array(fCropScaleUV));
       }
@@ -7290,7 +7264,13 @@ Ambient rendering budget: ${ambientlightBudgetRange[0]}ms to ${ambientlightBudge
         const realFramerateLimit = this.settings.webGL && frameFading > frameFadingMax ? Math.max(1, frameFadingMax / (frameFading || 1) * this.settings.framerateLimit) : this.settings.framerateLimit;
         return realFramerateLimit;
       };
-      this.limitFramerateToSaveEnergy = () => this.averageVideoFramesDifference < this.averageVideoFramesDifference1SecondThreshold && !this.sizesInvalidated && !this.buffersCleared && this.videoElem.currentTime > 5 && this.videoElem.currentTime < this.videoElem.duration - 5;
+      this.isBarDetectionWarmingUp = () => {
+        if (!this.barDetection || this.isVrVideo) return false;
+        const hWarm = this.settings.detectHorizontalBarSizeEnabled && this.barDetection.history.top.length < 2;
+        const vWarm = this.settings.detectVerticalBarSizeEnabled && this.barDetection.history.left.length < 2;
+        return hWarm || vWarm;
+      };
+      this.limitFramerateToSaveEnergy = () => this.averageVideoFramesDifference < this.averageVideoFramesDifference1SecondThreshold && !this.sizesInvalidated && !this.buffersCleared && !this.isBarDetectionWarmingUp() && this.videoElem.currentTime > 5 && this.videoElem.currentTime < this.videoElem.duration - 5;
       this.canScheduleNextFrame = () => !(!this.settings.enabled || !this.isOnVideoPage || this.isVrVideo && this.vrVideoElem || this.pendingStart || this.videoElem.ended || this.videoElem.paused || this.videoElem.seeking || this.isVideoHiddenOnWatchPage || this.isAmbientlightHiddenOnWatchPage);
       this.optionalFrame = async (fromSettingChange = false) => {
         if (!this.initializedTime || !this.settings.enabled || !this.isOnVideoPage || this.pendingStart || this.resizeAfterFrames > 0 || this.videoElem.ended || !this.videoElem.paused && !this.videoElem.seeking && this.scheduledNextFrame || !fromSettingChange && this.isVrVideo && this.vrVideoElem) return;
@@ -7403,9 +7383,10 @@ Ambient rendering budget: ${ambientlightBudgetRange[0]}ms to ${ambientlightBudge
           }
         }
       };
-      this.scheduleBarSizeDetectionCallback = async (horizontalPercentage, verticalPercentage) => {
-        const horizontalBarChanged = this.settings.detectHorizontalBarSizeEnabled && horizontalPercentage !== undefined && this.setHorizontalBars(horizontalPercentage);
-        const verticalBarChanged = this.settings.detectVerticalBarSizeEnabled && verticalPercentage !== undefined && this.setVerticalBars(verticalPercentage);
+      this.scheduleBarSizeDetectionCallback = async (horizontalPercentage, verticalPercentage, barSides) => {
+        const sides = barSides || {};
+        const horizontalBarChanged = this.settings.detectHorizontalBarSizeEnabled && horizontalPercentage !== undefined && this.setHorizontalBars(horizontalPercentage, sides.top, sides.bottom);
+        const verticalBarChanged = this.settings.detectVerticalBarSizeEnabled && verticalPercentage !== undefined && this.setVerticalBars(verticalPercentage, sides.left, sides.right);
         if (!horizontalBarChanged && !verticalBarChanged) return;
         this.sizesChanged = true;
         await this.optionalFrame();
@@ -8198,14 +8179,48 @@ Video ready state: ${readyStateToString(videoElem === null || videoElem === void
       this.prevVideoPath = videoPath;
       await this.settings.updateHdr();
     }
-    setHorizontalBars(percentage) {
-      if (this.settings.horizontalBarsClipPercentage === percentage) return false;
-      this.settings.set('horizontalBarsClipPercentage', percentage, true);
+    getBarClipSides() {
+      const hSym = this.isVrVideo ? 0 : (Number(this.settings.horizontalBarsClipPercentage) || 0);
+      const vSym = this.isVrVideo ? 0 : (Number(this.settings.verticalBarsClipPercentage) || 0);
+      if (!this.barClipSides) {
+        this.barClipSides = { top: hSym, bottom: hSym, left: vSym, right: vSym };
+      }
+      const hAvg = (this.barClipSides.top + this.barClipSides.bottom) / 2;
+      const vAvg = (this.barClipSides.left + this.barClipSides.right) / 2;
+      if (hSym === 0 || Math.abs(hAvg - hSym) > 0.05) {
+        this.barClipSides.top = hSym;
+        this.barClipSides.bottom = hSym;
+      }
+      if (vSym === 0 || Math.abs(vAvg - vSym) > 0.05) {
+        this.barClipSides.left = vSym;
+        this.barClipSides.right = vSym;
+      }
+      return this.barClipSides;
+    }
+    setHorizontalBars(percentage, topPct, bottomPct) {
+      const sides = this.getBarClipSides();
+      const nextTop = (typeof topPct === 'number' && isFinite(topPct)) ? topPct : percentage;
+      const nextBottom = (typeof bottomPct === 'number' && isFinite(bottomPct)) ? bottomPct : percentage;
+      const nextAvg = Math.round(((nextTop + nextBottom) / 2) * 100) / 100;
+      const unchanged = this.settings.horizontalBarsClipPercentage === nextAvg &&
+        sides.top === nextTop && sides.bottom === nextBottom;
+      if (unchanged) return false;
+      this.barClipSides.top = nextTop;
+      this.barClipSides.bottom = nextBottom;
+      this.settings.set('horizontalBarsClipPercentage', nextAvg, true);
       return true;
     }
-    setVerticalBars(percentage) {
-      if (this.settings.verticalBarsClipPercentage === percentage) return false;
-      this.settings.set('verticalBarsClipPercentage', percentage, true);
+    setVerticalBars(percentage, leftPct, rightPct) {
+      const sides = this.getBarClipSides();
+      const nextLeft = (typeof leftPct === 'number' && isFinite(leftPct)) ? leftPct : percentage;
+      const nextRight = (typeof rightPct === 'number' && isFinite(rightPct)) ? rightPct : percentage;
+      const nextAvg = Math.round(((nextLeft + nextRight) / 2) * 100) / 100;
+      const unchanged = this.settings.verticalBarsClipPercentage === nextAvg &&
+        sides.left === nextLeft && sides.right === nextRight;
+      if (unchanged) return false;
+      this.barClipSides.left = nextLeft;
+      this.barClipSides.right = nextRight;
+      this.settings.set('verticalBarsClipPercentage', nextAvg, true);
       return true;
     }
     recreateProjectors() {
@@ -8291,24 +8306,36 @@ Video ready state: ${readyStateToString(videoElem === null || videoElem === void
         await this.hide();
         return false;
       }
-      this.barsClip = [this.isVrVideo ? 0 : this.settings.verticalBarsClipPercentage, this.isVrVideo ? 0 : this.settings.horizontalBarsClipPercentage].map(percentage => percentage / 100);
-      this.clippedVideoScale = this.barsClip.map(clip => 1 - clip * 2);
+      const barSides = this.getBarClipSides();
+      const leftClip = this.isVrVideo ? 0 : barSides.left / 100;
+      const topClip = this.isVrVideo ? 0 : barSides.top / 100;
+      const rightClip = this.isVrVideo ? 0 : barSides.right / 100;
+      const bottomClip = this.isVrVideo ? 0 : barSides.bottom / 100;
+      this.barsClip = [leftClip, topClip, rightClip, bottomClip];
+      this.clippedVideoScale = [Math.max(0.1, 1 - leftClip - rightClip), Math.max(0.1, 1 - topClip - bottomClip)];
+      const shiftFracX = (leftClip - rightClip) / 2;
+      const shiftFracY = (topClip - bottomClip) / 2;
       this.shouldStyleVideoParentElem = this.isOnVideoPage && !this.isVideoHiddenOnWatchPage && !this.videoElem.ended && !noClipOrScale && !this.isControlledByAnotherExtension;
       if (this.shouldStyleVideoParentElem) {
         const top = Math.max(0, parseInt(this.videoElem.style.top) || 0);
         const left = Math.max(0, parseInt(this.videoElem.style.left) || 0);
-        const width = Math.max(0, parseInt(this.videoElem.style.width) || 0);
+        const width = Math.max(0, parseInt(this.videoElem.style.width) || this.videoElem.offsetWidth || 0);
+        const heightPx = Math.max(0, parseInt(this.videoElem.style.height) || this.videoElem.offsetHeight || 0);
+        const shiftX = Math.round(width * shiftFracX * 100) / 100;
+        const shiftY = Math.round(heightPx * shiftFracY * 100) / 100;
         videoParentElem.style.width = `${width}px`;
         videoParentElem.style.height = this.videoElem.style.height || '100%';
         videoParentElem.style.marginBottom = `${-this.videoElem.offsetHeight}px`;
         videoParentElem.style.overflow = 'hidden';
+        const parentShift = (shiftX || shiftY) ? `translate(${shiftX}px, ${shiftY}px) ` : '';
         videoParentElem.style.transform = `
         translate(${left}px, ${top}px)
-        scale(${this.videoScale / 100}) 
-        scale(${this.clippedVideoScale[0]}, ${this.clippedVideoScale[1]})
+        scale(${this.videoScale / 100})
+        ${parentShift}scale(${this.clippedVideoScale[0]}, ${this.clippedVideoScale[1]})
       `;
         const videoClipScale = this.clippedVideoScale.map(scale => Math.round(1000 * (1 / scale)) / 1000);
-        setStyleProperty(videoParentElem, '--video-transform', `translate(${-left}px, ${-top}px) scale(${videoClipScale[0]}, ${videoClipScale[1]})`);
+        const videoShift = (shiftX || shiftY) ? ` translate(${-shiftX}px, ${-shiftY}px)` : '';
+        setStyleProperty(videoParentElem, '--video-transform', `translate(${-left}px, ${-top}px) scale(${videoClipScale[0]}, ${videoClipScale[1]})${videoShift}`);
       } else {
         this.resetVideoParentElemStyle();
       }
@@ -8327,13 +8354,16 @@ Video ready state: ${readyStateToString(videoElem === null || videoElem === void
       const unscaledLeft = Math.round(this.videoOffset.left + window.scrollX - (unscaledWidth - this.videoOffset.width) / 2);
       const scrollYCorrection = ((_this$ytdWatchElem = this.ytdWatchElem) === null || _this$ytdWatchElem === void 0 ? void 0 : _this$ytdWatchElem.tagName) === 'YTD-WATCH-FIXIE' && this.view === VIEW_SMALL ? window.scrollY : 0;
       const unscaledTop = Math.round(this.videoOffset.top - scrollYCorrection - (unscaledHeight - this.videoOffset.height) / 2);
+      const projShiftX = Math.round(unscaledWidth * shiftFracX * 100) / 100;
+      const projShiftY = Math.round(unscaledHeight * shiftFracY * 100) / 100;
+      const projShift = (projShiftX || projShiftY) ? `translate(${projShiftX}px, ${projShiftY}px) ` : '';
       this.projectorsElem.style.left = `${unscaledLeft}px`;
       this.projectorsElem.style.top = `${unscaledTop - 1}px`;
       this.projectorsElem.style.width = `${unscaledWidth}px`;
       this.projectorsElem.style.height = `${unscaledHeight}px`;
       this.projectorsElem.style.transform = `
-      scale(${this.videoScale / 100}) 
-      scale(${this.clippedVideoScale[0]}, ${this.clippedVideoScale[1]})
+      scale(${this.videoScale / 100})
+      ${projShift}scale(${this.clippedVideoScale[0]}, ${this.clippedVideoScale[1]})
     `;
       if (this.settings.webGL) this.projector.cropped = false;
       if (this.settings.videoShadowOpacity != 0 && this.settings.videoShadowSize != 0) {
@@ -8344,7 +8374,7 @@ Video ready state: ${readyStateToString(videoElem === null || videoElem === void
         this.videoShadowElem.style.height = `${unscaledHeight * this.clippedVideoScale[1]}px`;
         this.videoShadowElem.style.transform = `
         translate3d(0,0,0)
-        translate(${unscaledWidth * this.barsClip[0]}px, ${unscaledHeight * this.barsClip[1]}px)
+        translate(${unscaledWidth * leftClip}px, ${unscaledHeight * topClip}px)
         scale(${this.videoScale / 100})
       `;
         this.videoShadowElem.style.borderRadius = this.ytdPlayerElem ? getComputedStyle(this.ytdPlayerElem).borderRadius ?? '' : '';
@@ -8677,11 +8707,14 @@ Video ready state: ${readyStateToString(videoElem === null || videoElem === void
       if (checkPosition) {
         const projectorsElemRect = this.getElemRect(this.projectorsElem);
         const videoElemRect = this.getElemRect(this.vrVideoElem || this.videoElem);
-        const topExtraOffset = !this.isVrVideo && this.settings.horizontalBarsClipPercentage ? videoElemRect.height * (this.settings.horizontalBarsClipPercentage / 100) : 0;
-        const leftExtraOffset = !this.isVrVideo && this.settings.verticalBarsClipPercentage ? videoElemRect.width * (this.settings.verticalBarsClipPercentage / 100) : 0;
+        const sides = this.getBarClipSides();
+        const topExtraOffset = !this.isVrVideo && sides.top ? videoElemRect.height * (sides.top / 100) : 0;
+        const bottomExtraOffset = !this.isVrVideo && sides.bottom ? videoElemRect.height * (sides.bottom / 100) : 0;
+        const leftExtraOffset = !this.isVrVideo && sides.left ? videoElemRect.width * (sides.left / 100) : 0;
+        const rightExtraOffset = !this.isVrVideo && sides.right ? videoElemRect.width * (sides.right / 100) : 0;
         const expectedProjectorsRect = {
-          width: videoElemRect.width - leftExtraOffset * 2,
-          height: videoElemRect.height - topExtraOffset * 2,
+          width: videoElemRect.width - leftExtraOffset - rightExtraOffset,
+          height: videoElemRect.height - topExtraOffset - bottomExtraOffset,
           top: videoElemRect.top + topExtraOffset,
           left: videoElemRect.left + leftExtraOffset
         };

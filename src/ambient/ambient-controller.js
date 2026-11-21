@@ -241,7 +241,7 @@
     }, wait);
   }
 
-  function envOnResize() { envSchedule(0, true); }
+  function envOnResize() { sg.haloCache = null; envSchedule(0, true); }
   function envOnScroll() { envSchedule(120, false); }
 
   function envStop() {
@@ -299,6 +299,7 @@
     video: null, videoHandlers: null, cropHost: null,
     lastSrc: "", lastPath: "",
     rvfcId: null, pollTimer: null, lastDraw: 0, lastCropScan: 0,
+    stableCropScans: 0, haloCache: null,
     crop: { top: 0, bottom: 0, left: 0, right: 0 }
   };
 
@@ -442,6 +443,7 @@
 
   function clearShortsCrop() {
     sg.crop = { top: 0, bottom: 0, left: 0, right: 0 };
+    sg.haloCache = null;
     var liveHost = getShortsHost();
     if (sg.cropHost) clearHostCropAttrs(sg.cropHost);
     if (liveHost && liveHost !== sg.cropHost) clearHostCropAttrs(liveHost);
@@ -457,6 +459,7 @@
     var sameVals = sg.crop.top === crop.top && sg.crop.bottom === crop.bottom &&
       sg.crop.left === crop.left && sg.crop.right === crop.right;
     if (sameVals && host && host === sg.cropHost) return;
+    sg.haloCache = null;
     if (sg.cropHost && host && sg.cropHost !== host) clearHostCropAttrs(sg.cropHost);
     sg.crop = { top: crop.top, bottom: crop.bottom, left: crop.left, right: crop.right };
     sg.cropHost = host || null;
@@ -476,8 +479,37 @@
     var a = data[idx + 3];
     if (a < 20) return false;
     var r = data[idx], g = data[idx + 1], b = data[idx + 2];
-    if (r + g + b > 24 || r > 14 || g > 14 || b > 14) return false;
-    return Math.abs(r - g) <= 6 && Math.abs(g - b) <= 6 && Math.abs(r - b) <= 6;
+    if (r + g + b > 54 || r > 22 || g > 22 || b > 22) return false;
+    var maxC = r > g ? (r > b ? r : b) : (g > b ? g : b);
+    var minC = r < g ? (r < b ? r : b) : (g < b ? g : b);
+    return (maxC - minC) <= 8;
+  }
+
+  function isStrongContentPixel(data, idx) {
+    var a = data[idx + 3];
+    if (a < 20) return false;
+    var r = data[idx], g = data[idx + 1], b = data[idx + 2];
+    var maxC = r > g ? (r > b ? r : b) : (g > b ? g : b);
+    var minC = r < g ? (r < b ? r : b) : (g < b ? g : b);
+    return (r + g + b) > 72 || maxC > 30 || (maxC - minC) > 14;
+  }
+
+  function edgeSignalAt(data, w, axisLen, horizontal, crossPos, stopPos, dir) {
+    var best = 0;
+    for (var step = 0; step < 3; step++) {
+      var p = stopPos + dir * step;
+      if (p < 0 || p >= axisLen) break;
+      var px = horizontal ? crossPos : p;
+      var py = horizontal ? p : crossPos;
+      var idx = (py * w + px) * 4;
+      if (data[idx + 3] < 20) continue;
+      var r = data[idx], g = data[idx + 1], b = data[idx + 2];
+      var luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      var maxC = r > g ? (r > b ? r : b) : (g > b ? g : b);
+      var sig = luma > maxC ? luma : maxC;
+      if (sig > best) best = sig;
+    }
+    return best;
   }
 
   function scanBarAxis(data, w, h, horizontal, crossStart, crossEnd) {
@@ -485,41 +517,106 @@
     var crossLen = horizontal ? w : h;
     var cMin = (typeof crossStart === "number") ? Math.max(0, Math.min(crossLen - 1, crossStart)) : 0;
     var cMax = (typeof crossEnd === "number") ? Math.max(cMin, Math.min(crossLen - 1, crossEnd)) : (crossLen - 1);
-    var maxDepth = Math.floor(axisLen * 0.38);
-    var minDepth = Math.max(5, Math.round(axisLen * 0.07));
-    var tol = Math.max(3, Math.round(axisLen * 0.04));
+    var total = cMax - cMin + 1;
+    var maxDepth = Math.floor(axisLen * 0.42);
+    var minSymDepth = Math.max(4, Math.round(axisLen * 0.04));
+    var minAsymDepth = Math.max(6, Math.round(axisLen * 0.06));
+    var tol = Math.max(3, Math.round(axisLen * 0.035));
     // Scan EVERY column/row in [cMin..cMax] (never skip outlier strokes such as baked-in top captions)
-    var startMin = maxDepth, startMax = 0;
-    var endMin = maxDepth, endMax = 0;
-    for (var c = cMin; c <= cMax; c++) {
-      var sd = 0;
+    var startDepths = new Array(total);
+    var endDepths = new Array(total);
+    var startLumas = new Array(total);
+    var endLumas = new Array(total);
+    var startMin = maxDepth, endMin = maxDepth;
+    var c, k;
+    for (c = cMin, k = 0; c <= cMax; c++, k++) {
+      var sd = 0, sStopIdx = -1;
       while (sd < maxDepth) {
         var sx = horizontal ? c : sd;
         var sy = horizontal ? sd : c;
-        if (!isDarkBarPixel(data, (sy * w + sx) * 4)) break;
+        var sIdx = (sy * w + sx) * 4;
+        if (!isDarkBarPixel(data, sIdx)) {
+          if (isStrongContentPixel(data, sIdx) || (sd + 1 >= maxDepth)) {
+            sStopIdx = sIdx;
+            break;
+          }
+          var nx = horizontal ? c : (sd + 1);
+          var ny = horizontal ? (sd + 1) : c;
+          if (!isDarkBarPixel(data, (ny * w + nx) * 4)) {
+            sStopIdx = sIdx;
+            break;
+          }
+        }
         sd++;
       }
+      startDepths[k] = sd;
+      startLumas[k] = (sd < maxDepth && sStopIdx >= 0) ? edgeSignalAt(data, w, axisLen, horizontal, c, sd, 1) : 0;
       if (sd < startMin) startMin = sd;
-      if (sd > startMax) startMax = sd;
-      var ed = 0;
+
+      var ed = 0, eStopIdx = -1;
       while (ed < maxDepth) {
         var pos = axisLen - 1 - ed;
         var ex = horizontal ? c : pos;
         var ey = horizontal ? pos : c;
-        if (!isDarkBarPixel(data, (ey * w + ex) * 4)) break;
+        var eIdx = (ey * w + ex) * 4;
+        if (!isDarkBarPixel(data, eIdx)) {
+          if (isStrongContentPixel(data, eIdx) || (ed + 1 >= maxDepth)) {
+            eStopIdx = eIdx;
+            break;
+          }
+          var eNextPos = pos - 1;
+          var enx = horizontal ? c : eNextPos;
+          var eny = horizontal ? eNextPos : c;
+          if (!isDarkBarPixel(data, (eny * w + enx) * 4)) {
+            eStopIdx = eIdx;
+            break;
+          }
+        }
         ed++;
       }
+      endDepths[k] = ed;
+      endLumas[k] = (ed < maxDepth && eStopIdx >= 0) ? edgeSignalAt(data, w, axisLen, horizontal, c, axisLen - 1 - ed, -1) : 0;
       if (ed < endMin) endMin = ed;
-      if (ed > endMax) endMax = ed;
     }
-    var rawStart = (startMin >= minDepth && startMin <= maxDepth && (startMax - startMin) <= tol) ? startMin : 0;
-    var rawEnd = (endMin >= minDepth && endMin <= maxDepth && (endMax - endMin) <= tol) ? endMin : 0;
+
+    var startSupport = 0, startLumaSum = 0;
+    var endSupport = 0, endLumaSum = 0;
+    for (k = 0; k < total; k++) {
+      if (startDepths[k] < maxDepth && startDepths[k] <= startMin + tol) {
+        startSupport++;
+        startLumaSum += startLumas[k];
+      }
+      if (endDepths[k] < maxDepth && endDepths[k] <= endMin + tol) {
+        endSupport++;
+        endLumaSum += endLumas[k];
+      }
+    }
+    var startRatio = startSupport / total;
+    var endRatio = endSupport / total;
+    var startAvgLuma = startSupport ? (startLumaSum / startSupport) : 0;
+    var endAvgLuma = endSupport ? (endLumaSum / endSupport) : 0;
+
+    var rawStart = 0, rawEnd = 0;
+    var isSymPair = startMin >= minSymDepth && startMin < maxDepth &&
+      endMin >= minSymDepth && endMin < maxDepth &&
+      startRatio >= 0.35 && endRatio >= 0.35 &&
+      Math.abs(startMin - endMin) <= Math.max(4, Math.round(axisLen * 0.05));
+    if (isSymPair) {
+      rawStart = startMin;
+      rawEnd = endMin;
+    } else {
+      var startMinSig = startRatio >= 0.80 ? 12 : 26;
+      var endMinSig = endRatio >= 0.80 ? 12 : 26;
+      rawStart = (startMin >= minAsymDepth && startMin < maxDepth && startRatio >= 0.50 && startAvgLuma >= startMinSig) ? startMin : 0;
+      rawEnd = (endMin >= minAsymDepth && endMin < maxDepth && endRatio >= 0.50 && endAvgLuma >= endMinSig) ? endMin : 0;
+    }
+
     var backoff = 1;
     var startPx = rawStart > backoff ? (rawStart - backoff) : 0;
     var endPx = rawEnd > backoff ? (rawEnd - backoff) : 0;
-    var startPct = startPx ? Math.min(38, Math.round((startPx / axisLen) * 200) / 2) : 0;
-    var endPct = endPx ? Math.min(38, Math.round((endPx / axisLen) * 200) / 2) : 0;
-    if (!startPct || !endPct || Math.abs(startPct - endPct) > 6 || (startPct + endPct) >= 76) {
+    var startPct = startPx ? Math.min(41, Math.round((startPx / axisLen) * 200) / 2) : 0;
+    var endPct = endPx ? Math.min(41, Math.round((endPx / axisLen) * 200) / 2) : 0;
+    if ((!startPct && !endPct) || (startPct + endPct) >= 82) {
       return { startPx: 0, endPx: 0, startPct: 0, endPct: 0 };
     }
     return { startPx: startPx, endPx: endPx, startPct: startPct, endPct: endPct };
@@ -539,6 +636,15 @@
       var img = sg.probeCtx.getImageData(0, 0, SG_PROBE_W, SG_PROBE_H);
       var data = img && img.data;
       if (!data || data.length < SG_PROBE_W * SG_PROBE_H * 4) return null;
+      var globalLit = 0;
+      for (var ggy = 1; ggy <= 5; ggy++) {
+        var gpy = Math.min(SG_PROBE_H - 1, Math.max(0, Math.round((SG_PROBE_H * ggy) / 6)));
+        for (var ggx = 1; ggx <= 5; ggx++) {
+          var gpx = Math.min(SG_PROBE_W - 1, Math.max(0, Math.round((SG_PROBE_W * ggx) / 6)));
+          if (!isDarkBarPixel(data, (gpy * SG_PROBE_W + gpx) * 4)) globalLit++;
+        }
+      }
+      if (globalLit < 2) return null;
       // Pass 1: estimate orthogonal bars within the guaranteed-interior [40%..60%] central band
       var estH = scanBarAxis(data, SG_PROBE_W, SG_PROBE_H, false, Math.floor(SG_PROBE_H * 0.40), Math.ceil(SG_PROBE_H * 0.60));
       var estV = scanBarAxis(data, SG_PROBE_W, SG_PROBE_H, true, Math.floor(SG_PROBE_W * 0.40), Math.ceil(SG_PROBE_W * 0.60));
@@ -552,10 +658,10 @@
       if (!vBars.startPct && !vBars.endPct && !hBars.startPct && !hBars.endPct) {
         return { top: 0, bottom: 0, left: 0, right: 0 };
       }
-      // Verify active interior contains visible non-bar content (reject fade-to-black frames)
+      // Verify active interior contains visible non-bar content (reject fade-to-black frames -> hold previous crop)
       var x0 = hBars.startPx, x1 = SG_PROBE_W - 1 - hBars.endPx;
       var y0 = vBars.startPx, y1 = SG_PROBE_H - 1 - vBars.endPx;
-      if (x1 - x0 < 3 || y1 - y0 < 3) return { top: 0, bottom: 0, left: 0, right: 0 };
+      if (x1 - x0 < 3 || y1 - y0 < 3) return null;
       var lit = 0;
       for (var gy = 1; gy <= 5; gy++) {
         var py = Math.min(y1, Math.max(y0, Math.round(y0 + ((y1 - y0) * gy) / 6)));
@@ -564,7 +670,7 @@
           if (!isDarkBarPixel(data, (py * SG_PROBE_W + px) * 4)) lit++;
         }
       }
-      if (lit < 3) return { top: 0, bottom: 0, left: 0, right: 0 };
+      if (lit < 3) return null;
       return {
         top: vBars.startPct,
         bottom: vBars.endPct,
@@ -629,8 +735,16 @@
     }
   }
 
-  function resolveHaloBox(v) {
+  function resolveHaloBox(v, now) {
+    var ts = typeof now === "number" ? now : Date.now();
     var vp = viewportDims();
+    var amb = (currentSettings && currentSettings.ambientLight) || {};
+    var spread = envClamp(Number(amb.spread), 40, 300, 162) / 162;
+    var crop = sg.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+    var cacheKey = [vp.w, vp.h, Math.round(spread * 100), crop.top, crop.bottom, crop.left, crop.right].join(",");
+    if (sg.haloCache && sg.haloCache.video === v && sg.haloCache.key === cacheKey && (ts - sg.haloCache.at) < 1500) {
+      return sg.haloCache.box;
+    }
     var rect = null;
     try {
       var playerEl = document.querySelector("#shorts-player");
@@ -638,7 +752,6 @@
     } catch (e) { rect = envRect(v); }
     var px, py, pw, ph;
     if (rect) {
-      var crop = sg.crop || { top: 0, bottom: 0, left: 0, right: 0 };
       var cx0 = rect.left + rect.width * (crop.left / 100);
       var cx1 = rect.left + rect.width * (1 - crop.right / 100);
       var cy0 = rect.top + rect.height * (crop.top / 100);
@@ -655,16 +768,16 @@
     }
     var cx = envClamp(px + pw / 2, 0, SG_W, SG_W / 2);
     var cy = envClamp(py + ph / 2, 0, SG_H, SG_H / 2);
-    var amb = (currentSettings && currentSettings.ambientLight) || {};
-    var spread = envClamp(Number(amb.spread), 40, 300, 162) / 162;
     var halfW = Math.max(pw * 1.65 * spread, cx + 6, (SG_W - cx) + 6);
     var halfH = Math.max(ph * 1.15 * spread, cy + 6, (SG_H - cy) + 6);
-    return {
+    var box = {
       dx: cx - halfW, dy: cy - halfH, dw: halfW * 2, dh: halfH * 2,
       cx: cx, cy: cy,
       r0: Math.max(4, Math.min(pw, ph) * 0.32),
       r1: Math.max(SG_W, SG_H) * (0.52 + 0.16 * Math.min(1.5, spread))
     };
+    sg.haloCache = { video: v, key: cacheKey, at: ts, box: box };
+    return box;
   }
 
   function drawShortsFrame() {
@@ -678,13 +791,22 @@
     if (now - sg.lastDraw < minMs) return false;
     sg.lastDraw = now;
     if (amb.detectBarSize === true) {
-      if (sg.lastCropScan === 0 || (now - sg.lastCropScan >= 350)) {
+      var scanInterval = sg.stableCropScans >= 4 ? 1000 : 350;
+      if (sg.lastCropScan === 0 || (now - sg.lastCropScan >= scanInterval)) {
         sg.lastCropScan = now;
         var detected = detectShortsBars(v);
-        if (detected) applyShortsCrop(detected);
+        if (detected) {
+          var sameCrop = sg.crop.top === detected.top && sg.crop.bottom === detected.bottom &&
+            sg.crop.left === detected.left && sg.crop.right === detected.right;
+          sg.stableCropScans = sameCrop ? Math.min(20, sg.stableCropScans + 1) : 0;
+          applyShortsCrop(detected);
+        }
       }
     } else if (sg.crop.top || sg.crop.bottom || sg.crop.left || sg.crop.right || sg.cropHost) {
+      sg.stableCropScans = 0;
       clearShortsCrop();
+    } else {
+      sg.stableCropScans = 0;
     }
     try {
       var vw = Number(v.videoWidth) || 0;
@@ -699,7 +821,7 @@
       } else {
         sg.tinyCtx.drawImage(v, 0, 0, SG_TINY_W, SG_TINY_H);
       }
-      var halo = resolveHaloBox(v);
+      var halo = resolveHaloBox(v, now);
       sg.ctx.globalCompositeOperation = "source-over";
       sg.ctx.imageSmoothingEnabled = true;
       sg.ctx.imageSmoothingQuality = "high";
@@ -735,6 +857,8 @@
       sg.lastPath = safePathname();
       sg.lastDraw = 0;
       sg.lastCropScan = 0;
+      sg.stableCropScans = 0;
+      sg.haloCache = null;
       drawShortsFrame();
     };
     var onEmptied = function () {
@@ -742,6 +866,8 @@
       sg.lastSrc = "";
       sg.lastDraw = 0;
       sg.lastCropScan = 0;
+      sg.stableCropScans = 0;
+      sg.haloCache = null;
       clearShortsCrop();
     };
     sg.videoHandlers = {
@@ -767,6 +893,8 @@
     sg.video = null;
     sg.lastSrc = "";
     sg.lastPath = "";
+    sg.stableCropScans = 0;
+    sg.haloCache = null;
   }
 
   function bindShortsVideo(fallback) {
@@ -779,6 +907,8 @@
         sg.lastPath = path;
         sg.lastDraw = 0;
         sg.lastCropScan = 0;
+        sg.stableCropScans = 0;
+        sg.haloCache = null;
         clearShortsCrop();
         drawShortsFrame();
       }
@@ -792,6 +922,8 @@
     sg.lastPath = path;
     sg.lastDraw = 0;
     sg.lastCropScan = 0;
+    sg.stableCropScans = 0;
+    sg.haloCache = null;
     attachShortsVideoListeners(next);
     drawShortsFrame();
     if (next.requestVideoFrameCallback) {
@@ -809,6 +941,8 @@
     sg.active = false;
     sg.lastDraw = 0;
     sg.lastCropScan = 0;
+    sg.stableCropScans = 0;
+    sg.haloCache = null;
     if (sg.pollTimer !== null) { clearInterval(sg.pollTimer); sg.pollTimer = null; }
     unbindShortsVideo();
     clearShortsCrop();
@@ -827,10 +961,13 @@
     bindShortsVideo(p.video);
     var amb = (currentSettings && currentSettings.ambientLight) || {};
     if (amb.detectBarSize !== true && (sg.crop.top || sg.crop.bottom || sg.crop.left || sg.crop.right || sg.cropHost)) {
+      sg.stableCropScans = 0;
       clearShortsCrop();
     } else if (amb.detectBarSize === true && sg.video) {
       sg.lastCropScan = 0;
       sg.lastDraw = 0;
+      sg.stableCropScans = 0;
+      sg.haloCache = null;
       drawShortsFrame();
     }
     if (sg.pollTimer === null) {
@@ -839,7 +976,9 @@
         var host = getShortsHost();
         if (host && sg.canvas && sg.canvas.parentNode !== host) ensureShortsCanvas();
         bindShortsVideo(null);
-        drawShortsFrame();
+        if (sg.rvfcId === null || (sg.video && sg.video.paused)) {
+          drawShortsFrame();
+        }
       }, 600);
     }
   }

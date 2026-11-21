@@ -129,7 +129,7 @@ html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-short
 html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) {
   isolation: isolate;
 }
-html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) :is(#shorts-container, #shorts-inner-container, .navigation-container, ytd-reel-video-renderer, #player-container, .player-wrapper, .reel-video-in-sequence-thumbnail, #shorts-player) {
+html[data-ylg-enabled="true"][data-ylg-ambient="on"] ytd-shorts:has(> #ylg-shorts-glow) :is(#shorts-container, #shorts-inner-container, .navigation-container, ytd-reel-video-renderer, #player-container, .player-wrapper, .reel-video-in-sequence-thumbnail, #shorts-player, #shorts-player .html5-video-container, #shorts-player .ytp-cued-thumbnail-overlay) {
   background-color: transparent !important;
   background-image: none !important;
 }

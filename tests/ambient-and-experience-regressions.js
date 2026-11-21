@@ -740,12 +740,15 @@ test("Shorts prioritizes #shorts-player video, tracks reused-video swaps, and ap
   assert.equal(shortsHost.style.getPropertyValue("--ylg-shorts-crop-top"), "");
   assert.deepEqual({ ...A.stats().shorts.crop }, { top: 0, bottom: 0, left: 0, right: 0 });
 
-  // Simulate baked-in caption header over top black bar (like /shorts/8XGMDdybbu4) -> must NOT slice caption text
+  // Simulate baked-in caption header over top black bar (like /shorts/8XGMDdybbu4) -> must NOT slice caption text, while independently cropping empty bottom bar
   frameMode = "caption-header";
   clock += 500;
   for (const fn of listenerMap.get("seeked")) fn();
-  assert.equal(shortsHost.getAttribute("data-ylg-shorts-cropped"), null, "baked-in caption over black top banner must not trigger aggressive top crop");
-  assert.deepEqual({ ...A.stats().shorts.crop }, { top: 0, bottom: 0, left: 0, right: 0 });
+  assert.equal(shortsHost.getAttribute("data-ylg-shorts-cropped"), "1", "empty bottom black bar must still crop independently");
+  assert.equal(A.stats().shorts.crop.top, 0, "baked-in caption over black top banner must never be sliced");
+  assert.ok(A.stats().shorts.crop.bottom >= 10 && A.stats().shorts.crop.bottom <= 13, "empty 12.5% bottom bar should crop cleanly");
+  assert.equal(A.stats().shorts.crop.left, 0);
+  assert.equal(A.stats().shorts.crop.right, 0);
 
   // Verify disabling detectBarSize clears active crop immediately
   frameMode = "cropped";

@@ -70,6 +70,11 @@
   function onFullscreenChange() {
     notify("fullscreenchange");
   }
+  function onVisibilityChange() {
+    if (started && generation === startGeneration && !document.hidden) {
+      scheduleApply(150);
+    }
+  }
 
   /* ---- history fallback ---- */
   function wrapHistory() {
@@ -126,7 +131,7 @@
   function startReconcile() {
     if (reconcileTimer !== null) return;
     reconcileTimer = setInterval(function () {
-      if (generation !== startGeneration) return;
+      if (generation !== startGeneration || document.hidden) return;
       scheduleApply(0); // cheap idempotent class-existence pass
     }, 5000);
   }
@@ -249,6 +254,7 @@
     document.addEventListener("yt-navigate-finish", onNavigateFinish, true);
     document.addEventListener("yt-page-data-updated", onPageData, true);
     document.addEventListener("fullscreenchange", onFullscreenChange, true);
+    document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("popstate", onNavigateFinish);
     wrapHistory();
     startObserver();
@@ -263,6 +269,7 @@
     document.removeEventListener("yt-navigate-finish", onNavigateFinish, true);
     document.removeEventListener("yt-page-data-updated", onPageData, true);
     document.removeEventListener("fullscreenchange", onFullscreenChange, true);
+    document.removeEventListener("visibilitychange", onVisibilityChange);
     window.removeEventListener("popstate", onNavigateFinish);
     if (observer) { try { observer.disconnect(); } catch (e) {} observer = null; }
     if (playerObserver) { try { playerObserver.disconnect(); } catch (e) {} playerObserver = null; }

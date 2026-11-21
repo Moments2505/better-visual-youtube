@@ -82,12 +82,21 @@
   function colorFromPixels(data) {
     if (!data) return null;
     var r = 0, g = 0, b = 0, n = 0;
+    var lr = 0, lg = 0, lb = 0, ln = 0;
     for (var i = 0; i < data.length; i += 4) {
       if (data[i + 3] < 8) continue;
-      r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
+      var pr = data[i], pg = data[i + 1], pb = data[i + 2];
+      r += pr; g += pg; b += pb; n++;
+      if (pr + pg + pb > 54 || pr > 22 || pg > 22 || pb > 22) {
+        lr += pr; lg += pg; lb += pb; ln++;
+      }
     }
     if (!n) return null;
-    r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+    var useLit = ln >= Math.max(4, Math.floor(n * 0.15));
+    var denom = useLit ? ln : n;
+    r = Math.round((useLit ? lr : r) / denom);
+    g = Math.round((useLit ? lg : g) / denom);
+    b = Math.round((useLit ? lb : b) / denom);
     if (!usable(r, g, b)) return null;
     return adjust(r, g, b);
   }
@@ -237,6 +246,7 @@
     timer = setInterval(function () {
       if (document.hidden) return;
       bindVideo();
+      if (rvfcId !== null && video && video.isConnected !== false && !video.paused && !video.ended) return;
       if (typeof root.createImageBitmap === "function") sampleAsync();
       else sample();
     }, 1200);

@@ -187,6 +187,14 @@
         if (activeEngine.barDetection && activeEngine.barDetection.reset) {
           activeEngine.barDetection.reset();
         }
+        if (!vendorSettings.detectHorizontalBarSizeEnabled) {
+          if (typeof activeEngine.setHorizontalBars === "function") activeEngine.setHorizontalBars(0, 0, 0);
+          else vendorSettings.set("horizontalBarsClipPercentage", 0, true, true);
+        }
+        if (!vendorSettings.detectVerticalBarSizeEnabled) {
+          if (typeof activeEngine.setVerticalBars === "function") activeEngine.setVerticalBars(0, 0, 0);
+          else vendorSettings.set("verticalBarsClipPercentage", 0, true, true);
+        }
         activeEngine.buffersCleared = true;
       }
       if (changed.indexOf("vibrance") !== -1 && activeEngine.projector && activeEngine.projector.updateVibrance) {
@@ -216,7 +224,8 @@
       vendorSettings.set("enabled", true, true, true);
       await activeEngine.start();
     } else if (changed.length) {
-      if ((changed.indexOf("resolution") !== -1 || changed.indexOf("blur2") !== -1 || changed.indexOf("spread") !== -1) &&
+      if ((changed.indexOf("resolution") !== -1 || changed.indexOf("blur2") !== -1 || changed.indexOf("spread") !== -1 ||
+          changed.indexOf("detectHorizontalBarSizeEnabled") !== -1 || changed.indexOf("detectVerticalBarSizeEnabled") !== -1) &&
           typeof activeEngine.updateSizes === "function") {
         await activeEngine.updateSizes();
       }
