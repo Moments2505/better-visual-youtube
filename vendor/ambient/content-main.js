@@ -7043,6 +7043,7 @@ Ambient rendering budget: ${ambientlightBudgetRange[0]}ms to ${ambientlightBudge
         this.isPageHidden = isPageHidden;
         if (isPageHidden) {
           this.pageHiddenTime = performance.now();
+          this.cancelScheduledRequestVideoFrame();
           this.checkIfNeedToHideVideoOverlay();
           this.buffersCleared = true;
           this.sizesChanged = true;
@@ -7266,7 +7267,7 @@ Ambient rendering budget: ${ambientlightBudgetRange[0]}ms to ${ambientlightBudge
         return hWarm || vWarm;
       };
       this.limitFramerateToSaveEnergy = () => this.averageVideoFramesDifference < this.averageVideoFramesDifference1SecondThreshold && !this.sizesInvalidated && !this.buffersCleared && !this.isBarDetectionWarmingUp() && this.videoElem.currentTime > 5 && this.videoElem.currentTime < this.videoElem.duration - 5;
-      this.canScheduleNextFrame = () => !(!this.settings.enabled || !this.isOnVideoPage || this.isVrVideo && this.vrVideoElem || this.pendingStart || this.videoElem.ended || this.videoElem.paused || this.videoElem.seeking || this.isVideoHiddenOnWatchPage || this.isAmbientlightHiddenOnWatchPage);
+      this.canScheduleNextFrame = () => !(!this.settings.enabled || !this.isOnVideoPage || this.isPageHidden || document.hidden || this.isVrVideo && this.vrVideoElem || this.pendingStart || this.videoElem.ended || this.videoElem.paused || this.videoElem.seeking || this.isVideoHiddenOnWatchPage || this.isAmbientlightHiddenOnWatchPage);
       this.optionalFrame = async (fromSettingChange = false) => {
         if (!this.initializedTime || !this.settings.enabled || !this.isOnVideoPage || this.pendingStart || this.resizeAfterFrames > 0 || this.videoElem.ended || !this.videoElem.paused && !this.videoElem.seeking && this.scheduledNextFrame || !fromSettingChange && this.isVrVideo && this.vrVideoElem) return;
         await this.nextFrame();

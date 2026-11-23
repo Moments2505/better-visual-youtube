@@ -243,7 +243,7 @@
     "message": "Bật nền bầu trời"
   },
   "daylightHint": {
-    "message": "Áp dụng cho Trang chủ, Tìm kiếm và Kênh. Bầu trời mô phỏng liên tục theo vị trí mặt trời tại thành phố bạn chọn, kết hợp thời tiết thực tế."
+    "message": "Áp dụng cho Trang chủ, Kênh đăng ký, Danh sách phát, Tìm kiếm và Kênh. Bầu trời mô phỏng liên tục theo vị trí mặt trời tại thành phố bạn chọn, kết hợp thời tiết thực tế."
   },
   "liveSunWeather": {
     "message": "Mặt trời & thời tiết trực tiếp"
@@ -301,6 +301,9 @@
   },
   "sceneNight": {
     "message": "Ban đêm"
+  },
+  "sceneAurora": {
+    "message": "Cực quang"
   },
   "skyIntensity": {
     "message": "Cường độ bầu trời"
@@ -472,6 +475,12 @@
   },
   "zenWatchLabel": {
     "message": "Chế độ Zen (làm mờ cột phụ đến khi rê chuột)"
+  },
+  "cardHaloLabel": {
+    "message": "Quầng sáng màu theo ảnh bìa khi rê chuột"
+  },
+  "floatingPlayerFrameLabel": {
+    "message": "Bo góc khung video kính nổi (chế độ thường)"
   },
   "toastAmbientOn": {
     "message": "Ánh sáng môi trường: Bật"

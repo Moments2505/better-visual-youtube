@@ -1,12 +1,12 @@
 # Chrome Web Store Submission Kit — Better Visual for YouTube
 
-Use the verified assets and copy-paste answers below when submitting `dist/releases/Better-visual-Youtube-0.7.3.zip` on the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
+Use the verified assets and copy-paste answers below when submitting `dist/releases/Better-visual-Youtube-0.8.0.zip` on the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
 
 ---
 
 ## 1. Upload Files Checklist
 
-- **Extension ZIP package**: `dist/releases/Better-visual-Youtube-0.7.3.zip`
+- **Extension ZIP package**: `dist/releases/Better-visual-Youtube-0.8.0.zip`
 - **Store icon (`128×128`)**: `assets/icons/icon128.png`
 - **Promo tile (`440×280`, 24-bit RGB PNG)**: `docs/store/screenshots/promo-small-440x280.png`
 - **Screenshots (`1280×800`, 24-bit RGB PNG)**:
@@ -50,7 +50,7 @@ KEY FEATURES
   Switch instantly between Crystal Clear, Tahoe Frosted, Cinema Glow, and Eco Minimal, or export/import your settings as JSON. Preferences stay backed up via browser profile sync.
 
 • Immersive Experience & Procedural Sky
-  Includes Immersive Cinema idle dimming, Zen Watch layout, Hide Shorts Shelf toggle, customizable keyboard shortcuts (Alt+Shift+G / Alt+Shift+A / Alt+Shift+D), and an optional WebGL Time-of-Day Sky background on Home, Search, and Channel pages (with optional opt-in Open-Meteo local weather).
+  Includes Immersive Cinema idle dimming, Zen Watch layout, Hide Shorts Shelf toggle, quick keyboard shortcuts (Alt+A / Alt+S / Alt+D), Thumbnail Hover Ambient Halo, optional Rounded Floating Video Frame, automatic zero-effect suspension in background tabs for audio-only listening, and an optional WebGL Time-of-Day & Aurora Sky across Home, Feeds, Playlists, Search, and Channel pages (with optional opt-in Open-Meteo local weather).
 
 PRIVACY FIRST
 
@@ -70,7 +70,7 @@ TÍNH NĂNG CHÍNH
 • Ambient Light cho trang Xem & Shorts: Phủ quầng sáng mượt quanh khung phát với các mức Eco / Balanced / High / Auto, giảm nhấp nháy, đồng bộ viền kính và hỗ trợ YouTube Shorts.
 • Tự động cắt viền đen thông minh: Tự nhận diện viền đen ngang/dọc, viền đen studio, cảnh tối hoặc thanh đen bất đối xứng trên Shorts mà không cắt lẹm phụ đề.
 • Cấu hình 1 chạm & Đồng bộ: Chuyển nhanh giữa Crystal Clear, Tahoe Frosted, Cinema Glow, Eco Minimal; xuất/nhập JSON và đồng bộ cài đặt qua tài khoản trình duyệt.
-• Rạp phim nhập vai, Zen Watch & Nền trời 3D theo giờ: Làm mờ giao diện thừa khi xem, ẩn mục Shorts trên Trang chủ, phím tắt nhanh (Alt+Shift+G / A / D) và tùy chọn bầu trời thời gian thực.
+• Rạp phim nhập vai, Zen Watch & Nền trời 3D theo giờ: Làm mờ giao diện thừa khi xem, ẩn mục Shorts trên Trang chủ, phím tắt nhanh (Alt+A / Alt+S / Alt+D), quầng sáng theo Thumbnail khi rê chuột, tùy chọn bo góc khung video, tự động tắt toàn bộ hiệu ứng khi chạy nền ở tab khác (chỉ nghe nhạc) và bầu trời thời gian thực kèm cảnh Cực quang & Sao băng trên toàn bộ trang duyệt.
 
 QUYỀN RIÊNG TƯ: Không quảng cáo, không theo dõi lịch sử xem, không máy chủ thu thập dữ liệu. Quyền thời tiết Open-Meteo tắt mặc định và chỉ xin khi người dùng tự bật.
 ```

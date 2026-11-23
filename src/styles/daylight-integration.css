@@ -39,6 +39,8 @@ html[data-ylg-enabled="true"][data-ylg-daylight] #ylg-daylight-background {
   z-index: -1;
 }
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-page-manager,
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-browse,
+html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-browse :is(ytd-feed-filter-chip-bar-renderer, ytd-two-column-browse-results-renderer, ytd-section-list-renderer, ytd-rich-grid-renderer > #header, ytd-playlist-header-renderer, .immersive-header-container, .metadata-wrapper, ytd-c4-tabbed-header-renderer, yt-page-header-renderer, #channel-header-container, #tabs-container),
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-browse[page-subtype="home"],
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-browse[page-subtype="home"] :is(ytd-feed-filter-chip-bar-renderer, ytd-rich-grid-renderer > #header),
 html[data-ylg-enabled="true"][data-ylg-daylight] body ytd-browse[page-subtype="channels"],

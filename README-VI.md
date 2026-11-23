@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Tiện ích miễn phí, mã nguồn mở, dành cho Microsoft Edge và Google Chrome trên máy tính.
 
-**Bản chính thức mới nhất: [0.7.3](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.7.3).** Sửa triệt để tình trạng giật lag trên Watch & Shorts (`128×128` `createImageBitmap` bất đồng bộ, quét 1-pass mặc định, giãn nhịp quét/lấy màu nền) và khôi phục nút trượt kính lỏng trên thanh tiến trình khi rê chuột lẫn kéo tua. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.7.3.md)
+**Bản chính thức mới nhất: [0.8.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.0).** Mở rộng nền trời thời gian thực sang toàn bộ trang duyệt kèm cảnh **Cực quang (Aurora)** & **Sao băng**, bổ sung quầng sáng theo thumbnail khi rê chuột, hoàn thiện đồng bộ kính cho Miniplayer/Live Chat/Chương video/thanh tiến trình Shorts + tùy chọn bo góc khung video, tự động tắt mọi hiệu ứng khi chạy nền ở tab khác (chỉ nghe nhạc), và cập nhật đúng phím tắt `Alt+A / Alt+S / Alt+D`. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.0.md)
 
 ## Thêm chiều sâu cho giao diện
 

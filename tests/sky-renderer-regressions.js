@@ -120,5 +120,16 @@ test("shipped shader is procedural and source has no image assets, JS frame loop
   const overcastPos=w.shaders[1].indexOf("vec3 overcast(vec2 uv)"),atmoPos=w.shaders[1].indexOf("vec3 atmosphere(vec2 uv)");
   assert.ok(overcastPos>0&&overcastPos<atmoPos,"overcast() must be declared before atmosphere() for GLSL ES 1.00");
   assert.match(w.shaders[1],/if\(wet>\.001\)\{\s*color=mix\(color,overcast\(uv\)/,"wet weather blends overcast ceiling even when manual rain glass is off");
+  assert.match(w.shaders[1],/float shootingStars\(/);assert.match(w.shaders[1],/vec3 auroraGlow\(/);
+  assert.match(w.shaders[1],/uniform float [^;]*\baurora\b/);
+});
+test("aurora scene drives aurora uniform without leaking into daytime auto solar",()=>{
+  const w=world();
+  w.renderer.update({...state,auto:false,scene:"aurora",moving:false});
+  assert.equal(w.uniforms.get("aurora"),1);assert.equal(w.uniforms.get("night"),1);
+  w.renderer.update({...state,auto:false,scene:"day",moving:false});
+  assert.equal(w.uniforms.get("aurora"),0);
+  w.renderer.update({...state,auto:true,scene:"aurora",moving:false});
+  assert.equal(w.uniforms.get("aurora"),0,"auto solar must override aurora uniform");
 });
 console.log(count+" renderer lifecycle groups passed (WebGL API model, not a GPU/pixel test).");

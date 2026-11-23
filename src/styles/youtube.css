@@ -832,3 +832,134 @@ html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #top-row,
 html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #bottom-row {
   border-radius: inherit;
 }
+
+/* ============================================================================
+   v0.8.0 (V3): Miniplayer, Watch Engagement Panels, Live Chat, Shorts Progress Bar & Floating Video Frame
+   ============================================================================ */
+
+/* Optional rounded floating video frame in Normal Watch mode only (never Theater/Fullscreen) */
+html[data-ylg-enabled="true"][data-ylg-player-frame="true"] ytd-watch-flexy:not([theater]):not([fullscreen]) :is(#ytd-player, #player-container-inner, #movie_player) {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+html[data-ylg-enabled="true"][data-ylg-player-frame="true"] ytd-watch-flexy:not([theater]):not([fullscreen]) #ytd-player {
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+html[data-ylg-enabled="true"][data-ylg-player-frame="true"][data-ylg-theme="light"] ytd-watch-flexy:not([theater]):not([fullscreen]) #ytd-player {
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.16),
+    0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+html[data-ylg-enabled="true"][data-ylg-player-frame="true"][data-ylg-ambient="on"][data-ylg-ambient-sync="1"] ytd-watch-flexy:not([theater]):not([fullscreen]) #ytd-player {
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.30),
+    0 0 0 1px rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.30);
+}
+
+/* Miniplayer glass shell + transparent inner bar */
+html[data-ylg-enabled="true"]:not([data-ylg-fill="none"]):not([data-ylg-opacity-solid="true"]) ytd-miniplayer {
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(155deg, var(--ylg-fill-a), var(--ylg-fill-b));
+  border: 1px solid var(--ylg-rim-light);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.24);
+}
+
+html[data-ylg-enabled="true"]:not([data-ylg-fill="none"]):not([data-ylg-opacity-solid="true"]) ytd-miniplayer :is(.miniplayer.ytd-miniplayer, #card.ytd-miniplayer, .info-bar.ytd-miniplayer) {
+  background: transparent !important;
+}
+
+/* Watch expanded Engagement Panels (Chapters, Transcript, Comments side panels) */
+html[data-ylg-enabled="true"]:not([data-ylg-fill="none"]):not([data-ylg-opacity-solid="true"]) ytd-watch-flexy ytd-engagement-panel-section-list-renderer[visibility="ENGAGEMENT_PANEL_VISIBILITY_EXPANDED"] {
+  background: linear-gradient(155deg, var(--ylg-fill-a), var(--ylg-fill-b));
+  border: 1px solid var(--ylg-rim-light);
+  border-radius: var(--ylg-radius);
+  overflow: hidden;
+}
+
+html[data-ylg-enabled="true"]:not([data-ylg-fill="none"]):not([data-ylg-opacity-solid="true"]) ytd-watch-flexy ytd-engagement-panel-section-list-renderer[visibility="ENGAGEMENT_PANEL_VISIBILITY_EXPANDED"] :is(ytd-engagement-panel-title-header-renderer, #header.ytd-engagement-panel-title-header-renderer, ytd-macro-markers-list-renderer, ytd-transcript-renderer, #content.ytd-engagement-panel-section-list-renderer) {
+  background: transparent !important;
+}
+
+/* Watch Live Chat outer container + header toggle sync */
+html[data-ylg-enabled="true"]:not([data-ylg-fill="none"]):not([data-ylg-opacity-solid="true"]) ytd-watch-flexy ytd-live-chat-frame {
+  background: linear-gradient(155deg, var(--ylg-fill-a), var(--ylg-fill-b));
+  border: 1px solid var(--ylg-rim-light);
+  border-radius: var(--ylg-radius);
+  overflow: hidden;
+}
+
+html[data-ylg-enabled="true"]:not([data-ylg-fill="none"]):not([data-ylg-opacity-solid="true"]) ytd-watch-flexy ytd-live-chat-frame #show-hide-button {
+  background: transparent !important;
+}
+
+html[data-ylg-enabled="true"]:not([data-ylg-blur="none"]):not([data-ylg-lowfx="true"]):not([data-ylg-bg-suspended="1"]):not([data-ylg-fill="none"]):not([data-ylg-opacity-solid="true"]) :is(ytd-miniplayer, ytd-watch-flexy ytd-engagement-panel-section-list-renderer[visibility="ENGAGEMENT_PANEL_VISIBILITY_EXPANDED"], ytd-watch-flexy ytd-live-chat-frame) {
+  -webkit-backdrop-filter: blur(var(--ylg-blur)) saturate(var(--ylg-saturate, 1.4));
+  backdrop-filter: blur(var(--ylg-blur)) saturate(var(--ylg-saturate, 1.4));
+}
+
+html[data-ylg-enabled="true"][data-ylg-ambient="on"][data-ylg-ambient-sync="1"]:not([data-ylg-fill="none"]):not([data-ylg-opacity-solid="true"]) :is(ytd-miniplayer, ytd-watch-flexy ytd-engagement-panel-section-list-renderer[visibility="ENGAGEMENT_PANEL_VISIBILITY_EXPANDED"], ytd-watch-flexy ytd-live-chat-frame) {
+  box-shadow:
+    0 1px 2px var(--ylg-shadow-contact, rgba(0, 0, 0, 0.18)),
+    0 10px 26px var(--ylg-shadow-ambient, rgba(0, 0, 0, 0.24)),
+    inset 0 1px 0 rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.44),
+    inset 0 0 0 1px rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.22);
+}
+
+/* Shorts bottom Progress Bar + accent/ambient-synced glow */
+html[data-ylg-enabled="true"] ytd-shorts .ytProgressBarLineProgressBarLine {
+  background: rgba(255, 255, 255, 0.20);
+  border-radius: 999px;
+  transition: height 140ms ease, background-color 140ms ease;
+}
+
+html[data-ylg-enabled="true"] ytd-shorts yt-progress-bar:hover .ytProgressBarLineProgressBarLine {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+html[data-ylg-enabled="true"] ytd-shorts .ytProgressBarLineProgressBarPlayed {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ylg-accent, #ff4e6a) 72%, rgba(var(--ylg-ambient-rim, 255, 72, 96), 0.96)),
+    rgba(255, 255, 255, 0.94)
+  );
+  border-radius: 999px;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--ylg-accent, #ff4e6a) 68%, rgba(var(--ylg-ambient-rim, 255, 72, 96), 0.55));
+}
+
+html[data-ylg-enabled="true"] ytd-shorts .ytProgressBarPlayheadProgressBarPlayheadDot {
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--ylg-accent, #ff4e6a) 55%, rgba(255, 255, 255, 0.42)),
+    0 0 12px rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.65);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html[data-ylg-enabled="true"] :is(ytd-miniplayer, ytd-watch-flexy ytd-engagement-panel-section-list-renderer[visibility="ENGAGEMENT_PANEL_VISIBILITY_EXPANDED"], ytd-watch-flexy ytd-live-chat-frame) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"]:not([data-ylg-system-motion="ignore"]) ytd-shorts .ytProgressBarLineProgressBarLine {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  html[data-ylg-enabled="true"] :is(ytd-miniplayer, ytd-watch-flexy ytd-engagement-panel-section-list-renderer, ytd-watch-flexy ytd-live-chat-frame) {
+    border: 1px solid CanvasText !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}

@@ -9,7 +9,7 @@
 precision highp float;
 uniform vec2 size;
 uniform vec2 sun;
-uniform float daylight, warmth, night, clouds, seconds, wet, rain;
+uniform float daylight, warmth, night, clouds, seconds, wet, rain, aurora;
 float hash(vec2 p){vec2 v=mod(p,1024.);return fract(sin(v.x*12.9898+v.y*78.233)*4375.85453);}
 float valueNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float n=0.,a=.5;for(int i=0;i<5;i++){n+=valueNoise(p)*a;p=mat2(1.6,-1.2,1.2,1.6)*p+7.3;a*=.5;}return n;}
@@ -25,6 +25,51 @@ vec3 overcast(vec2 uv){
  color+=(cover-.48)*vec3(.13,.15,.17);
  color+=vec3(.028,.030,.031)*exp(-pow((uv.y-.19)*2.7,2.));
  return max(vec3(.008),color*light);
+}
+float shootingStars(vec2 uv,float aspect,float t){
+ float total=0.;
+ vec2 dir=normalize(vec2(-.86,-.44));
+ vec2 perp=vec2(-dir.y,dir.x);
+ for(int i=0;i<2;i++){
+  float fi=float(i);
+  float period=9.5+fi*4.7;
+  float slot=t/period+fi*.37;
+  float cycle=floor(slot);
+  float phase=fract(slot);
+  float window=.068;
+  if(phase<window){
+   float prog=phase/window;
+   vec2 start=vec2(.22+.72*hash(vec2(cycle,13.1+fi*7.)),.58+.34*hash(vec2(cycle,29.3+fi*5.)));
+   vec2 head=start+dir*(prog*.42);
+   vec2 rel=(uv-head)*vec2(aspect,1.);
+   float along=dot(rel,dir);
+   float across=abs(dot(rel,perp));
+   float tail=smoothstep(-.18,.0,along)*(1.-smoothstep(.0,.008,along));
+   float beam=exp(-across*1100.)*tail;
+   float core=exp(-length(rel)*220.);
+   float env=sin(prog*3.14159);
+   total+=(beam*.75+core*1.15)*env;
+  }
+ }
+ return total;
+}
+vec3 auroraGlow(vec2 uv,float aspect,float t){
+ vec2 p=vec2((uv.x-.5)*aspect,uv.y);
+ float skyFade=smoothstep(.22,.56,uv.y)*(1.-smoothstep(.76,.99,uv.y));
+ vec3 acc=vec3(0.);
+ for(int i=0;i<3;i++){
+  float fi=float(i);
+  float wave=.44+fi*.10+.09*sin(p.x*(1.4+fi*.35)+t*(.09+fi*.03)+fi*2.1)+.05*cos(p.x*2.9-t*.07+fi);
+  float n=fbm(vec2(p.x*(1.7+fi*.4)+t*(.018+fi*.006),p.y*1.2-t*.022+fi*4.3));
+  float dist=p.y-(wave+(n-.5)*.14);
+  float curtain=exp(-abs(dist)*(11.-fi*2.2))*smoothstep(-.05,.18,dist+.04);
+  float rays=.55+.45*fbm(vec2(p.x*11.+t*.08+fi*3.,uv.y*2.-t*.11));
+  vec3 lowCol=mix(vec3(.08,.90,.58),vec3(.20,.56,.96),fi*.35);
+  vec3 highCol=vec3(.66,.24,.88);
+  vec3 tint=mix(lowCol,highCol,smoothstep(.0,.20,max(0.,dist)));
+  acc+=tint*curtain*rays*(.42-.07*fi);
+ }
+ return acc*skyFade;
 }
 vec3 atmosphere(vec2 uv){
  float aspect=size.x/size.y;
@@ -52,6 +97,11 @@ vec3 atmosphere(vec2 uv){
  float disc=1.-smoothstep(.019,.0205,md);
  float crater=fbm((uv-moon)*380.);
  color+=starVis*(vec3(.74,.81,.88)*disc*(.65+.35*crater)+vec3(.20,.30,.49)*exp(-md*22.)*.14);
+ float meteor=shootingStars(uv,aspect,seconds)*starVis*smoothstep(.24,.55,uv.y);
+ color+=vec3(.76,.90,1.)*meteor;
+ }
+ if(aurora>.001){
+ color+=auroraGlow(uv,aspect,seconds)*aurora*(1.-wet*.85)*(1.-clouds*.45);
  }
  // Perspective-shaped layers, slow advection, fine detail and self-shading.
  vec2 wind=vec2(seconds*.0013,seconds*.00023);
@@ -153,15 +203,17 @@ void main(){
       if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;gl.viewport(0,0,width,height);}
     }
     function parameters(){
-      var manual={morning:{elevation:4,hourAngle:-80},day:{elevation:60,hourAngle:0},sunset:{elevation:2,hourAngle:80},night:{elevation:-30,hourAngle:140}};
-      var solar=state.auto&&root.YLG_SKY_ENV&&state.location?root.YLG_SKY_ENV.solarAt(new Date(),state.location):null;
-      solar=solar||manual[state.scene]||manual.night;
+      var manual={morning:{elevation:4,hourAngle:-80},day:{elevation:60,hourAngle:0},sunset:{elevation:2,hourAngle:80},night:{elevation:-30,hourAngle:140},aurora:{elevation:-30,hourAngle:140}};
+      var autoSolar=state.auto&&root.YLG_SKY_ENV&&state.location?root.YLG_SKY_ENV.solarAt(new Date(),state.location):null;
+      var solar=autoSolar||manual[state.scene]||manual.night;
       var e=solar.elevation,day=Math.max(0,Math.min(1,(e+6)/18));
       var weather=state.weather,raining=state.rain===true;
+      var isAurora=!autoSolar&&state.scene==="aurora";
+      var defaultCloud=isAurora?.14:.24;
       return {day:day,warm:Math.max(0,1-Math.abs(e-1)/13),night:1-Math.max(0,Math.min(1,(e+12)/12)),
         x:Math.max(.05,Math.min(.95,.5+solar.hourAngle/180*.7)),y:1-Math.max(.1,Math.min(.85,.82-Math.max(0,e)/90*.72)),
-        cloud:raining?Math.max(.96,weather?weather.cloud:0):(weather?weather.cloud:.24),rain:raining?1:0,
-        wet:raining||(weather&&["rain","storm","fog"].indexOf(weather.kind)>=0)?1:0};
+        cloud:raining?Math.max(.96,weather?weather.cloud:0):(weather?weather.cloud:defaultCloud),rain:raining?1:0,
+        wet:raining||(weather&&["rain","storm","fog"].indexOf(weather.kind)>=0)?1:0,aurora:isAurora?1:0};
     }
     function draw(){
       cancel();if(stopped||failed||!state||document.hidden||!host.isConnected)return;
@@ -175,6 +227,7 @@ void main(){
         gl.uniform2f(locations.size,canvas.width,canvas.height);gl.uniform2f(locations.sun,p.x,p.y);
         gl.uniform1f(locations.daylight,p.day);gl.uniform1f(locations.warmth,p.warm);gl.uniform1f(locations.night,p.night);
         gl.uniform1f(locations.clouds,cloudValue);gl.uniform1f(locations.wet,p.wet);gl.uniform1f(locations.rain,p.rain);
+        gl.uniform1f(locations.aurora,p.aurora);
         var time=state.moving?root.performance.now()/1000:lastAt;
         gl.uniform1f(locations.seconds,time);lastAt=time;
         gl.drawArrays(gl.TRIANGLES,0,3);draws++;lastCost=root.performance.now()-start;
@@ -193,7 +246,7 @@ void main(){
       gl.useProgram(program);buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
       gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
       var index=gl.getAttribLocation(program,"p");gl.enableVertexAttribArray(index);gl.vertexAttribPointer(index,2,gl.FLOAT,false,0,0);
-      ["size","sun","daylight","warmth","night","clouds","seconds","wet","rain"].forEach(function(name){locations[name]=gl.getUniformLocation(program,name);});
+      ["size","sun","daylight","warmth","night","clouds","seconds","wet","rain","aurora"].forEach(function(name){locations[name]=gl.getUniformLocation(program,name);});
       canvas.addEventListener("webglcontextlost",lost);
       host.appendChild(canvas);host.setAttribute("data-sky-renderer","webgl");
     }catch(_){fallback();return null;}

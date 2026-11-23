@@ -269,8 +269,8 @@ html[data-ylg-motion="on"] .ylg-panel { animation: ylg-popup-enter 200ms var(--e
 .ylg-amb-subrow > label { display: block; color: var(--txt); font-size: 12.5px; margin-bottom: 6px; }
 .ylg-amb-toggles { padding: 2px 0; }
 .ylg-hint { color: var(--txt-dim); font-size: 11px; }
-.ylg-scene-choices { margin: 8px 0; flex-wrap: wrap; }
-.ylg-scene-choices button { min-width: 54px; }
+.ylg-scene-choices { margin: 8px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; }
+.ylg-scene-choices button { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* footer */
 .ylg-footer {

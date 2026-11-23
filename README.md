@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Free and open source, made for desktop Microsoft Edge and Google Chrome.
 
-**Latest release: [0.7.3](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.7.3).** Eliminates `0.7.2` Watch & Shorts frame-time regressions (128×128 off-thread `createImageBitmap` bar detection, single-pass-by-default scanning, lighter adaptive scan/tint cadences) and restores the Liquid Glass progress-bar scrubber pill across both hover and active drag. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.7.3.md)
+**Latest release: [0.8.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.0).** Adds browse-wide procedural sky with an **Aurora** & shooting-star night scene, **Thumbnail Hover Ambient Halo**, unified glass sync for Miniplayer/Engagement Panels/Live Chat/Shorts progress bar + optional rounded Watch video frame, automatic zero-effect suspension in background tabs for audio-only listening, and synced `Alt+A / Alt+S / Alt+D` Chrome Web Store docs. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.0.md)
 
 ## A little more depth
 

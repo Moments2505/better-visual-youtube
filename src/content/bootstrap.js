@@ -94,6 +94,54 @@
   var lastApplied = null;
   var themeObserver = null;
   var tintListener = null;
+  var bgSuspended = false;
+  var applyTimer = null;
+
+  function isPageHidden() {
+    return !!(doc && (doc.hidden === true || doc.visibilityState === "hidden"));
+  }
+
+  function suspendForBackground() {
+    bgSuspended = true;
+    if (de && de.setAttribute) de.setAttribute("data-ylg-bg-suspended", "1");
+    if (applyTimer !== null) {
+      clearTimeout(applyTimer);
+      applyTimer = null;
+    }
+    if (themeObserver) {
+      try { themeObserver.disconnect(); } catch (eObs) {}
+      themeObserver = null;
+    }
+    try { root.YLG_OPTICS && root.YLG_OPTICS.teardown && root.YLG_OPTICS.teardown(); } catch (eOpt) {}
+    try {
+      if (de && de.removeAttribute) de.removeAttribute("data-ylg-advanced-ok");
+      if (R && R.dispose) R.dispose();
+    } catch (eRef) {}
+    try { root.YLG_TINT && root.YLG_TINT.teardown && root.YLG_TINT.teardown(); } catch (eTint) {}
+    if (tintListener) {
+      try { root.removeEventListener("ylg-tint", tintListener); } catch (eRem) {}
+      tintListener = null;
+    }
+    try { if (S && S.setAmbientRim) S.setAmbientRim(doc, null); } catch (eRim) {}
+    try { root.YLG_MICRO && root.YLG_MICRO.teardown && root.YLG_MICRO.teardown(); } catch (eMic) {}
+    try { root.YLG_PANEL_HOVER && root.YLG_PANEL_HOVER.teardown && root.YLG_PANEL_HOVER.teardown(); } catch (ePan) {}
+    try { root.YLG_CARD_HALO && root.YLG_CARD_HALO.teardown && root.YLG_CARD_HALO.teardown(); } catch (eHalo) {}
+    try { root.YLG_DESCRIPTION_MOTION && root.YLG_DESCRIPTION_MOTION.teardown && root.YLG_DESCRIPTION_MOTION.teardown(); } catch (eDesc) {}
+    try { root.YLG_PLAYER_MOTION && root.YLG_PLAYER_MOTION.teardown && root.YLG_PLAYER_MOTION.teardown(); } catch (ePm) {}
+    try { root.YLG_DAYLIGHT && root.YLG_DAYLIGHT.teardown && root.YLG_DAYLIGHT.teardown(); } catch (eDay) {}
+    try { root.YLG_EXPERIENCE && root.YLG_EXPERIENCE.teardown && root.YLG_EXPERIENCE.teardown(); } catch (eExp) {}
+    try { AMB && AMB.teardown && AMB.teardown(); } catch (eAmb) {}
+    try { ADAPTER && ADAPTER.teardown && ADAPTER.teardown(); } catch (eAdp) {}
+    try { NAV && NAV.teardown && NAV.teardown(); } catch (eNav) {}
+    try {
+      var VB = root.YLG_AMBIENT_VENDOR;
+      if (VB && VB.setBackgroundSuspended) {
+        var susp = VB.setBackgroundSuspended(true);
+        if (susp && typeof susp.catch === "function") susp.catch(function () {});
+      }
+    } catch (eVB) {}
+  }
+
   function syncThemeObserver(settings) {
     if (!settings.enabled || settings.theme !== "auto") {
       if (themeObserver) themeObserver.disconnect();
@@ -113,8 +161,14 @@
     var s = S.normalizeSettings(settings);
     lastApplied = s;
     S.applySettingsToDocument(doc, s); // sets data-ylg-enabled + data-ylg-ambient + vars
-    syncThemeObserver(s);
     detectLowFx();
+    if (s.enabled && isPageHidden()) {
+      suspendForBackground();
+      return;
+    }
+    bgSuspended = false;
+    if (de && de.removeAttribute) de.removeAttribute("data-ylg-bg-suspended");
+    syncThemeObserver(s);
     evaluateAdvancedMode(s);
 
     // Layer 6 optics (chromatic aberration + hover magnification). Additive:
@@ -140,6 +194,10 @@
     // engine's option keys and publish which engine paints this page.
     try {
       var VB = root.YLG_AMBIENT_VENDOR;
+      if (VB && VB.setBackgroundSuspended) {
+        var resSusp = VB.setBackgroundSuspended(false, { silent: true });
+        if (resSusp && typeof resSusp.catch === "function") resSusp.catch(function () {});
+      }
       if (VB && VB.reconcile) {
         // Bridge serializes latest snapshots and migrates before vendor startup.
         // Call synchronously so disable takes ownership before native init.
@@ -182,6 +240,7 @@
     } catch (eTint) {}
 
     if (s.enabled) {
+      var lowFxActive = Boolean(doc && doc.documentElement && doc.documentElement.getAttribute("data-ylg-lowfx") === "true");
       try { ADAPTER && ADAPTER.init && ADAPTER.init(); } catch (e) {}
       try { NAV && NAV.init && NAV.init(); } catch (e) {}
       try {
@@ -189,6 +248,7 @@
         if (root.YLG_MICRO) root.YLG_MICRO.init();
         if (root.YLG_DESCRIPTION_MOTION) root.YLG_DESCRIPTION_MOTION[s.motion ? "init" : "teardown"]();
         if (root.YLG_PANEL_HOVER) root.YLG_PANEL_HOVER[s.motion && s.hoverEffects && s.optics.enabled && s.optics.magnify ? "init" : "teardown"]();
+        if (root.YLG_CARD_HALO) root.YLG_CARD_HALO[s.cardHalo !== false && s.motion && s.hoverEffects && !lowFxActive ? "init" : "teardown"]();
       } catch (e) {}
       scheduleApply(0);
       if (doc.readyState === "loading") {
@@ -200,6 +260,7 @@
     } else {
       try { root.YLG_MICRO && root.YLG_MICRO.teardown(); } catch (e) {}
       try { root.YLG_PANEL_HOVER && root.YLG_PANEL_HOVER.teardown(); } catch (e) {}
+      try { root.YLG_CARD_HALO && root.YLG_CARD_HALO.teardown(); } catch (e) {}
       try { root.YLG_DESCRIPTION_MOTION && root.YLG_DESCRIPTION_MOTION.teardown(); } catch (e) {}
       try { root.YLG_PLAYER_MOTION && root.YLG_PLAYER_MOTION.teardown(); } catch (e) {}
       try { ADAPTER && ADAPTER.teardown && ADAPTER.teardown(); } catch (e) {}
@@ -226,13 +287,32 @@
     } catch (eExp) {}
   }
 
-  var applyTimer = null;
+  function onVisibilityChange() {
+    if (!lastApplied || !lastApplied.enabled) {
+      if (bgSuspended) {
+        bgSuspended = false;
+        if (de && de.removeAttribute) de.removeAttribute("data-ylg-bg-suspended");
+      }
+      return;
+    }
+    if (isPageHidden()) {
+      if (!bgSuspended) suspendForBackground();
+    } else if (bgSuspended) {
+      bgSuspended = false;
+      if (de && de.removeAttribute) de.removeAttribute("data-ylg-bg-suspended");
+      applySettings(lastApplied);
+    }
+  }
+
+  function onPageHide() {
+    if (lastApplied && lastApplied.enabled && !bgSuspended) suspendForBackground();
+  }
 
   function scheduleApply(delayMs) {
     if (applyTimer !== null) return;
     applyTimer = setTimeout(function () {
       applyTimer = null;
-      if (!lastApplied || !lastApplied.enabled) return;
+      if (!lastApplied || !lastApplied.enabled || bgSuspended) return;
       try { ADAPTER && ADAPTER.applyAll && ADAPTER.applyAll(); } catch (e) {}
     }, delayMs || 0);
   }
@@ -242,6 +322,13 @@
     stampBuild();
     S.onSettingsChanged(function (next) { applySettings(next); });
     S.getStoredSettings(function (stored) { applySettings(stored); });
+    if (doc && typeof doc.addEventListener === "function") {
+      doc.addEventListener("visibilitychange", onVisibilityChange);
+    }
+    if (root && typeof root.addEventListener === "function") {
+      root.addEventListener("pagehide", onPageHide);
+      root.addEventListener("pageshow", onVisibilityChange);
+    }
   }
 
   init();

@@ -134,7 +134,7 @@ test("one coarse timer changes scenes at successive boundaries and schedules the
 
 test("explicit scenes and live intensity apply without polling or replacing the scene tree", () => {
   const w = world(); w.api.updateSettings(snapshot()); const host = w.host();
-  for (const selected of ["night", "morning", "sunset", "day"]) {
+  for (const selected of ["night", "morning", "sunset", "day", "aurora"]) {
     w.api.updateSettings(snapshot({ daylightBackground: { enabled: true, scene: selected, intensity: 0.7 } }));
     scene(w, selected); assert.equal(w.host(), host); assert.equal(w.timers.size, 0);
     assert.equal(w.api.stats().nextChangeAt, null);
@@ -143,9 +143,13 @@ test("explicit scenes and live intensity apply without polling or replacing the 
   w.setClock(21); w.api.updateSettings(snapshot()); scene(w, "night"); assert.equal(w.timers.size, 1);
 });
 
-test("home, search and channel pages mount; SPA route exits unmount and later entries restore", () => {
+test("home, search, browse feeds and channel pages mount; SPA route exits unmount and later entries restore", () => {
   const w = world(); w.api.updateSettings(snapshot());
-  for (const pathname of ["/watch", "/shorts/123", "/channel/", "/c/", "/user/", "/@", "/feed/subscriptions", "/playlist", "/results-other"]) {
+  for (const pathname of ["/feed/subscriptions", "/feed/history", "/feed/you", "/playlist", "/gaming", "/podcasts", "/courses"]) {
+    w.navigate(pathname); assert.ok(w.host(), pathname); assert.equal(w.api.stats().eligiblePage, true, pathname);
+    assert.equal(w.html.getAttribute("data-ylg-daylight") !== null, true, pathname);
+  }
+  for (const pathname of ["/watch", "/shorts/123", "/channel/", "/c/", "/user/", "/@", "/feed", "/results-other"]) {
     w.navigate(pathname); assert.equal(w.host(), null, pathname); assert.equal(w.timers.size, 0, pathname);
     assert.equal(w.api.stats().eligiblePage, false, pathname);
     assert.equal(w.html.hasAttribute("data-ylg-daylight"), false, pathname);

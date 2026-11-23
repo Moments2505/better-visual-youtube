@@ -10,12 +10,13 @@
   var weather = null, weatherStatus = "off", weatherKey = "", weatherDue = 0, weatherPending = false, weatherRevision = 0;
   var reduced = root.matchMedia ? root.matchMedia("(prefers-reduced-motion: reduce)") : null;
   var forced = root.matchMedia ? root.matchMedia("(forced-colors: active)") : null;
-  var scenes = ["auto", "morning", "day", "sunset", "night"];
+  var scenes = ["auto", "morning", "day", "sunset", "night", "aurora"];
 
   function eligiblePage() {
-    var path = root.location && root.location.pathname;
-    return path === "/" || path === "/results" ||
-      /^\/(?:@[^/]+|(?:channel|c|user)\/[^/]+)(?:\/|$)/.test(path || "");
+    var path = (root.location && root.location.pathname) || "";
+    if (path === "/" || path === "/results" || path === "/playlist" || path === "/gaming" || path === "/podcasts" || path === "/courses") return true;
+    if (/^\/feed\/[a-z0-9_-]+(?:\/|$)/i.test(path)) return true;
+    return /^\/(?:@[^/]+|(?:channel|c|user)\/[^/]+)(?:\/|$)/.test(path);
   }
   function options() {
     var value = snapshot && snapshot.daylightBackground || {};

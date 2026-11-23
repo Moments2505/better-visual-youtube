@@ -164,6 +164,20 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
   html[data-ylg-enabled="true"][data-ylg-lowfx="true"][data-ylg-optics-aberration="1"] .ylg-glass[data-ylg-level="panel"]::before {
     filter: none !important;
   }
+  /* Background tab (audio-only): release all GPU blur/animation/compositing layers while hidden. */
+  html[data-ylg-bg-suspended="1"],
+  html[data-ylg-bg-suspended="1"] *,
+  html[data-ylg-bg-suspended="1"] *::before,
+  html[data-ylg-bg-suspended="1"] *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+  html[data-ylg-bg-suspended="1"] :is(#ylg-card-halo, #ylg-daylight-background, #ylg-shorts-glow, .ambientlight__container) {
+    display: none !important;
+  }
 }
 
 @layer ylg-a11y {

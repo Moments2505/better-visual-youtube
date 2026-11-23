@@ -25,6 +25,7 @@
     "videoShadow": 55
   },
   "blur": 8,
+  "cardHalo": true,
   "daylightBackground": {
     "enabled": true,
     "animate": true,
@@ -39,6 +40,7 @@
     }
   },
   "enabled": true,
+  "floatingPlayerFrame": false,
   "hideShortsShelf": false,
   "highlight": 0.25,
   "hotkeys": true,

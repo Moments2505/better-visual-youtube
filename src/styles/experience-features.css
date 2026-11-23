@@ -116,6 +116,76 @@ html[data-ylg-enabled="true"][data-ylg-hide-shorts="true"] ytd-mini-guide-entry-
   }
 }
 
+/* Feature #4 (v0.8.0 V2): Thumbnail Hover Ambient Halo */
+html[data-ylg-enabled="true"][data-ylg-card-halo="true"]:not([data-ylg-lowfx="true"]) [data-ylg-halo-host="1"] {
+  position: relative !important;
+  isolation: isolate;
+}
+
+#ylg-card-halo {
+  position: absolute;
+  inset: -16px -14px -18px -14px;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 26px;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 210ms cubic-bezier(0.22, 1, 0.36, 1), transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  contain: strict;
+  will-change: opacity, transform;
+  -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 42%, #000 36%, rgba(0, 0, 0, 0.45) 70%, transparent 98%);
+  mask-image: radial-gradient(ellipse 88% 82% at 50% 42%, #000 36%, rgba(0, 0, 0, 0.45) 70%, transparent 98%);
+}
+
+#ylg-card-halo > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  transform: scale(1.18);
+  filter: blur(28px) saturate(1.52) contrast(1.06);
+  pointer-events: none;
+  user-select: none;
+}
+
+#ylg-card-halo[data-ylg-halo-visible="1"] {
+  opacity: 0.48;
+  transform: scale(1);
+}
+
+html[data-ylg-theme="light"] #ylg-card-halo[data-ylg-halo-visible="1"] {
+  opacity: 0.34;
+}
+
+html[data-ylg-enabled="true"][data-ylg-card-halo="true"]:not([data-ylg-lowfx="true"]) [data-ylg-halo-host="1"] :is(ytd-thumbnail, yt-thumbnail-view-model) {
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+html[data-ylg-motion="off"] #ylg-card-halo,
+html[data-ylg-hover="off"] #ylg-card-halo,
+html[data-ylg-lowfx="true"] #ylg-card-halo,
+html[data-ylg-scrubbing="1"] #ylg-card-halo,
+html[data-ylg-bg-suspended="1"] #ylg-card-halo {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-ylg-enabled="true"]:not([data-ylg-system-motion="ignore"]) #ylg-card-halo {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  #ylg-card-halo {
+    display: none !important;
+  }
+}
+
 @layer ylg-a11y {
   @media (prefers-reduced-motion: reduce) {
     html:not([data-ylg-system-motion="ignore"])[data-ylg-enabled="true"][data-ylg-zen-watch="true"] ytd-watch-flexy :is(#secondary, ytd-comments),

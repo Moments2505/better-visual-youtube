@@ -264,6 +264,8 @@
     setChecked("ylg-exp-hotkeys", s.hotkeys !== false);
     setChecked("ylg-exp-hide-shorts", s.hideShortsShelf === true);
     setChecked("ylg-exp-zen-watch", s.zenWatch === true);
+    setChecked("ylg-exp-card-halo", s.cardHalo !== false);
+    setChecked("ylg-exp-player-frame", s.floatingPlayerFrame === true);
     syncState(s);
   }
 
@@ -602,6 +604,10 @@
     if (expHideShorts) expHideShorts.addEventListener("change", function () { update({ hideShortsShelf: this.checked }); });
     var expZenWatch = $("ylg-exp-zen-watch");
     if (expZenWatch) expZenWatch.addEventListener("change", function () { update({ zenWatch: this.checked }); });
+    var expCardHalo = $("ylg-exp-card-halo");
+    if (expCardHalo) expCardHalo.addEventListener("change", function () { update({ cardHalo: this.checked }); });
+    var expPlayerFrame = $("ylg-exp-player-frame");
+    if (expPlayerFrame) expPlayerFrame.addEventListener("change", function () { update({ floatingPlayerFrame: this.checked }); });
 
     var reset = $("ylg-reset");
     if (reset) {

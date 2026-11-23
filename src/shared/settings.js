@@ -40,6 +40,7 @@
       "videoShadow": 55
     },
     "blur": 8,
+    "cardHalo": true,
     "daylightBackground": {
       "enabled": true,
       "animate": true,
@@ -50,6 +51,7 @@
       "intensity": 1
     },
     "enabled": true,
+    "floatingPlayerFrame": false,
     "hideShortsShelf": false,
     "highlight": 0.25,
     "hotkeys": true,
@@ -262,7 +264,7 @@
           rain: typeof daylight.rain === "boolean" ? daylight.rain : def.rain,
           liveWeather: daylight.liveWeather === true,
           location: normalizeSkyLocation(daylight.location, def.location),
-          scene: ["auto", "morning", "day", "sunset", "night"].indexOf(daylight.scene) !== -1 ? daylight.scene : def.scene,
+          scene: ["auto", "morning", "day", "sunset", "night", "aurora"].indexOf(daylight.scene) !== -1 ? daylight.scene : def.scene,
           intensity: typeof daylight.intensity === "number" && isFinite(daylight.intensity) ? clamp(daylight.intensity, 0, 1) : def.intensity
         };
         return;
@@ -480,7 +482,7 @@
     applyTintChannels(de, "media", chromeState.accent);
   }
 
-  var WATCH_RIM_SELECTOR = "ytd-watch-flexy ytd-watch-metadata, ytd-watch-flexy #secondary, ytd-watch-flexy ytd-playlist-panel-renderer, ytd-watch-flexy ytd-comments";
+  var WATCH_RIM_SELECTOR = "ytd-watch-flexy ytd-watch-metadata, ytd-watch-flexy #secondary, ytd-watch-flexy ytd-playlist-panel-renderer, ytd-watch-flexy ytd-comments, ytd-watch-flexy ytd-engagement-panel-section-list-renderer, ytd-watch-flexy ytd-live-chat-frame, ytd-miniplayer";
 
   function applyAmbientRim(doc, syncEnabled) {
     var de = doc && doc.documentElement;
@@ -589,6 +591,10 @@
     else if (de.removeAttribute) de.removeAttribute("data-ylg-hide-shorts");
     if (s.enabled && s.zenWatch) de.setAttribute("data-ylg-zen-watch", "true");
     else if (de.removeAttribute) de.removeAttribute("data-ylg-zen-watch");
+    if (s.enabled && s.cardHalo && s.hoverEffects && s.motion) de.setAttribute("data-ylg-card-halo", "true");
+    else if (de.removeAttribute) de.removeAttribute("data-ylg-card-halo");
+    if (s.enabled && s.floatingPlayerFrame) de.setAttribute("data-ylg-player-frame", "true");
+    else if (de.removeAttribute) de.removeAttribute("data-ylg-player-frame");
 
     setProp("--ylg-blur", px(s.blur));
     // Blur 0 means "no backdrop blur", so the derived sizes collapse with it

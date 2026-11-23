@@ -243,7 +243,7 @@
     "message": "Enable sky background"
   },
   "daylightHint": {
-    "message": "Home, search and channel pages. A continuous procedural sky follows the sun at your chosen city. No fixed background images. Live weather adds local conditions."
+    "message": "Home, subscriptions, playlists, search and channel pages. A continuous procedural sky follows the sun at your chosen city. No fixed background images. Live weather adds local conditions."
   },
   "liveSunWeather": {
     "message": "Live sun & weather"
@@ -301,6 +301,9 @@
   },
   "sceneNight": {
     "message": "Night"
+  },
+  "sceneAurora": {
+    "message": "Aurora"
   },
   "skyIntensity": {
     "message": "Sky intensity"
@@ -472,6 +475,12 @@
   },
   "zenWatchLabel": {
     "message": "Zen Watch focus (dim sidebar until hover)"
+  },
+  "cardHaloLabel": {
+    "message": "Thumbnail hover ambient halo"
+  },
+  "floatingPlayerFrameLabel": {
+    "message": "Rounded floating video frame (Normal mode)"
   },
   "toastAmbientOn": {
     "message": "Ambient Light: On"

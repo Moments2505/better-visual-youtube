@@ -20,7 +20,8 @@
 /* Keep the night atmosphere visible at moderate intensity over YouTube's
    near-black page. Screen blending lifts the sky without dimming its stars;
    rain keeps its separate overcast treatment. No additional animation/filter. */
-#ylg-daylight-background[data-scene="night"][data-rain="false"]:not([data-weather="rain"]):not([data-weather="storm"])::before {
+#ylg-daylight-background[data-scene="night"][data-rain="false"]:not([data-weather="rain"]):not([data-weather="storm"])::before,
+#ylg-daylight-background[data-scene="aurora"][data-rain="false"]:not([data-weather="rain"]):not([data-weather="storm"])::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -28,6 +29,9 @@
   pointer-events: none;
   background: linear-gradient(180deg, rgba(45, 76, 128, .72), rgba(69, 100, 142, .65));
   mix-blend-mode: screen;
+}
+#ylg-daylight-background[data-scene="aurora"][data-rain="false"]:not([data-weather="rain"]):not([data-weather="storm"])::before {
+  background: linear-gradient(180deg, rgba(16, 86, 88, .42), rgba(45, 42, 102, .48));
 }
 /* Rain renders a dark overcast scene. Keep native light-theme text readable
    without switching YouTube's palette or recolouring individual cards/menus.
@@ -55,6 +59,10 @@ html:not([dark]) #ylg-daylight-background:is([data-rain="true"], [data-live="tru
   --ylg-sky-top: #09152e; --ylg-sky-bottom: #193856;
   --ylg-ray: #556fb0;
 }
+#ylg-daylight-background[data-scene="aurora"] {
+  --ylg-sky-top: #04101d; --ylg-sky-bottom: #0c2b3a;
+  --ylg-ray: #2dd4bf; --ylg-stars: #e2fff8;
+}
 html:not([dark]) #ylg-daylight-background[data-scene="morning"] {
   --ylg-sky-top: #bfe1f0; --ylg-sky-bottom: #ffe5bb;
 }
@@ -67,6 +75,10 @@ html:not([dark]) #ylg-daylight-background[data-scene="sunset"] {
 html:not([dark]) #ylg-daylight-background[data-scene="night"] {
   --ylg-sky-top: #d0d8ed; --ylg-sky-bottom: #e3e9f6;
   --ylg-stars: #6073a5; --ylg-ray: #9daed5;
+}
+html:not([dark]) #ylg-daylight-background[data-scene="aurora"] {
+  --ylg-sky-top: #bfe7ea; --ylg-sky-bottom: #dcd4f5;
+  --ylg-stars: #4a7882; --ylg-ray: #2dd4bf;
 }
 #ylg-daylight-background .ylg-daylight-glow {
   width: min(90vw, 960px);
@@ -99,7 +111,8 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
 #ylg-daylight-background[data-scene="sunset"] .ylg-daylight-sun { top: 65vh; right: 20vw; }
 /* Reuse the sun's small layer as the moon: no extra scene tree or video layer.
    Place it in the navigation gutter rather than behind the thumbnail grid. */
-#ylg-daylight-background[data-scene="night"] .ylg-daylight-sun {
+#ylg-daylight-background[data-scene="night"] .ylg-daylight-sun,
+#ylg-daylight-background[data-scene="aurora"] .ylg-daylight-sun {
   display: block;
   left: 12px; right: auto; top: 67vh;
   width: clamp(48px, 4.2vw, 70px);
@@ -124,7 +137,8 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
     radial-gradient(circle at 56px 112px, var(--ylg-stars) 0 .5px, transparent 1.1px);
   background-size: 173px 137px, 263px 211px, 347px 293px, 419px 331px, 113px 157px;
 }
-#ylg-daylight-background[data-scene="night"] .ylg-daylight-stars { display: block; }
+#ylg-daylight-background[data-scene="night"] .ylg-daylight-stars,
+#ylg-daylight-background[data-scene="aurora"] .ylg-daylight-stars { display: block; }
 /* A static, bounded nebula texture moves as one compositor layer. No animated
    filters, blend modes, image decoding, per-star elements or per-frame JS. */
 #ylg-daylight-background .ylg-daylight-galaxy {
@@ -152,6 +166,16 @@ html:not([dark]) #ylg-daylight-background[data-scene="night"] {
   mask-image: radial-gradient(ellipse, #000 12%, transparent 62%);
 }
 #ylg-daylight-background[data-scene="night"] .ylg-daylight-galaxy { display: block; }
+#ylg-daylight-background[data-scene="aurora"] .ylg-daylight-galaxy {
+  display: block;
+  opacity: .96;
+  background:
+    radial-gradient(ellipse at 52% 45%, #2dd4bfa8 0 4%, transparent 26%),
+    radial-gradient(ellipse at 32% 54%, #14b8a699 0 6%, transparent 34%),
+    radial-gradient(ellipse at 70% 38%, #818cf8a6 0 5%, transparent 32%),
+    radial-gradient(ellipse at 78% 30%, #a855f78a 0 5%, transparent 28%),
+    linear-gradient(164deg, transparent 22%, #0d948855 34%, #2dd4bf99 45%, #38bdf888 53%, #8b5cf666 62%, transparent 74%);
+}
 #ylg-daylight-background .ylg-daylight-glow {
   animation: ylg-daylight-drift 38s ease-in-out infinite alternate;
   animation-play-state: paused;

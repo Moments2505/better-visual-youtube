@@ -15,6 +15,7 @@
   var revision = 0;
   var state = "pending";
   var lastError = null;
+  var bgSuspended = false;
   var listeners = [];
   var enabledWaiters = [];
   var queue = Promise.resolve();
@@ -66,7 +67,13 @@
     var lowMem = !!(nav && typeof nav.deviceMemory === "number" && nav.deviceMemory > 0 && nav.deviceMemory <= 4);
     return (lowCores || lowMem) ? 25 : 50;
   }
+  function isPageHidden() {
+    try {
+      return typeof document !== "undefined" && (document.hidden === true || document.visibilityState === "hidden");
+    } catch (e) { return false; }
+  }
   function wanted(settings, currentMode) {
+    if (bgSuspended || isPageHidden()) return false;
     var amb = settings && settings.ambientLight;
     if (!settings || settings.enabled === false || !amb || amb.enabled === false || !ambientAllowed(settings)) return false;
     if (currentMode === "shorts" || currentMode === "miniplayer") return false;
@@ -218,6 +225,9 @@
     // clears its surfaces without that early-return guard.
     if (!on) {
       vendorSettings.set("enabled", false, true, true);
+      if (typeof activeEngine.cancelScheduledRequestVideoFrame === "function") {
+        activeEngine.cancelScheduledRequestVideoFrame();
+      }
       if (activeEngine.updateKeywordsToPreventTheaterScaling) activeEngine.updateKeywordsToPreventTheaterScaling();
       await activeEngine.hide();
     } else if (!vendorSettings.enabled || activeEngine.isHidden) {
@@ -270,7 +280,8 @@
         return false;
       }
       if (request !== revision) return false;
-      if (snapshot.enabled !== false && snapshot.ambientLight && snapshot.ambientLight.enabled !== false) {
+      if (snapshot.enabled !== false && snapshot.ambientLight && snapshot.ambientLight.enabled !== false &&
+          !bgSuspended && !isPageHidden()) {
         enabledWaiters.splice(0).forEach(function (resolve) { resolve(); });
       }
       if (!engine) return false; // pending is deliberately NOT upstream-active
@@ -311,6 +322,41 @@
       if (settings && settings.getStoredSettings) settings.getStoredSettings(reconcile);
     });
   }
+  function setBackgroundSuspended(suspended, opts) {
+    var next = Boolean(suspended);
+    var silent = Boolean(opts && opts.silent);
+    if (next === bgSuspended) return Promise.resolve(false);
+    bgSuspended = next;
+    if (silent) return Promise.resolve(false);
+    if (!next && latest && latest.enabled !== false && latest.ambientLight && latest.ambientLight.enabled !== false && !isPageHidden()) {
+      enabledWaiters.splice(0).forEach(function (resolve) { resolve(); });
+    }
+    if (!latest) return Promise.resolve(false);
+    if (!engine) {
+      if (!next) return reconcile(latest);
+      publish("off");
+      return Promise.resolve(false);
+    }
+    var snapshot = latest;
+    var request = ++revision;
+    publish("pending");
+    queue = queue.catch(function () {}).then(async function () {
+      if (request !== revision || !engine) return false;
+      try {
+        var livePatch = toPatch(snapshot);
+        livePatch[keys.enabled] = wanted(snapshot, mode);
+        var applied = await applyLive(livePatch, snapshot);
+        if (request !== revision) return false;
+        lastError = applied ? null : "vendor-not-applied";
+        publish(applied ? (livePatch[keys.enabled] ? "upstream" : "off") : "error");
+        return applied && livePatch[keys.enabled];
+      } catch (error) {
+        if (request === revision) { lastError = "vendor-apply-failed"; publish("error"); }
+        return false;
+      }
+    });
+    return queue;
+  }
   function onStateChanged(listener) {
     listeners.push(listener);
     return function () { listeners = listeners.filter(function (item) { return item !== listener; }); };
@@ -328,11 +374,12 @@
   root.YLG_AMBIENT_VENDOR = {
     push: reconcile, reconcile: reconcile, attach: attach,
     waitUntilEnabled: waitUntilEnabled, refreshMode: refreshMode,
+    setBackgroundSuspended: setBackgroundSuspended,
     onStateChanged: onStateChanged, upstreamActive: function () { return Promise.resolve(state === "upstream"); },
     // Pending/error reserve the engine slot too: the unconditional legacy loader
     // can still be running. Falling back would risk two renderers. Fail closed.
     ownsRenderer: function () { return true; },
-    stats: function () { return { state: state, attached: !!engine, error: lastError, mode: mode }; },
+    stats: function () { return { state: state, attached: !!engine, error: lastError, mode: mode, backgroundSuspended: bgSuspended }; },
     repair: repair, clampSpread: clampSpread, toPatch: toPatch, keys: keys
   };
 })();
