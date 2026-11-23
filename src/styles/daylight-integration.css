@@ -5,7 +5,7 @@ html[data-ylg-enabled="true"][data-ylg-daylight] {
 }
 /* Channel routes hide the native sheet with .none, even though our masthead
    child surfaces still delegate their material to it. Restore that painter. */
-html[data-ylg-enabled="true"][data-ylg-daylight]:not(:fullscreen):not(:has(:fullscreen)) #frosted-glass {
+html[data-ylg-enabled="true"][data-ylg-daylight]:not(:fullscreen):not([data-ylg-fullscreen="1"]) #frosted-glass {
   display: block !important;
   /* Channel header is a flex item at 2000; masthead controls remain at 2020. */
   z-index: 2018 !important;

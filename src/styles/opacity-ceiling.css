@@ -9,7 +9,7 @@
     html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid] #frosted-glass::before {
       background: var(--ylg-chrome-scrim) !important;
     }
-    html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid]:has(#frosted-glass) #masthead-container :is(ytd-masthead, #masthead, ytd-searchbox).ylg-glass {
+    html[data-ylg-enabled="true"][data-ylg-theme][data-ylg-opacity-solid][data-ylg-frosted-glass="1"] #masthead-container :is(ytd-masthead, #masthead, ytd-searchbox).ylg-glass {
       background-color: transparent !important;
       background-image: none !important;
     }
@@ -19,7 +19,7 @@
       -webkit-backdrop-filter: none !important;
       backdrop-filter: none !important;
     }
-    html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container :is(ytd-masthead, #masthead, #background, ytd-searchbox, yt-searchbox) {
+    html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container :is(ytd-masthead, #masthead, #background, ytd-searchbox, yt-searchbox) {
       background: transparent !important;
       background-color: transparent !important;
       background-image: none !important;
@@ -27,7 +27,7 @@
       backdrop-filter: none !important;
       box-shadow: none !important;
     }
-    html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #background {
+    html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container #background {
       opacity: 0 !important;
     }
     html[data-ylg-enabled="true"] #masthead-container {

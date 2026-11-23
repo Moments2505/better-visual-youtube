@@ -61,24 +61,50 @@ test("enlarged metadata cannot trap pointer over comments or recommendations; re
   w.move(w.metadata,616,200);w.flush();assert.deepEqual(w.active(),[w.secondary]);
   assert.ok(w.secondary.getBoundingClientRect().left<598);
   w.move(w.secondary,598,200);w.flush();assert.deepEqual(w.active(),[w.metadata]);
-  assert.equal(w.de.getAttribute("data-ylg-panel-side"),"primary");
+  assert.equal(w.de.hasAttribute("data-ylg-panel-side"),false);
 });
-test("pointer bursts coalesce; staying in one panel never restarts its animation",()=>{
+test("pointer bursts coalesce; staying in one panel never restarts its animation or performs layout reads",()=>{
   const w=world();const before=w.stats();
   for(let i=0;i<200;i++)w.move(w.metadata,500,200+i%30);
   assert.equal(w.frames.size,1);w.flush();
   assert.ok(w.stats().reads-before.reads<=3);const selectedWrites=w.stats().writes;
-  for(let i=0;i<60;i++){w.move(w.metadata,500,200+i%30);w.flush();}
+  const steadyReads=w.stats().reads;
+  for(let i=0;i<60;i++){w.move(w.metadata,500,200+i%30);assert.equal(w.frames.size,0);w.flush();}
+  assert.equal(w.stats().reads,steadyReads);
   assert.equal(w.stats().writes,selectedWrites);assert.equal(w.timers.size,0);
 });
-test("rapid reversals keep exactly one active panel and bounded leaving timers",()=>{
+test("scaled bottom overhang continuity holds in gap without flicker while neighbor entry hands off immediately",()=>{
+  const w=world();
+  w.move(w.metadata,500,200);w.flush();assert.deepEqual(w.active(),[w.metadata]);
+  assert.ok(w.metadata.getBoundingClientRect().bottom>385);
+  w.move(w.metadata,500,385);w.flush();assert.deepEqual(w.active(),[w.metadata]);
+  w.move(w.metadata,500,391);w.flush();assert.deepEqual(w.active(),[w.comments]);
+});
+test("clicking to expand description invalidates geometry cache and releases lift",()=>{
+  const w=world();
+  w.move(w.metadata,500,200);w.flush();assert.deepEqual(w.active(),[w.metadata]);
+  w.metadata.expanded=true;w.emit("click",{target:w.metadata});w.flush();
+  assert.equal(w.active().length,0);
+  assert.equal(w.metadata.getAttribute("data-ylg-desc-expanded"),"1");
+  w.metadata.expanded=false;w.emit("click",{target:w.metadata});w.flush();
+  assert.deepEqual(w.active(),[w.metadata]);
+  assert.equal(w.metadata.hasAttribute("data-ylg-desc-expanded"),false);
+  w.metadata.expanded=true;w.emit("click",{target:w.metadata});w.flush();
+  assert.equal(w.metadata.getAttribute("data-ylg-desc-expanded"),"1");
+  w.api.teardown();
+  assert.equal(w.metadata.hasAttribute("data-ylg-desc-expanded"),false);
+});
+test("rapid reversals keep exactly one active panel, bounded leaving timers, and zero root attribute churn",()=>{
   const w=world();const steps=[[w.metadata,500,200],[w.comments,500,500],[w.secondary,800,200]];
   for(let i=0;i<90;i++){
     const [target,x,y]=steps[i%3];w.move(target,x,y);w.flush();
     assert.deepEqual(w.active(),[target]);assert.ok(w.timers.size<=2);
+    assert.equal(w.de.hasAttribute("data-ylg-panel-side"),false);
   }
-  assert.equal(w.de.getAttribute("data-ylg-panel-side"),"leaving-primary");
-  w.advance(500);assert.equal(w.timers.size,0);assert.equal(w.de.getAttribute("data-ylg-panel-side"),"secondary");
+  assert.equal(w.comments.hasAttribute("data-ylg-panel-leaving"),true);
+  w.advance(500);assert.equal(w.timers.size,0);
+  assert.equal(w.comments.hasAttribute("data-ylg-panel-leaving"),false);
+  assert.deepEqual(w.active(),[w.secondary]);
 });
 test("stale exit callbacks cannot finish a newer exit on the same panel",()=>{
   const w=world();w.move(w.metadata,500,200);w.flush();w.move(w.comments,500,500);w.flush();

@@ -4,8 +4,8 @@
 /* YouTube keeps the sheet in the DOM but gives it .none on watch pages.
    Presence-based child resets still apply there, so ensure the sole painter
    actually displays. Respect fullscreen, which owns the entire viewport. */
-html[data-ylg-enabled="true"]:not(:fullscreen):not(:has(:fullscreen)) ytd-app:not([fullscreen]) #frosted-glass,
-html[data-ylg-enabled="true"]:not(:fullscreen):not(:has(:fullscreen)) ytd-app[is-watch-page]:not([fullscreen]) #frosted-glass {
+html[data-ylg-enabled="true"]:not(:fullscreen):not([data-ylg-fullscreen="1"]) ytd-app:not([fullscreen]) #frosted-glass,
+html[data-ylg-enabled="true"]:not(:fullscreen):not([data-ylg-fullscreen="1"]) ytd-app[is-watch-page]:not([fullscreen]) #frosted-glass {
   display: block !important;
 }
 html[data-ylg-enabled="true"] #frosted-glass {
@@ -85,22 +85,22 @@ html[data-ylg-enabled="true"][data-ylg-fill="none"] #frosted-glass::before {
   box-shadow: none;
 }
 /* The bounded sheet owns the only headbar painter. */
-html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container#masthead-container ytd-masthead.ylg-glass,
-html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container :is(ytd-masthead, #masthead, #background, ytd-searchbox, yt-searchbox),
-html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
-html[data-ylg-enabled="true"]:has(#frosted-glass) :is(#chips-wrapper, ytd-feed-filter-chip-bar-renderer),
-html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-searchbox.ylg-glass {
+html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container#masthead-container ytd-masthead.ylg-glass,
+html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container :is(ytd-masthead, #masthead, #background, ytd-searchbox, yt-searchbox),
+html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox,
+html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] :is(#chips-wrapper, ytd-feed-filter-chip-bar-renderer),
+html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container ytd-searchbox.ylg-glass {
   background-color: transparent !important;
   background-image: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   box-shadow: none !important;
 }
-html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #background {
+html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container #background {
   opacity: 0 !important;
 }
-html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-masthead.ylg-glass::before,
-html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container ytd-masthead.ylg-glass::after {
+html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container ytd-masthead.ylg-glass::before,
+html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container ytd-masthead.ylg-glass::after {
   content: none;
   display: none;
 }
@@ -138,7 +138,7 @@ html[data-ylg-enabled="true"] #masthead-container#masthead-container #center .yt
   background-color: var(--yt-sys-color-baseline--mono-tonal-hover, rgba(128, 128, 128, 0.2)) !important;
 }
 /* Keyboard focus stays visible without introducing another material painter. */
-html[data-ylg-enabled="true"]:has(#frosted-glass) #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox:focus-within {
+html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container #center .ytSearchboxComponentInputBox.ytSearchboxComponentInputBox:focus-within {
   outline: 2px solid var(--ylg-accent);
   outline-offset: -2px;
 }

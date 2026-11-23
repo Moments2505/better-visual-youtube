@@ -76,8 +76,10 @@ html[data-ylg-optics="on"] .ylg-glass {
     box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-html[data-ylg-optics="on"] .ylg-glass:hover,
-html[data-ylg-optics="on"] .ylg-glass:focus-within {
+html[data-ylg-optics="on"] .ylg-glass:not([data-ylg-level="panel"]):hover,
+html[data-ylg-optics="on"] .ylg-glass:not([data-ylg-level="panel"]):focus-within,
+html[data-ylg-optics="on"]:not([data-ylg-panel-controller="on"]) .ylg-glass[data-ylg-level="panel"]:hover,
+html[data-ylg-optics="on"]:not([data-ylg-panel-controller="on"]) .ylg-glass[data-ylg-level="panel"]:focus-within {
   transform: scale(var(--ylg-hover-scale, 1.028));
   /* paint above siblings: the focused surface overlaps its neighbours instead
      of being clipped by them, and it never hides its own content.
@@ -136,25 +138,8 @@ html[data-ylg-optics="on"] #primary   { position: relative; z-index: 2; }
 html[data-ylg-optics="on"] #secondary { position: relative; z-index: 3; }
 html[data-ylg-optics="on"] #below     { position: relative; z-index: 2; }
 
-/* the lift wins over all three columns */
-/* The lift above is necessary but NOT sufficient, and the measurement says why:
-   a stacking context only competes with its own siblings. ytd-watch-metadata is
-   rendered inside #below, which is itself inside #primary, so its z-index 31 is
-   resolved against #below's other children - never against #secondary. Lifting
-   the surface alone leaves it trapped:
-       #primary (z 2) > #below (z 2) > ytd-watch-metadata (z 31)   vs   #secondary (z 3)
-   Measured: with the metadata zoomed to 1.12 the panel covers 126px of the
-   sidebar, and the topmost element at that overlap was SECONDARY - the panel was
-   painted UNDER the recommendations, exactly as reported.
-   The column that owns the surface has to rise with it. :has() lets us express
-   that without any JS: while the metadata is hovered or focused, #primary becomes
-   the top column and its whole subtree - including the zoomed panel - wins.
-   Measured after: the same overlap resolves to METADATA.
-   Same treatment for the comments, so a zooming comments panel always covers the
-   video-info card it overlaps rather than sliding beneath it. */
-html[data-ylg-optics="on"]:not([data-ylg-panel-controller="on"]) #primary:has(> #primary-inner > #below :is(ytd-watch-metadata, ytd-comments):is(:hover, :focus-within)) {
-  z-index: 4;
-}
+/* panel-hover.js + hover-refinement.css handle cross-column stacking directly
+   without #primary:has(...) global style invalidation. */
 
 /* ---- 2a. ANCHORS -----------------------------------------------------------
    One rule per region, in the order the page reads. The anchor is whichever

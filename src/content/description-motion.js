@@ -4,7 +4,7 @@
   "use strict";
   var root = typeof window !== "undefined" ? window : globalThis;
   if (root.YLG_DESCRIPTION_MOTION) return;
-  var active = false, frame = 0, animation = null, node = null;
+  var active = false, frame = 0, animation = null, node = null, expandedMeta = null;
   function eligible() {
     var de = document.documentElement;
     return de.getAttribute("data-ylg-enabled") === "true" && de.getAttribute("data-ylg-motion") === "on" &&
@@ -17,6 +17,27 @@
     if (previous) { previous.onfinish = previous.oncancel = null; previous.cancel(); }
     if (node) node.removeAttribute("data-ylg-description-motion");
     node = null;
+  }
+  function clearExpandedMeta() {
+    if (expandedMeta && typeof expandedMeta.removeAttribute === "function") {
+      try { expandedMeta.removeAttribute("data-ylg-desc-expanded"); } catch (e) {}
+    }
+    expandedMeta = null;
+  }
+  function syncExpandedMeta(metadata) {
+    if (!metadata || typeof metadata.setAttribute !== "function" ||
+        typeof metadata.removeAttribute !== "function" || typeof metadata.querySelector !== "function") {
+      return;
+    }
+    try {
+      if (metadata.querySelector("#description-inline-expander[is-expanded]")) {
+        metadata.setAttribute("data-ylg-desc-expanded", "1");
+        expandedMeta = metadata;
+      } else {
+        metadata.removeAttribute("data-ylg-desc-expanded");
+        if (expandedMeta === metadata) expandedMeta = null;
+      }
+    } catch (e) {}
   }
   function prepare(event) {
     if (!active || !eligible()) return;
@@ -32,6 +53,7 @@
     frame = root.requestAnimationFrame(function () {
       frame = 0;
       if (!active || !eligible() || description.isConnected === false) { clear(); return; }
+      syncExpandedMeta(metadata);
       var after = parseFloat(root.getComputedStyle(description).height);
       if (!(after > 0) || Math.abs(after - before) < 1) { clear(); return; }
       description.setAttribute("data-ylg-description-motion", "1");
@@ -44,21 +66,22 @@
     });
   }
   function hidden() { if (document.hidden) clear(); }
+  function onNavigate() { clear(); clearExpandedMeta(); }
   function init() {
     if (active) return; active = true;
     document.addEventListener("click", prepare, true);
-    document.addEventListener("yt-navigate-start", clear, true);
+    document.addEventListener("yt-navigate-start", onNavigate, true);
     document.addEventListener("visibilitychange", hidden);
     root.addEventListener("resize", clear);
-    root.addEventListener("pagehide", clear);
+    root.addEventListener("pagehide", onNavigate);
   }
   function teardown() {
-    active = false; clear();
+    active = false; clear(); clearExpandedMeta();
     document.removeEventListener("click", prepare, true);
-    document.removeEventListener("yt-navigate-start", clear, true);
+    document.removeEventListener("yt-navigate-start", onNavigate, true);
     document.removeEventListener("visibilitychange", hidden);
     root.removeEventListener("resize", clear);
-    root.removeEventListener("pagehide", clear);
+    root.removeEventListener("pagehide", onNavigate);
   }
   root.YLG_DESCRIPTION_MOTION = { init: init, teardown: teardown };
 })();

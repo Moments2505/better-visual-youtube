@@ -29,7 +29,7 @@ html[data-ylg-enabled="true"][data-ylg-hover="on"][data-ylg-optics="on"][data-yl
   z-index: 2;
 }
 /* Expanded descriptions keep their real layout rather than covering comments. */
-html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass:has(#description-inline-expander[is-expanded]) {
+html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass[data-ylg-desc-expanded="1"] {
   transform: none !important;
 }
 

@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Free and open source, made for desktop Microsoft Edge and Google Chrome.
 
-**Latest release: [0.8.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.0).** Adds browse-wide procedural sky with an **Aurora** & shooting-star night scene, **Thumbnail Hover Ambient Halo**, unified glass sync for Miniplayer/Engagement Panels/Live Chat/Shorts progress bar + optional rounded Watch video frame, automatic zero-effect suspension in background tabs for audio-only listening, and synced `Alt+A / Alt+S / Alt+D` Chrome Web Store docs. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.0.md)
+**Latest release: [0.8.1](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.1).** Fixes Watch-page hover stutter across the lower description panel and comment-to-metadata crossings (eliminating global `:has(...)` style-recalc storms, heavy panel SVG/`mask-image`/`drop-shadow` filters, and per-frame bounding-box reads), building on 0.8.0's Aurora & shooting-star sky, Thumbnail Hover Halo, unified glass sync, and background-tab suspension. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.1.md)
 
 ## A little more depth
 

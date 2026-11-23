@@ -1,5 +1,17 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.8.1 — 2026-11-24
+
+### Performance & Interaction / Hiệu năng & Tương tác
+- Eliminated Watch-page hover stutter when moving across the lower half of `ytd-watch-metadata` (`#description`) and rapidly crossing between `ytd-comments` and `ytd-watch-metadata`:
+  - Replaced heavy global/deep `:has(...)` selectors across `chrome-surface.css`, `opacity-ceiling.css`, `liquid-components.css`, `daylight-integration.css`, `glass-optics.css`, `hover-refinement.css`, and `description-motion.css` with targeted state attributes (`data-ylg-frosted-glass`, `data-ylg-fullscreen`, `data-ylg-desc-expanded`) and class selectors so YouTube's `#description` hover DOM mutations no longer trigger whole-page style invalidations (`UpdateLayoutTree` dropped from `159.5ms` / `444–492` elements to `21.12ms` / `1–50` elements).
+  - Disabled full-panel `#ylg-optics-aberration` SVG filters, replaced lower-38% `mask-image` compositing passes with alpha-faded gradients, neutralized vendor ambient `drop-shadow` filters on Watch metadata/description/comments, and added `contain: layout style` isolation.
+  - Upgraded `panel-hover.js` with dirty-flagged bounding-box caching, steady-state zero-rAF fast path, scaled overhang hover continuity without `data-ylg-panel-side` root attribute churn, and controller-aware `:hover` scoping in `glass-optics.css`.
+- Khắc phục triệt để tình trạng khựng/lag khi rê chuột ở nửa dưới khung mô tả video (`ytd-watch-metadata`) và khi di chuột liên tục qua lại giữa phần bình luận (`ytd-comments`) và mô tả video:
+  - Thay thế các selector `:has(...)` phạm vi rộng gây bão tính toán lại style (`chrome-surface.css`, `opacity-ceiling.css`, `liquid-components.css`, `daylight-integration.css`, `glass-optics.css`, `hover-refinement.css`, `description-motion.css`) bằng attribute trạng thái nhẹ (`data-ylg-frosted-glass`, `data-ylg-fullscreen`, `data-ylg-desc-expanded`) và selector class trực tiếp.
+  - Tắt bộ lọc SVG `#ylg-optics-aberration` trên panel lớn, thay `mask-image` 38% đáy panel bằng gradient chuyển alpha, loại bỏ `drop-shadow` tốn GPU của vendor ambient trên vùng mô tả/bình luận và cô lập layout/style bằng `contain: layout style`.
+  - Nâng cấp `panel-hover.js` với cache tọa độ theo cờ bẩn, bỏ attribute thừa `data-ylg-panel-side` trên `<html>`, giữ liên tục hover ở vùng rìa phóng to và tách rule `:hover` trùng lặp khi controller đang bật.
+
 ## 0.8.0 — 2026-11-23
 
 - **V1 — Browse-Wide Sky, Aurora Scene & Shooting Stars** (`src/content/daylight-background.js`, `src/content/sky-renderer.js`, `src/styles/daylight-background.css`, `src/styles/daylight-integration.css`, `src/popup/*`, `_locales/*/messages.json`): Expanded procedural sky mounting across `/feed/*`, `/playlist`, `/gaming`, `/podcasts`, and `/courses`, added an `aurora` sky scene (WebGL aurora shader + CSS gradient ribbons) and procedural `shootingStars` at night.

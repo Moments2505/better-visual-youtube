@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Tiện ích miễn phí, mã nguồn mở, dành cho Microsoft Edge và Google Chrome trên máy tính.
 
-**Bản chính thức mới nhất: [0.8.0](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.0).** Mở rộng nền trời thời gian thực sang toàn bộ trang duyệt kèm cảnh **Cực quang (Aurora)** & **Sao băng**, bổ sung quầng sáng theo thumbnail khi rê chuột, hoàn thiện đồng bộ kính cho Miniplayer/Live Chat/Chương video/thanh tiến trình Shorts + tùy chọn bo góc khung video, tự động tắt mọi hiệu ứng khi chạy nền ở tab khác (chỉ nghe nhạc), và cập nhật đúng phím tắt `Alt+A / Alt+S / Alt+D`. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.0.md)
+**Bản chính thức mới nhất: [0.8.1](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.1).** Khắc phục triệt để tình trạng khựng/lag khi rê chuột ở nửa dưới khung mô tả video và di chuột liên tục giữa bình luận với mô tả (loại bỏ bão tính toán lại style từ `:has(...)` toàn trang, bộ lọc SVG/`mask-image`/`drop-shadow` nặng và đọc tọa độ mỗi khung hình), kế thừa trọn vẹn nền trời Cực quang & Sao băng, quầng sáng thumbnail, đồng bộ kính toàn diện và chế độ tắt hiệu ứng khi chạy nền của 0.8.0. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.1.md)
 
 ## Thêm chiều sâu cho giao diện
 

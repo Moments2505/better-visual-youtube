@@ -183,7 +183,7 @@ html[data-ylg-enabled="true"] .ytp-play-progress { background: #ff2337 !importan
       inset 0 0 0 1px rgba(15, 23, 42, 0.14),
       0 2px 6px rgba(15, 23, 42, 0.14) !important;
   }
-  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-button:not([data-tooltip-target-id="ytp-autonav-toggle-button"]):not(:has(.ytp-autonav-toggle-button)) :is(svg, .ytp-svg-fill, svg :is(path, rect, circle, polygon, use):not(.ytp-svg-shadow):not([fill="none"])) {
+  html[data-ylg-enabled="true"][data-ylg-opacity-pale="true"]:not([data-ylg-fill="none"]) .ytp-chrome-bottom .ytp-button:not([data-tooltip-target-id="ytp-autonav-toggle-button"]):not(.ytp-autonav-toggle) :is(svg, .ytp-svg-fill, svg :is(path, rect, circle, polygon, use):not(.ytp-svg-shadow):not([fill="none"])) {
     color: #111827 !important;
     fill: #111827 !important;
     filter: none !important;

@@ -161,8 +161,55 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
-  html[data-ylg-enabled="true"][data-ylg-lowfx="true"][data-ylg-optics-aberration="1"] .ylg-glass[data-ylg-level="panel"]::before {
+  /* Giant panels (metadata, comments, sidebar) use a faint rim sheen where SVG
+     chromatic aberration is visually imperceptible, while toggling url(#ylg-optics-aberration)
+     on/off on :hover forces multi-megapixel SVG filter re-rasterization and 150-260ms stalls.
+     Hero, floating, and player/search capsules retain full chromatic aberration. */
+  html[data-ylg-enabled="true"][data-ylg-optics-aberration="1"] .ylg-glass[data-ylg-level="panel"]::before {
     filter: none !important;
+  }
+  /* Avoid masked compositing surfaces across the lower 38% of tall watch panels;
+     preserve the identical soft bottom light pool via pure alpha stops. */
+  html[data-ylg-enabled="true"] .ylg-glass[data-ylg-level="panel"]::after {
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      transparent 22%,
+      rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 0.55)) 62%,
+      rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.1)) 85%,
+      rgba(255, 255, 255, calc(var(--ylg-scatter-alpha) * 1.6)) 100%) !important;
+  }
+  /* Vendor ambient applies drop-shadow CSS filters onto watch comments,
+     #description-inline-expander, #info-container, metadata buttons, and comment
+     action buttons. light-ambient.css already provides GPU-free text-shadow contrast. */
+  html[data-ylg-enabled="true"][data-ambientlight-enabled] ytd-watch-flexy :is(
+    ytd-comments.ylg-glass,
+    ytd-watch-metadata.ylg-glass #title.ytd-watch-metadata,
+    ytd-watch-metadata.ylg-glass ytd-video-owner-renderer.ytd-watch-metadata,
+    ytd-watch-metadata.ylg-glass #upload-info.ytd-video-owner-renderer,
+    ytd-watch-metadata.ylg-glass #top-row.ytd-watch-metadata button:not(.yt-spec-button-shape-next--filled) > *,
+    ytd-watch-metadata.ylg-glass #middle-row.ytd-watch-metadata,
+    ytd-watch-metadata.ylg-glass #description-inner.ytd-watch-metadata,
+    ytd-watch-metadata.ylg-glass #info-container.ytd-watch-metadata,
+    ytd-watch-metadata.ylg-glass #info-container.ytd-watch-info-text,
+    ytd-watch-metadata.ylg-glass #description-inline-expander.ytd-watch-metadata,
+    ytd-comments.ylg-glass ytd-comments-header-renderer[modern-typography] .count-text.ytd-comments-header-renderer,
+    ytd-comments.ylg-glass ytd-comment-replies-renderer .yt-spec-button-shape-next--call-to-action.yt-spec-button-shape-next--text,
+    ytd-comments.ylg-glass #like-button.ytd-comment-action-buttons-renderer,
+    ytd-comments.ylg-glass #dislike-button.ytd-comment-action-buttons-renderer,
+    ytd-comments.ylg-glass #reply-button-end.ytd-comment-action-buttons-renderer,
+    ytd-comments.ylg-glass #cancel-button.ytd-commentbox,
+    ytd-comments.ylg-glass #emoji-button.ytd-commentbox yt-icon,
+    ytd-comments.ylg-glass #panel-button.ytd-comments-header-renderer yt-icon,
+    ytd-comments.ylg-glass #sort-menu.ytd-comments-header-renderer #trigger tp-yt-paper-button
+  ) {
+    filter: none !important;
+  }
+  /* Isolate style/layout invalidations inside watch panels without clipping
+     scaled overflow (never use contain: paint here). */
+  html[data-ylg-enabled="true"] ytd-watch-flexy :is(ytd-watch-metadata, ytd-comments).ylg-glass[data-ylg-level="panel"] {
+    contain: layout style !important;
   }
   /* Background tab (audio-only): release all GPU blur/animation/compositing layers while hidden. */
   html[data-ylg-bg-suspended="1"],

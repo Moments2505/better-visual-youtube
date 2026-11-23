@@ -8,8 +8,8 @@
   var SELECTOR = "ytd-watch-metadata, ytd-comments, #secondary";
   var BLOCKED = "#masthead-container, #guide, #guide-inner-content, ytd-popup-container, tp-yt-paper-dialog, [role=dialog], .ytp-popup";
   var started = false, frame = 0, generation = 0, panels = [], selected = null, point = null;
-  var keyboard = false, dirty = true, resizeObserver = null, modeObserver = null;
-  var leaving = new Map();
+  var keyboard = false, dirty = true, geoDirty = true, resizeObserver = null, modeObserver = null;
+  var leaving = new Map(), boxes = new Map();
   var reduced = root.matchMedia ? root.matchMedia("(prefers-reduced-motion: reduce)") : null;
   function allowed() {
     var de = document.documentElement;
@@ -19,22 +19,23 @@
       de.getAttribute("data-ylg-optics-magnify") !== "0" && de.getAttribute("data-ylg-player-transition") !== "1" &&
       (de.getAttribute("data-ylg-system-motion") === "ignore" || !(reduced && reduced.matches));
   }
-  function side() {
-    var value = selected ? (selected.id === "secondary" ? "secondary" : "primary") : "none";
-    if (value !== "primary") leaving.forEach(function (_, panel) {
-      if (panel.id !== "secondary") value = "leaving-primary";
-    });
-    // A departing left panel stays below the newly selected right panel.
-    var de = document.documentElement;
-    if (!de.getAttribute || de.getAttribute("data-ylg-panel-side") !== value) {
-      de.setAttribute("data-ylg-panel-side", value);
+  function invalidateGeometry() {
+    geoDirty = true;
+    boxes.clear();
+  }
+  function syncExpanded(panel) {
+    if (!panel || !panel.querySelector) return false;
+    var expanded = !!panel.querySelector("#description-inline-expander[is-expanded]");
+    if (panel.setAttribute && panel.removeAttribute) {
+      if (expanded) panel.setAttribute("data-ylg-desc-expanded", "1");
+      else panel.removeAttribute("data-ylg-desc-expanded");
     }
+    return expanded;
   }
   function finish(panel) {
     if (leaving.has(panel)) root.clearTimeout(leaving.get(panel));
     leaving.delete(panel);
     panel.removeAttribute("data-ylg-panel-leaving");
-    side();
   }
   function select(next) {
     if (next === selected) return; // Pointer traffic cannot restart an animation.
@@ -52,7 +53,6 @@
       finish(next);
       next.setAttribute("data-ylg-panel-active", "1");
     }
-    side();
   }
   function clear() {
     generation++;
@@ -60,31 +60,47 @@
     frame = 0;
     if (selected) selected.removeAttribute("data-ylg-panel-active");
     selected = null;
+    invalidateGeometry();
+    for (var i = 0; i < panels.length; i++) {
+      if (panels[i] && panels[i].removeAttribute) panels[i].removeAttribute("data-ylg-desc-expanded");
+    }
     leaving.forEach(function (timer, panel) {
       root.clearTimeout(timer); panel.removeAttribute("data-ylg-panel-leaving");
     });
     leaving.clear();
-    document.documentElement.removeAttribute("data-ylg-panel-side");
   }
   function refresh() {
     dirty = false;
+    invalidateGeometry();
     if (resizeObserver) resizeObserver.disconnect();
     var watch = document.querySelector("ytd-watch-flexy:not([hidden])");
-    panels = watch ? Array.prototype.slice.call(watch.querySelectorAll(SELECTOR), 0, 3) : [];
+    var nextPanels = watch ? Array.prototype.slice.call(watch.querySelectorAll(SELECTOR), 0, 3) : [];
+    for (var i = 0; i < panels.length; i++) {
+      if (nextPanels.indexOf(panels[i]) < 0 && panels[i] && panels[i].removeAttribute) {
+        panels[i].removeAttribute("data-ylg-desc-expanded");
+      }
+    }
+    panels = nextPanels;
     if (selected && panels.indexOf(selected) < 0) clear();
     Array.from(leaving.keys()).forEach(function (panel) { if (panels.indexOf(panel) < 0) finish(panel); });
     if (resizeObserver) panels.forEach(function (panel) { resizeObserver.observe(panel); });
   }
-  function inside(panel, x, y) {
-    if (panel.isConnected === false) return false;
+  function getBox(panel) {
+    if (!geoDirty && boxes.has(panel)) return boxes.get(panel);
+    if (!panel || panel.isConnected === false) return null;
     var rect = panel.getBoundingClientRect();
     var width = panel.offsetWidth, height = panel.offsetHeight;
-    if (!(width > 0 && height > 0 && rect.width > 0 && rect.height > 0)) return false;
+    if (!(width > 0 && height > 0 && rect.width > 0 && rect.height > 0)) return null;
     // CSS anchors left panels at top-left and recommendations at top-right.
     // Those corners do not move during scale, so layout dimensions recover
     // the original box even halfway through an interrupted transition.
     var left = panel.id === "secondary" ? rect.right - width : rect.left;
-    return x >= left && x < left + width && y >= rect.top && y < rect.top + height;
+    var box = { left: left, top: rect.top, right: left + width, bottom: rect.top + height };
+    boxes.set(panel, box);
+    return box;
+  }
+  function inBox(box, x, y) {
+    return !!box && x >= box.left && x < box.right && y >= box.top && y < box.bottom;
   }
   function tick() {
     frame = 0;
@@ -93,8 +109,22 @@
     var next = null;
     // Batch the bounded geometry reads before changing any panel attributes.
     if (point) {
+      var allValid = panels.length > 0;
       for (var i = 0; i < panels.length; i++) {
-        if (inside(panels[i], point.x, point.y)) { next = panels[i]; break; }
+        var box = getBox(panels[i]);
+        if (!box) { allValid = false; continue; }
+        if (!next && inBox(box, point.x, point.y)) next = panels[i];
+      }
+      if (allValid) geoDirty = false;
+      // Preserve scaled overhang continuity when cursor rests past unscaled bottom/right edge
+      // without overlapping another panel; any entry into a neighbor panel above already wins.
+      if (next === null && selected && panels.indexOf(selected) >= 0 && selected.isConnected !== false) {
+        var sr = selected.getBoundingClientRect();
+        if (sr && sr.width > 0 && sr.height > 0 &&
+            point.x >= sr.left && point.x < sr.right &&
+            point.y >= sr.top && point.y < sr.bottom) {
+          next = selected;
+        }
       }
     } else if (keyboard && document.activeElement) {
       var focused = document.activeElement;
@@ -103,7 +133,7 @@
         if (panels.indexOf(owner) >= 0) next = owner;
       }
     }
-    if (next && next.querySelector("#description-inline-expander[is-expanded]")) next = null;
+    if (next && syncExpanded(next)) next = null;
     if (next && (next.id === "secondary" || next.id === "comments" || next.tagName === "YTD-COMMENTS")) {
       var deState = document.documentElement;
       if (deState.getAttribute("data-ylg-zen-watch") === "true" ||
@@ -127,6 +157,7 @@
     point = { x: event.clientX, y: event.clientY };
     var owner = target && target.closest && target.closest(SELECTOR);
     if (owner && panels.indexOf(owner) < 0) dirty = true;
+    if (!dirty && !geoDirty && selected && boxes.has(selected) && inBox(boxes.get(selected), point.x, point.y)) return;
     if (!owner && !selected && !dirty) return;
     schedule();
   }
@@ -139,38 +170,45 @@
   function leave(event) { if (!event.relatedTarget) { keyboard = false; point = null; schedule(); } }
   function reset() { point = null; keyboard = false; clear(); }
   function navigation() {
-    reset(); panels = []; dirty = true;
+    reset(); panels = []; dirty = true; invalidateGeometry();
     if (resizeObserver) resizeObserver.disconnect();
   }
-  function changed() { dirty = true; schedule(); }
+  function onScroll() { invalidateGeometry(); schedule(); }
+  function onResize() { invalidateGeometry(); schedule(); }
+  function onClick() { invalidateGeometry(); schedule(); }
+  function changed() { dirty = true; invalidateGeometry(); schedule(); }
   function modeChanged() {
     if (!allowed()) clear();
     else changed();
   }
   function ended(event) {
-    if (event.propertyName === "transform" && event.target !== selected && leaving.has(event.target)) finish(event.target);
+    if (event.propertyName === "transform") {
+      invalidateGeometry();
+      if (event.target !== selected && leaving.has(event.target)) finish(event.target);
+    }
   }
   function visibility() { if (document.hidden) reset(); }
   function init() {
     if (started) return;
-    started = true; dirty = true;
+    started = true; dirty = true; invalidateGeometry();
     document.documentElement.setAttribute("data-ylg-panel-controller", "on");
     document.addEventListener("pointermove", move, { passive: true, capture: true });
     document.addEventListener("pointerdown", pointerDown, true);
     document.addEventListener("pointerout", leave, true);
+    document.addEventListener("click", onClick, { passive: true, capture: true });
     document.addEventListener("keydown", key, true);
     document.addEventListener("focusin", focus, true);
     document.addEventListener("focusout", focus, true);
     document.addEventListener("transitionend", ended, true);
     document.addEventListener("yt-navigate-start", navigation, true);
     document.addEventListener("yt-navigate-finish", changed, true);
-    document.addEventListener("scroll", schedule, { passive: true, capture: true });
+    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
     document.addEventListener("visibilitychange", visibility);
     root.addEventListener("resize", changed);
     root.addEventListener("blur", reset);
     root.addEventListener("pagehide", reset);
     if (reduced && reduced.addEventListener) reduced.addEventListener("change", modeChanged);
-    if (typeof root.ResizeObserver === "function") resizeObserver = new root.ResizeObserver(schedule);
+    if (typeof root.ResizeObserver === "function") resizeObserver = new root.ResizeObserver(onResize);
     if (typeof root.MutationObserver === "function") {
       modeObserver = new root.MutationObserver(modeChanged);
       modeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-ylg-player-transition", "data-ylg-system-motion"] });
@@ -178,20 +216,21 @@
     schedule();
   }
   function teardown() {
-    started = false; reset(); panels = []; dirty = true;
+    started = false; reset(); panels = []; dirty = true; invalidateGeometry();
     if (resizeObserver) resizeObserver.disconnect(); resizeObserver = null;
     if (modeObserver) modeObserver.disconnect(); modeObserver = null;
     document.documentElement.removeAttribute("data-ylg-panel-controller");
     document.removeEventListener("pointermove", move, true);
     document.removeEventListener("pointerdown", pointerDown, true);
     document.removeEventListener("pointerout", leave, true);
+    document.removeEventListener("click", onClick, true);
     document.removeEventListener("keydown", key, true);
     document.removeEventListener("focusin", focus, true);
     document.removeEventListener("focusout", focus, true);
     document.removeEventListener("transitionend", ended, true);
     document.removeEventListener("yt-navigate-start", navigation, true);
     document.removeEventListener("yt-navigate-finish", changed, true);
-    document.removeEventListener("scroll", schedule, true);
+    document.removeEventListener("scroll", onScroll, true);
     document.removeEventListener("visibilitychange", visibility);
     root.removeEventListener("resize", changed);
     root.removeEventListener("blur", reset);

@@ -76,9 +76,11 @@ queue("settings, defaults, popup, locales, V3 tokens, and CWS hotkeys stay align
   assert.match(integrationCss, /ytd-browse/);
 
   const cws = read("docs/store/CHROME-WEB-STORE-LISTING.md");
+  const { version } = JSON.parse(read("manifest.json"));
+  const escapedVersion = String(version).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   assert.doesNotMatch(cws, /Alt\+Shift\+G/);
   assert.match(cws, /Alt\+A \/ Alt\+S \/ Alt\+D/);
-  assert.match(cws, /Better-visual-Youtube-0\.8\.0\.zip/);
+  assert.match(cws, new RegExp(`Better-visual-Youtube-${escapedVersion}\\.zip`));
 });
 
 // ---- 2. V2 Card Halo VM Tests ----

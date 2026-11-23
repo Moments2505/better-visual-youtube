@@ -137,6 +137,15 @@
     var g = generation;
     pruneDetached();
     SEL.invalidate(); // fresh queries each pass (DOM changes under us)
+    try {
+      var de = document.documentElement;
+      if (de && de.setAttribute) {
+        var frosted = (document.getElementById && document.getElementById("frosted-glass")) ||
+          (document.querySelector && document.querySelector("#frosted-glass"));
+        if (frosted) de.setAttribute("data-ylg-frosted-glass", "1");
+        else if (de.removeAttribute) de.removeAttribute("data-ylg-frosted-glass");
+      }
+    } catch (eFrosted) {}
     refractCount = 0;
     passes++;
 
@@ -241,6 +250,11 @@
     if (navApplyTimer !== null) { clearTimeout(navApplyTimer); navApplyTimer = null; }
     tagged.forEach(untag);
     tagged.clear();
+    try {
+      if (document.documentElement && document.documentElement.removeAttribute) {
+        document.documentElement.removeAttribute("data-ylg-frosted-glass");
+      }
+    } catch (eFrostedClean) {}
     if (SEL && SEL.invalidate) SEL.invalidate();
     cardCursor = 0;
   }

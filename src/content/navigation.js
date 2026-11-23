@@ -67,7 +67,16 @@
   function onPageData() {
     scheduleApply(150);
   }
+  function syncFullscreenAttr() {
+    try {
+      var de = document.documentElement;
+      if (!de || !de.setAttribute) return;
+      if (document.fullscreenElement) de.setAttribute("data-ylg-fullscreen", "1");
+      else if (de.removeAttribute) de.removeAttribute("data-ylg-fullscreen");
+    } catch (eFs) {}
+  }
   function onFullscreenChange() {
+    syncFullscreenAttr();
     notify("fullscreenchange");
   }
   function onVisibilityChange() {
@@ -256,6 +265,7 @@
     document.addEventListener("fullscreenchange", onFullscreenChange, true);
     document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("popstate", onNavigateFinish);
+    syncFullscreenAttr();
     wrapHistory();
     startObserver();
     bindPlayerObserver();
@@ -265,6 +275,11 @@
   function teardown() {
     generation++;
     started = false;
+    try {
+      if (document.documentElement && document.documentElement.removeAttribute) {
+        document.documentElement.removeAttribute("data-ylg-fullscreen");
+      }
+    } catch (eFsClean) {}
     document.removeEventListener("yt-navigate-start", onNavigateStart, true);
     document.removeEventListener("yt-navigate-finish", onNavigateFinish, true);
     document.removeEventListener("yt-page-data-updated", onPageData, true);
