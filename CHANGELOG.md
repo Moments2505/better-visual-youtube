@@ -1,5 +1,11 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.8.2 — 2026-11-24
+
+### Fixes / Sửa lỗi
+- **Removed Top bar hover zoom regression** (`src/glass/glass-optics.css`, `src/styles/chrome-surface.css`, `tests/chrome-surface-regressions.js`): Removed the `.ylg-glass:not([data-ylg-level="panel"]):hover` / `:focus-within` zoom selectors introduced in `0.8.1` whose specificity overrode the `ytd-masthead` non-scale guard, restricted hover-scale magnification strictly to `[data-ylg-level="panel"]`, and locked `#frosted-glass`, `ytd-masthead`, `#masthead`, and `#masthead-container .ylg-glass` to `transform: none !important` on hover and focus.
+- **Xóa hiệu ứng phóng to thanh Top bar khi hover** (`src/glass/glass-optics.css`, `src/styles/chrome-surface.css`, `tests/chrome-surface-regressions.js`): Gỡ bỏ selector `.ylg-glass:not([data-ylg-level="panel"]):hover` / `:focus-within` từ bản `0.8.1` (đã vô tình đè lên guard của `ytd-masthead`), giới hạn hiệu ứng phóng to khi hover chỉ áp dụng cho `[data-ylg-level="panel"]`, và khóa cố định `transform: none !important` cho thanh Top bar khi rê chuột hoặc focus tìm kiếm.
+
 ## 0.8.1 — 2026-11-24
 
 ### Performance & Interaction / Hiệu năng & Tương tác

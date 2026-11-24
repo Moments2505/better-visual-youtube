@@ -78,4 +78,14 @@ const hoverCss = fs.readFileSync(path.join(root,'src/styles/hover-refinement.css
 const descCss = fs.readFileSync(path.join(root,'src/styles/description-motion.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
 assert.doesNotMatch(hoverCss, /:has\(#description-inline-expander/, "hover-refinement.css must use [data-ylg-desc-expanded=\"1\"] instead of :has()");
 assert.doesNotMatch(descCss, /:has\(#description-inline-expander/, "description-motion.css must use [data-ylg-desc-expanded=\"1\"] instead of :has()");
-console.log('Chrome surface regressions: 58/58 assertions passed (source contracts only; browser rendering requires separate verification).');
+assert.doesNotMatch(opticsCss, /\.ylg-glass:not\(\[data-ylg-level="panel"\]\):(?:hover|focus-within)/, "glass-optics.css must not zoom non-panel glass levels on hover/focus");
+const opticsZoomRules = [...opticsCss.matchAll(/([^{}]+)\{[^}]*transform:\s*scale\(var\(--ylg-hover-scale/g)];
+assert.ok(opticsZoomRules.length >= 1, "glass-optics.css must retain hover-scale zoom block for watch panels");
+for (const [, selectorHeader] of opticsZoomRules) {
+  for (const sel of selectorHeader.split(',').map(s => s.trim()).filter(Boolean)) {
+    assert.ok(sel.includes('[data-ylg-level="panel"]'), `hover-scale zoom selector must require [data-ylg-level="panel"]: ${sel}`);
+  }
+}
+assert.match(opticsCss, /ytd-masthead\.ylg-glass:hover[\s\S]*?#masthead-container\s+\.ylg-glass:focus-within\s*\{\s*transform:\s*none\s*!important/, "glass-optics.css must lock masthead and Top bar glass surfaces against transform on hover/focus");
+assert.match(css, /:is\(#frosted-glass,\s*ytd-masthead,\s*#masthead\):is\(:hover,\s*:focus-within\)[\s\S]*?transform:\s*none\s*!important/, "chrome-surface.css must keep Top bar surfaces untransformed on hover/focus");
+console.log('Chrome surface regressions: 62/62 assertions passed (source contracts only; browser rendering requires separate verification).');

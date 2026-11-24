@@ -76,8 +76,6 @@ html[data-ylg-optics="on"] .ylg-glass {
     box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-html[data-ylg-optics="on"] .ylg-glass:not([data-ylg-level="panel"]):hover,
-html[data-ylg-optics="on"] .ylg-glass:not([data-ylg-level="panel"]):focus-within,
 html[data-ylg-optics="on"]:not([data-ylg-panel-controller="on"]) .ylg-glass[data-ylg-level="panel"]:hover,
 html[data-ylg-optics="on"]:not([data-ylg-panel-controller="on"]) .ylg-glass[data-ylg-level="panel"]:focus-within {
   transform: scale(var(--ylg-hover-scale, 1.028));
@@ -170,10 +168,21 @@ html[data-ylg-optics="on"] #secondary.ylg-glass:focus-within {
 
 /* Sticky surfaces must not move at all: a scaled masthead or drawer would show a
    seam against the viewport edge while scrolling. */
+html[data-ylg-optics="on"] ytd-masthead.ylg-glass,
 html[data-ylg-optics="on"] ytd-masthead.ylg-glass:hover,
 html[data-ylg-optics="on"] ytd-masthead.ylg-glass:focus-within,
+html[data-ylg-optics="on"] #masthead.ylg-glass,
+html[data-ylg-optics="on"] #masthead.ylg-glass:hover,
+html[data-ylg-optics="on"] #masthead.ylg-glass:focus-within,
+html[data-ylg-optics="on"] #masthead-container.ylg-glass,
 html[data-ylg-optics="on"] #masthead-container.ylg-glass:hover,
 html[data-ylg-optics="on"] #masthead-container.ylg-glass:focus-within,
+html[data-ylg-optics="on"] #masthead-container .ylg-glass,
+html[data-ylg-optics="on"] #masthead-container .ylg-glass:hover,
+html[data-ylg-optics="on"] #masthead-container .ylg-glass:focus-within {
+  transform: none !important;
+  transition: none !important;
+}
 html[data-ylg-optics="on"] tp-yt-app-drawer.ylg-glass:hover,
 html[data-ylg-optics="on"] tp-yt-app-drawer.ylg-glass:focus-within {
   transform: none;

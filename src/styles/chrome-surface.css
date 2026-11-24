@@ -104,6 +104,13 @@ html[data-ylg-enabled="true"][data-ylg-frosted-glass="1"] #masthead-container yt
   content: none;
   display: none;
 }
+/* Top bar surfaces must never scale, shift, or lift on hover or focus. */
+html[data-ylg-enabled="true"] :is(#frosted-glass, ytd-masthead, #masthead),
+html[data-ylg-enabled="true"] :is(#frosted-glass, ytd-masthead, #masthead):is(:hover, :focus-within),
+html[data-ylg-enabled="true"] #masthead-container .ylg-glass,
+html[data-ylg-enabled="true"] #masthead-container .ylg-glass:is(:hover, :focus-within) {
+  transform: none !important;
+}
 /* Legacy watch-column stacking must not trap the HOME chipbar underneath the
    fixed frosted sheet. Home #primary is not the watch-page player column. */
 html[data-ylg-enabled="true"] ytd-browse #primary {
