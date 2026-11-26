@@ -64,6 +64,10 @@ queue("settings, defaults, popup, locales, V3 tokens, and CWS hotkeys stay align
   assert.match(ytCss, /html\[data-ylg-enabled="true"\]:not\(\[data-ylg-fullscreen="1"\]\)\s+ytd-watch-flexy\[theater\]:not\(\[fullscreen\]\)\s+:is\(#full-bleed-container,\s*#player-full-bleed-container,\s*#ytd-player,\s*#movie_player\)/);
   assert.match(ytCss, /html\[data-ylg-enabled="true"\]:not\(\[data-ylg-fullscreen="1"\]\)\s+ytd-watch-flexy\[theater\]:not\(\[fullscreen\]\)\s+:is\(\.html5-video-container,\s*video\.html5-main-video\)/);
   assert.match(ytCss, /html\[data-ylg-enabled="true"\]\[data-ylg-player-frame="true"\]:not\(\[data-ylg-fullscreen="1"\]\)\s+ytd-watch-flexy:not\(\[fullscreen\]\)\s+:is\(#ytd-player,\s*#player-container-inner,\s*#movie_player\)/);
+  assert.doesNotMatch(ytCss, /\[data-ylg-player-frame="true"\][^{]*\{[^}]*0 0 0 1px/, "floating player frame must never draw a 1px border ring");
+  assert.doesNotMatch(ytCss, /video\.html5-main-video\s*\{[^}]*box-shadow:\s*(?!none)/, "Watch video must never carry a non-none box-shadow ring");
+  assert.match(ytCss, /ytd-watch-flexy:not\(\[fullscreen\]\)\s+:is\(#full-bleed-container,\s*#player-full-bleed-container,\s*#player-container-inner,\s*#ytd-player,\s*#movie_player,\s*\.html5-video-container,\s*video\.html5-main-video\)\s*\{\s*border:\s*none\s*!important;\s*box-shadow:\s*none\s*!important;\s*\}/);
+  assert.match(ytCss, /ytd-app\[is-watch-page\]\s+\.ambientlight__video-shadow\s*\{\s*border-radius:\s*var\(--ylg-watch-video-radius,\s*12px\)\s*!important;\s*\}/);
   assert.match(ytCss, /\.ytProgressBarLineProgressBarPlayed/);
   assert.match(ytCss, /\.ytProgressBarPlayheadProgressBarPlayheadDot/);
 

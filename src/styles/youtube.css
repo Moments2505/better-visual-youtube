@@ -837,12 +837,12 @@ html[data-ylg-enabled="true"] ytd-watch-metadata.ylg-glass #bottom-row {
    v0.8.0 (V3): Miniplayer, Watch Engagement Panels, Live Chat, Shorts Progress Bar & Floating Video Frame
    ============================================================================ */
 
-/* Watch video rounded corners: Theater mode matches Normal mode (12px default, 18px with Floating Video Frame; never Fullscreen) */
-html[data-ylg-enabled="true"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy:not([fullscreen]) {
+/* Watch video rounded corners: Theater mode matches Normal mode, strictly borderless (12px default, 18px with Floating Video Frame; never Fullscreen) */
+html[data-ylg-enabled="true"]:not([data-ylg-fullscreen="1"]) {
   --ylg-watch-video-radius: 12px;
 }
 
-html[data-ylg-enabled="true"][data-ylg-player-frame="true"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy:not([fullscreen]) {
+html[data-ylg-enabled="true"][data-ylg-player-frame="true"]:not([data-ylg-fullscreen="1"]) {
   --ylg-watch-video-radius: 18px;
 }
 
@@ -855,31 +855,19 @@ html[data-ylg-enabled="true"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy[the
   border-radius: var(--ylg-watch-video-radius, 12px) !important;
 }
 
-/* Optional 18px rounded floating video frame in Normal & Theater Watch modes (never Fullscreen) */
+/* Optional 18px rounded video corners in Normal & Theater Watch modes (never Fullscreen) - strictly borderless like Normal mode */
 html[data-ylg-enabled="true"][data-ylg-player-frame="true"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy:not([fullscreen]) :is(#ytd-player, #player-container-inner, #movie_player) {
   border-radius: 18px !important;
   overflow: hidden;
 }
 
-html[data-ylg-enabled="true"][data-ylg-player-frame="true"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy:not([theater]):not([fullscreen]) #ytd-player,
-html[data-ylg-enabled="true"][data-ylg-player-frame="true"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy[theater]:not([fullscreen]) video.html5-main-video {
-  box-shadow:
-    0 12px 34px rgba(0, 0, 0, 0.28),
-    0 0 0 1px rgba(255, 255, 255, 0.14);
+html[data-ylg-enabled="true"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy:not([fullscreen]) :is(#full-bleed-container, #player-full-bleed-container, #player-container-inner, #ytd-player, #movie_player, .html5-video-container, video.html5-main-video) {
+  border: none !important;
+  box-shadow: none !important;
 }
 
-html[data-ylg-enabled="true"][data-ylg-player-frame="true"][data-ylg-theme="light"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy:not([theater]):not([fullscreen]) #ytd-player,
-html[data-ylg-enabled="true"][data-ylg-player-frame="true"][data-ylg-theme="light"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy[theater]:not([fullscreen]) video.html5-main-video {
-  box-shadow:
-    0 12px 30px rgba(15, 23, 42, 0.16),
-    0 0 0 1px rgba(15, 23, 42, 0.08);
-}
-
-html[data-ylg-enabled="true"][data-ylg-player-frame="true"][data-ylg-ambient="on"][data-ylg-ambient-sync="1"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy:not([theater]):not([fullscreen]) #ytd-player,
-html[data-ylg-enabled="true"][data-ylg-player-frame="true"][data-ylg-ambient="on"][data-ylg-ambient-sync="1"]:not([data-ylg-fullscreen="1"]) ytd-watch-flexy[theater]:not([fullscreen]) video.html5-main-video {
-  box-shadow:
-    0 12px 34px rgba(0, 0, 0, 0.30),
-    0 0 0 1px rgba(var(--ylg-ambient-rim, 255, 255, 255), 0.30);
+html[data-ylg-enabled="true"]:not([data-ylg-fullscreen="1"]) ytd-app[is-watch-page] .ambientlight__video-shadow {
+  border-radius: var(--ylg-watch-video-radius, 12px) !important;
 }
 
 /* Miniplayer glass shell + transparent inner bar */

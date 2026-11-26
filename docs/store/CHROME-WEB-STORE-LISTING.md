@@ -1,12 +1,12 @@
 # Chrome Web Store Submission Kit — Better Visual for YouTube
 
-Use the verified assets and copy-paste answers below when submitting `dist/releases/Better-visual-Youtube-0.8.3.zip` on the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
+Use the verified assets and copy-paste answers below when submitting `dist/releases/Better-visual-Youtube-0.8.4.zip` on the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
 
 ---
 
 ## 1. Upload Files Checklist
 
-- **Extension ZIP package**: `dist/releases/Better-visual-Youtube-0.8.3.zip`
+- **Extension ZIP package**: `dist/releases/Better-visual-Youtube-0.8.4.zip`
 - **Store icon (`128×128`)**: `assets/icons/icon128.png`
 - **Promo tile (`440×280`, 24-bit RGB PNG)**: `docs/store/screenshots/promo-small-440x280.png`
 - **Screenshots (`1280×800`, 24-bit RGB PNG)**:

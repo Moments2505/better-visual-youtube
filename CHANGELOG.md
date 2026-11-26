@@ -1,5 +1,11 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.8.4 — 2026-11-26
+
+### Fixes / Sửa lỗi
+- **Removed `1px` border/rim around rounded Watch video frames in Theater & Normal modes** (`src/styles/youtube.css`, `tests/visual-v080-regressions.js`): Removed the `0 0 0 1px` rim `box-shadow` rules applied by `floatingPlayerFrame` (`data-ylg-player-frame="true"`) across `#ytd-player` and `video.html5-main-video`, added an explicit `border: none !important; box-shadow: none !important` guard across non-fullscreen Watch player/video containers so Theater mode renders completely borderless rounded corners just like Normal mode (`12px` default, `18px` with Floating Video Frame), and synced `.ambientlight__video-shadow` `border-radius` directly with `--ylg-watch-video-radius` on `html`.
+- **Xóa viền `1px` quanh khung video bo góc ở Theater & Normal mode** (`src/styles/youtube.css`, `tests/visual-v080-regressions.js`): Gỡ bỏ quy tắc `box-shadow` tạo viền mảnh `1px` của `floatingPlayerFrame` trên `#ytd-player` và `video.html5-main-video`, khóa cứng `border: none !important; box-shadow: none !important` cho các vùng chứa trình phát/video ngoài Fullscreen để Theater mode bo góc sạch không viền giống hệt Normal mode (`12px` mặc định, `18px` khi bật khung kính nổi), đồng thời đồng bộ trực tiếp `border-radius` của `.ambientlight__video-shadow` theo `--ylg-watch-video-radius` trên `html`.
+
 ## 0.8.3 — 2026-11-26
 
 ### Fixes & Polish / Sửa lỗi & Hoàn thiện
