@@ -50,14 +50,14 @@ test("active sidebar guide pill syncs opacity, tint, corner radius, highlight, c
   );
 });
 
-test("settings schema keeps v8 and normalizes all #1-#9 fields safely", () => {
+test("settings schema keeps v9 and normalizes all #1-#9 fields safely", () => {
   const ctx = {};
   ctx.window = ctx;
   ctx.globalThis = ctx;
   vm.runInNewContext(read("src/shared/settings.js"), ctx, { filename: "src/shared/settings.js" });
   const S = ctx.YLG_SETTINGS;
 
-  assert.equal(S.SCHEMA_VERSION, 8);
+  assert.equal(S.SCHEMA_VERSION, 9);
   const def = S.normalizeSettings({});
   assert.equal(def.ambientLight.flickerReduction, 55);
   assert.equal(def.ambientLight.detectBarSize, true);

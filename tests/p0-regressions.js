@@ -301,10 +301,13 @@ test("sky controls save independently, gate children and restore the selected sc
   assert.equal(h.$("ylg-daylight-enabled").checked, false);
   assert.equal(h.$("ylg-daylight-intensity").disabled, true);
   assert.equal(h.$("ylg-daylight-animate").disabled, true);
-  selected(h,"ylg-daylight-scene","auto");
+  selected(h,"ylg-daylight-scene","night");
   h.change("ylg-daylight-enabled",true);
   h.change("ylg-daylight-animate",false);
   assert.equal(h.$("ylg-daylight-intensity").disabled,false);
+  const morningBtn = h.$("ylg-daylight-scene").querySelectorAll("button[data-value]").find(b=>b.getAttribute("data-value")==="morning");
+  morningBtn.emit("click");
+  selected(h,"ylg-daylight-scene","morning");
   const button = h.$("ylg-daylight-scene").querySelectorAll("button[data-value]").find(b=>b.getAttribute("data-value")==="night");
   button.emit("click");
   selected(h,"ylg-daylight-scene","night");
@@ -418,8 +421,12 @@ test("sky schema defaults validate without resetting other settings", () => {
   for(const [raw,expected] of [[NaN,1],[Infinity,1],[-1,0],[3,1],[.7,.7]]) {
     const settings=S.normalizeSettings({...old,daylightBackground:{enabled:true,scene:"bad",intensity:raw}});
     assert.equal(settings.daylightBackground.intensity,expected);
-    assert.equal(settings.daylightBackground.scene,"auto");
+    assert.equal(settings.daylightBackground.scene,"night");
   }
+  const migratedSpace=S.normalizeSettings({schemaVersion:8,daylightBackground:{scene:"auto",liveWeather:false,location:{name:"London, United Kingdom",latitude:51.5074,longitude:-0.1278}}});
+  assert.equal(migratedSpace.daylightBackground.scene,"night");
+  const keptAuto=S.normalizeSettings({schemaVersion:9,daylightBackground:{scene:"auto",liveWeather:false,location:{name:"London, United Kingdom",latitude:51.5074,longitude:-0.1278}}});
+  assert.equal(keptAuto.daylightBackground.scene,"auto");
 });
 
 test("bootstrap starts sky independently of Motion and ambient, and tears down when disabled", () => {
@@ -562,7 +569,7 @@ test("full snapshots preserve rapid edits while stale callback cannot revert UI/
   h.finish(1); h.finish(0, { message: "old failure" });
   assert.equal(h.$("ylg-blur").value, "31"); assert.equal(h.$("ylg-status").textContent, "Saved");
   assert.equal(h.writes[0].settings.blur, 21); assert.equal(h.writes[1].settings.blur, 31);
-  assert.ok(h.writes[1].settings.ambientLight.modes); assert.ok(h.writes[1].settings.optics); assert.equal(h.writes[1].settings.schemaVersion, 8);
+  assert.ok(h.writes[1].settings.ambientLight.modes); assert.ok(h.writes[1].settings.optics); assert.equal(h.writes[1].settings.schemaVersion, 9);
 });
 test("in-flight completion cannot report Saved over a newer unsaved edit", () => {
   const h = loaded(); h.input("ylg-blur", 21); h.$("ylg-blur").emit("change"); h.input("ylg-blur", 32);

@@ -132,4 +132,16 @@ test("aurora scene drives aurora uniform without leaking into daytime auto solar
   w.renderer.update({...state,auto:true,scene:"aurora",moving:false});
   assert.equal(w.uniforms.get("aurora"),0,"auto solar must override aurora uniform");
 });
+test("manual night scene activates deepSpace without clouds and auto solar overrides it",()=>{
+  const w=world();
+  w.renderer.update({...state,auto:false,scene:"night",weather:null,moving:false});
+  assert.equal(w.uniforms.get("deepSpace"),1);
+  assert.equal(w.uniforms.get("night"),1);
+  assert.equal(w.uniforms.get("clouds"),0);
+  assert.equal(w.uniforms.get("aurora"),0);
+  w.renderer.update({...state,auto:false,scene:"day",moving:false});
+  assert.equal(w.uniforms.get("deepSpace"),0);
+  w.renderer.update({...state,auto:true,scene:"night",moving:false});
+  assert.equal(w.uniforms.get("deepSpace"),0,"auto solar must override deepSpace uniform");
+});
 console.log(count+" renderer lifecycle groups passed (WebGL API model, not a GPU/pixel test).");

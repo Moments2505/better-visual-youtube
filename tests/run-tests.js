@@ -147,7 +147,7 @@ const ALL = ["src/shared/settings.js", "src/ambient/ambient-vendor-bridge.js",
   // keys comes back without them while every live value survives.
   const norm = S.normalizeSettings({ schemaVersion: 6, preset: "crystal", renderMode: "advanced", blur: 12,
     tint: "custom", accent: "#a78bfa", ambientLight: { smoothing: 0.7, enabled: false } });
-  check("normalizeSettings stamps schema 8", S.SCHEMA_VERSION === 8 && norm.schemaVersion === 8,
+  check("normalizeSettings stamps schema 9", S.SCHEMA_VERSION === 9 && norm.schemaVersion === 9,
     "SCHEMA_VERSION=" + S.SCHEMA_VERSION + " stamped=" + norm.schemaVersion);
   check("normalizeSettings drops preset / renderMode / smoothing",
     !("preset" in norm) && !("renderMode" in norm) && !("smoothing" in norm.ambientLight), JSON.stringify(norm).slice(0, 120));

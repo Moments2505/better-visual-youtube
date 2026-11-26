@@ -10,7 +10,7 @@
   if (root.YLG_SETTINGS) return; // idempotent
 
   var STORAGE_KEY = "ylgSettings";
-  var SCHEMA_VERSION = 8;
+  var SCHEMA_VERSION = 9;
 
   // Clean fresh-install defaults (slider 8% -> 0.08^1.4 exact round-trip).
   var DEFAULT_SETTINGS = {
@@ -47,7 +47,7 @@
       "rain": false,
       "liveWeather": false,
       "location": { "name": "London, United Kingdom", "latitude": 51.5074, "longitude": -0.1278 },
-      "scene": "auto",
+      "scene": "night",
       "intensity": 1
     },
     "enabled": true,
@@ -343,6 +343,18 @@
        comes back without them - no key surgery is needed here, and there is no
        numeric default that older builds wrote to storage and would need
        lifting. Every live value (blur, opacity, optics, ...) is preserved. */
+
+    /* Schema 9 migration - v0.8.5 switched DEFAULT_SETTINGS.daylightBackground.scene
+       from "auto" (London solar clock) to "night" (Deep Space). Migrate untouched
+       pre-schema-9 snapshots (scene === "auto", liveWeather !== true, default London
+       location) once to "night", while letting schema-9+ users choose "auto" freely. */
+    if (!(typeof src.schemaVersion === "number" && src.schemaVersion >= 9)) {
+      var db8 = (src.daylightBackground && typeof src.daylightBackground === "object") ? src.daylightBackground : null;
+      if (out.daylightBackground && db8 && db8.scene === "auto" && db8.liveWeather !== true &&
+          (!db8.location || db8.location.name === "London, United Kingdom")) {
+        out.daylightBackground.scene = "night";
+      }
+    }
 
     out.schemaVersion = SCHEMA_VERSION;
     return out;

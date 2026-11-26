@@ -86,8 +86,8 @@ const DARK_AUTO_RGB = "22, 28, 38";
 const LIGHT_AUTO_RGB = "248, 250, 252";
 
 /* ---------------- schema 8 contract ---------------- */
-test("schema 8 ships the documented defaults and ranges", () => {
-  assert.equal(S.SCHEMA_VERSION, 8);
+test("schema 9 ships the documented defaults and ranges", () => {
+  assert.equal(S.SCHEMA_VERSION, 9);
   assert.equal(S.DEFAULT_SETTINGS.tint, "auto");
   assert.equal(S.DEFAULT_SETTINGS.opacity, S.sliderToOpacity(8));
   assert.equal(S.opacityToSlider(S.DEFAULT_SETTINGS.opacity), 8);
@@ -148,7 +148,7 @@ test("schema-8 settings round-trip without drift", () => {
   const first = S.normalizeSettings({ schemaVersion: 6, opacity: 0.45, tint: "white" });
   const second = S.normalizeSettings(JSON.parse(JSON.stringify(first)));
   assert.deepEqual(second, first);
-  assert.equal(first.schemaVersion, 8);
+  assert.equal(first.schemaVersion, 9);
   assert.equal(first.opacity, S.DEFAULT_SETTINGS.opacity);
   assert.equal(first.tint, "white");
   // Stamping the schema is what stops a later load from re-running the migration.
@@ -170,7 +170,7 @@ test("the removed preset / renderMode / smoothing keys never survive normalizati
   assert.equal(stored.blur, 20);
   assert.equal(stored.tint, "custom");
   assert.equal(stored.ambientLight.quality, "high");
-  assert.equal(stored.schemaVersion, 8);
+  assert.equal(stored.schemaVersion, 9);
   // ...and a round trip never resurrects them.
   assert.ok(!Object.hasOwn(S.normalizeSettings(stored), "preset"));
 });
@@ -485,7 +485,7 @@ test("tint click saves immediately and keeps ARIA/tab stops in sync", () => {
   selected(h, "ylg-tint", "black");
   assert.equal(h.writes.length, 1);
   assert.equal(h.writes[0].settings.tint, "black");
-  assert.equal(h.writes[0].settings.schemaVersion, 8);
+  assert.equal(h.writes[0].settings.schemaVersion, 9);
   choose(h, "ylg-tint", "white");
   selected(h, "ylg-tint", "white");
   assert.equal(h.writes.length, 2);
@@ -593,7 +593,7 @@ test("reset restores captured defaults in one snapshot", () => {
   assert.equal(h.writes.length, 1);
   assert.equal(h.writes[0].settings.opacity, S.DEFAULT_SETTINGS.opacity);
   assert.equal(h.writes[0].settings.tint, S.DEFAULT_SETTINGS.tint);
-  assert.equal(h.writes[0].settings.schemaVersion, 8);
+  assert.equal(h.writes[0].settings.schemaVersion, 9);
   assert.equal(h.$("ylg-opacity").value, String(S.opacityToSlider(S.DEFAULT_SETTINGS.opacity)));
   assert.equal(h.$("ylg-opacity-v").textContent, S.opacityToSlider(S.DEFAULT_SETTINGS.opacity) + "%");
   selected(h, "ylg-tint", S.DEFAULT_SETTINGS.tint);

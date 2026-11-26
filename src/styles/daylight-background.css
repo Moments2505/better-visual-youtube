@@ -17,22 +17,6 @@
   background: linear-gradient(180deg, var(--ylg-sky-top), var(--ylg-sky-bottom));
 }
 #ylg-daylight-background > span { position: absolute; display: block; pointer-events: none; }
-/* Keep the night atmosphere visible at moderate intensity over YouTube's
-   near-black page. Screen blending lifts the sky without dimming its stars;
-   rain keeps its separate overcast treatment. No additional animation/filter. */
-#ylg-daylight-background[data-scene="night"][data-rain="false"]:not([data-weather="rain"]):not([data-weather="storm"])::before,
-#ylg-daylight-background[data-scene="aurora"][data-rain="false"]:not([data-weather="rain"]):not([data-weather="storm"])::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(45, 76, 128, .72), rgba(69, 100, 142, .65));
-  mix-blend-mode: screen;
-}
-#ylg-daylight-background[data-scene="aurora"][data-rain="false"]:not([data-weather="rain"]):not([data-weather="storm"])::before {
-  background: linear-gradient(180deg, rgba(16, 86, 88, .42), rgba(45, 42, 102, .48));
-}
 /* Rain renders a dark overcast scene. Keep native light-theme text readable
    without switching YouTube's palette or recolouring individual cards/menus.
    This veil is inside the decorative host and never covers page content. */
@@ -56,8 +40,8 @@ html:not([dark]) #ylg-daylight-background:is([data-rain="true"], [data-live="tru
   --ylg-sun: #ffd0a0; --ylg-ray: #eab087;
 }
 #ylg-daylight-background[data-scene="night"] {
-  --ylg-sky-top: #09152e; --ylg-sky-bottom: #193856;
-  --ylg-ray: #556fb0;
+  --ylg-sky-top: #03050a; --ylg-sky-bottom: #080d18;
+  --ylg-ray: #1b2848; --ylg-stars: #dce8ff;
 }
 #ylg-daylight-background[data-scene="aurora"] {
   --ylg-sky-top: #04101d; --ylg-sky-bottom: #0c2b3a;
@@ -111,7 +95,6 @@ html:not([dark]) #ylg-daylight-background[data-scene="aurora"] {
 #ylg-daylight-background[data-scene="sunset"] .ylg-daylight-sun { top: 65vh; right: 20vw; }
 /* Reuse the sun's small layer as the moon: no extra scene tree or video layer.
    Place it in the navigation gutter rather than behind the thumbnail grid. */
-#ylg-daylight-background[data-scene="night"] .ylg-daylight-sun,
 #ylg-daylight-background[data-scene="aurora"] .ylg-daylight-sun {
   display: block;
   left: 12px; right: auto; top: 67vh;
@@ -124,6 +107,8 @@ html:not([dark]) #ylg-daylight-background[data-scene="aurora"] {
     radial-gradient(circle at 42% 38%, #fffef0 0 28%, #e2eaf5 62%, #9baed0 100%);
   box-shadow: inset -8px -5px 12px #25406a61, 0 0 24px 8px #b7d4ff33;
 }
+#ylg-daylight-background[data-scene="night"] .ylg-daylight-sun { display: none; }
+#ylg-daylight-background[data-scene="night"] .ylg-daylight-glow { opacity: .12; }
 #ylg-daylight-background .ylg-daylight-stars {
   z-index: 2;
   inset: 0;
@@ -165,7 +150,15 @@ html:not([dark]) #ylg-daylight-background[data-scene="aurora"] {
   -webkit-mask-image: radial-gradient(ellipse, #000 12%, transparent 62%);
   mask-image: radial-gradient(ellipse, #000 12%, transparent 62%);
 }
-#ylg-daylight-background[data-scene="night"] .ylg-daylight-galaxy { display: block; }
+#ylg-daylight-background[data-scene="night"] .ylg-daylight-galaxy {
+  display: block;
+  opacity: .42;
+  background:
+    radial-gradient(ellipse at 52% 45%, #344a8540 0 4%, transparent 22%),
+    radial-gradient(ellipse at 34% 56%, #24386e38 0 6%, transparent 32%),
+    radial-gradient(ellipse at 70% 38%, #482d7038 0 5%, transparent 30%),
+    linear-gradient(168deg, transparent 28%, #15214533 40%, #24376644 49%, #2f204e33 58%, transparent 70%);
+}
 #ylg-daylight-background[data-scene="aurora"] .ylg-daylight-galaxy {
   display: block;
   opacity: .96;

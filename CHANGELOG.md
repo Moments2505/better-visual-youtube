@@ -1,5 +1,11 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.8.5 — 2026-11-26
+
+### Features & Visual Polish / Tính năng & Giao diện
+- **Replaced `"night"` sky scene with dark Deep Space (`Đêm vũ trụ`) and set it as default (`src/content/sky-renderer.js`, `src/styles/daylight-background.css`, `src/shared/settings.js`, `default-settings.json`, `src/popup/popup.html`, `_locales/*/messages.json`)**: Added a dedicated `deepSpace` shader mode (deep `#03050a` → `#080d18` cosmos backdrop, zero cloud haze, fine distant stars, muted indigo-violet dusty galactic band, no bright moon), removed the `mix-blend-mode: screen` bright blue wash on `[data-scene="night"]` and `[data-scene="aurora"]`, switched `DEFAULT_SETTINGS.daylightBackground.scene` to `"night"` with a one-time `SCHEMA_VERSION = 9` migration for untouched pre-0.8.5 installs, and relabeled `sceneNight` to **Deep Space** / **Đêm vũ trụ**.
+- **Đổi nền Trang chủ mặc định sang Đêm vũ trụ trầm (`Deep Space`)**: Nâng cấp cảnh `"night"` thành nền đen vũ trụ sâu (`#03050a` → `#080d18`), bỏ vầng trăng/mây sáng và xóa lớp phủ `mix-blend-mode: screen` gây chói, thêm rãnh bụi ngân hà tím–chàm dịu cùng sao xa mịn, đặt `"night"` làm cảnh mặc định kèm nâng `SCHEMA_VERSION = 9` tự chuyển tiếp một lần từ mặc định cũ, và đổi nhãn nút trong Popup sang **Đêm vũ trụ** (`vi`) / **Deep Space** (`en`).
+
 ## 0.8.4 — 2026-11-26
 
 ### Fixes / Sửa lỗi

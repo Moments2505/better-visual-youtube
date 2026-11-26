@@ -9,7 +9,7 @@
 precision highp float;
 uniform vec2 size;
 uniform vec2 sun;
-uniform float daylight, warmth, night, clouds, seconds, wet, rain, aurora;
+uniform float daylight, warmth, night, clouds, seconds, wet, rain, aurora, deepSpace;
 float hash(vec2 p){vec2 v=mod(p,1024.);return fract(sin(v.x*12.9898+v.y*78.233)*4375.85453);}
 float valueNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float n=0.,a=.5;for(int i=0;i<5;i++){n+=valueNoise(p)*a;p=mat2(1.6,-1.2,1.2,1.6)*p+7.3;a*=.5;}return n;}
@@ -74,8 +74,10 @@ vec3 auroraGlow(vec2 uv,float aspect,float t){
 vec3 atmosphere(vec2 uv){
  float aspect=size.x/size.y;
  vec2 q=vec2(uv.x*aspect,uv.y);
- vec3 zenith=mix(vec3(.009,.018,.047),vec3(.09,.36,.67),daylight);
- vec3 horizon=mix(vec3(.025,.055,.10),vec3(.64,.79,.88),daylight);
+ vec3 nightZenith=mix(vec3(.009,.018,.047),vec3(.011,.016,.034),deepSpace);
+ vec3 nightHorizon=mix(vec3(.025,.055,.10),vec3(.026,.040,.076),deepSpace);
+ vec3 zenith=mix(nightZenith,vec3(.09,.36,.67),daylight);
+ vec3 horizon=mix(nightHorizon,vec3(.64,.79,.88),daylight);
  horizon=mix(horizon,vec3(.96,.34,.13),warmth*.82);
  vec3 color=mix(horizon,zenith,pow(uv.y,.65));
  float d=length((uv-sun)*vec2(aspect,1.));
@@ -89,15 +91,20 @@ vec3 atmosphere(vec2 uv){
  vec2 starUV=uv*vec2(560.*aspect,560.);vec2 cell=floor(starUV),f=fract(starUV)-.5;
  float star=pow(max(0.,1.-length(f)*2.5),7.)*step(.995,hash(cell));
  float star2=pow(max(0.,1.-length(fract(starUV*.47)-.5)*2.8),11.)*step(.997,hash(floor(starUV*.47)+18.));
+ float star3=pow(max(0.,1.-length(fract(starUV*1.45)-.5)*2.6),9.)*step(.9965,hash(floor(starUV*1.45)+41.))*deepSpace*.42;
  float axis=uv.y-.17-.43*uv.x+sin(seconds*.002)*.008;
- float band=exp(-axis*axis/0.018),dust=fbm(q*10.+vec2(7.+seconds*.00001,2.));
- float galaxy=band*(.12+fbm(q*5.)*.45)*smoothstep(.24,.66,dust);
- color+=starVis*(vec3(.17,.25,.44)*galaxy+vec3(.62,.75,.95)*star*(.9+.1*sin(seconds*.3+hash(cell)*6.28))+vec3(.95,.84,.77)*star2);
+ float band=exp(-axis*axis/mix(0.018,0.024,deepSpace)),dust=fbm(q*10.+vec2(7.+seconds*.00001,2.));
+ float rift=smoothstep(.40,.68,fbm(q*13.+vec2(3.1,8.7)))*deepSpace*.48;
+ float galaxy=band*(.12+fbm(q*5.)*.45)*smoothstep(.24,.66,dust)*(1.-rift);
+ vec3 galCol=mix(vec3(.17,.25,.44),mix(vec3(.052,.080,.168),vec3(.098,.060,.158),smoothstep(.18,.82,uv.x)),deepSpace);
+ color+=starVis*(galCol*galaxy+vec3(.62,.75,.95)*star*(.9+.1*sin(seconds*.3+hash(cell)*6.28))+vec3(.95,.84,.77)*star2+vec3(.54,.66,.88)*star3);
+ if(deepSpace<.5){
  vec2 moon=vec2(.055,.34);float md=length((uv-moon)*vec2(aspect,1.));
  float disc=1.-smoothstep(.019,.0205,md);
  float crater=fbm((uv-moon)*380.);
  color+=starVis*(vec3(.74,.81,.88)*disc*(.65+.35*crater)+vec3(.20,.30,.49)*exp(-md*22.)*.14);
- float meteor=shootingStars(uv,aspect,seconds)*starVis*smoothstep(.24,.55,uv.y);
+ }
+ float meteor=shootingStars(uv,aspect,seconds)*starVis*smoothstep(.24,.55,uv.y)*mix(1.,.65,deepSpace);
  color+=vec3(.76,.90,1.)*meteor;
  }
  if(aurora>.001){
@@ -209,11 +216,12 @@ void main(){
       var e=solar.elevation,day=Math.max(0,Math.min(1,(e+6)/18));
       var weather=state.weather,raining=state.rain===true;
       var isAurora=!autoSolar&&state.scene==="aurora";
-      var defaultCloud=isAurora?.14:.24;
+      var isDeepSpace=!autoSolar&&state.scene==="night";
+      var defaultCloud=isDeepSpace?0:(isAurora?.14:.24);
       return {day:day,warm:Math.max(0,1-Math.abs(e-1)/13),night:1-Math.max(0,Math.min(1,(e+12)/12)),
         x:Math.max(.05,Math.min(.95,.5+solar.hourAngle/180*.7)),y:1-Math.max(.1,Math.min(.85,.82-Math.max(0,e)/90*.72)),
         cloud:raining?Math.max(.96,weather?weather.cloud:0):(weather?weather.cloud:defaultCloud),rain:raining?1:0,
-        wet:raining||(weather&&["rain","storm","fog"].indexOf(weather.kind)>=0)?1:0,aurora:isAurora?1:0};
+        wet:raining||(weather&&["rain","storm","fog"].indexOf(weather.kind)>=0)?1:0,aurora:isAurora?1:0,deepSpace:isDeepSpace?1:0};
     }
     function draw(){
       cancel();if(stopped||failed||!state||document.hidden||!host.isConnected)return;
@@ -227,7 +235,7 @@ void main(){
         gl.uniform2f(locations.size,canvas.width,canvas.height);gl.uniform2f(locations.sun,p.x,p.y);
         gl.uniform1f(locations.daylight,p.day);gl.uniform1f(locations.warmth,p.warm);gl.uniform1f(locations.night,p.night);
         gl.uniform1f(locations.clouds,cloudValue);gl.uniform1f(locations.wet,p.wet);gl.uniform1f(locations.rain,p.rain);
-        gl.uniform1f(locations.aurora,p.aurora);
+        gl.uniform1f(locations.aurora,p.aurora);gl.uniform1f(locations.deepSpace,p.deepSpace);
         var time=state.moving?root.performance.now()/1000:lastAt;
         gl.uniform1f(locations.seconds,time);lastAt=time;
         gl.drawArrays(gl.TRIANGLES,0,3);draws++;lastCost=root.performance.now()-start;
@@ -246,7 +254,7 @@ void main(){
       gl.useProgram(program);buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
       gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
       var index=gl.getAttribLocation(program,"p");gl.enableVertexAttribArray(index);gl.vertexAttribPointer(index,2,gl.FLOAT,false,0,0);
-      ["size","sun","daylight","warmth","night","clouds","seconds","wet","rain","aurora"].forEach(function(name){locations[name]=gl.getUniformLocation(program,name);});
+      ["size","sun","daylight","warmth","night","clouds","seconds","wet","rain","aurora","deepSpace"].forEach(function(name){locations[name]=gl.getUniformLocation(program,name);});
       canvas.addEventListener("webglcontextlost",lost);
       host.appendChild(canvas);host.setAttribute("data-sky-renderer","webgl");
     }catch(_){fallback();return null;}

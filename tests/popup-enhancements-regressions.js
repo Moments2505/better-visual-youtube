@@ -388,7 +388,7 @@ test("STYLE_PROFILES defines 4 curated schema-8 profiles and does not match DEFA
 
   for (const id of ids) {
     const applied = S.applyStyleProfile(S.DEFAULT_SETTINGS, id);
-    assert.equal(applied.schemaVersion, 8);
+    assert.equal(applied.schemaVersion, 9);
     assert.equal(applied.enabled, true);
     assert.equal(S.matchStyleProfile(applied), id, `applied ${id} must match ONLY ${id}`);
   }

@@ -30,7 +30,7 @@
     "enabled": true,
     "animate": true,
     "rain": false,
-    "scene": "auto",
+    "scene": "night",
     "intensity": 1,
     "liveWeather": false,
     "location": {
@@ -65,5 +65,5 @@
   "theme": "auto",
   "tint": "auto",
   "zenWatch": true,
-  "schemaVersion": 8
+  "schemaVersion": 9
 }
