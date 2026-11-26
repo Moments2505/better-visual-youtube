@@ -480,7 +480,7 @@
     "message": "Thumbnail hover ambient halo"
   },
   "floatingPlayerFrameLabel": {
-    "message": "Rounded floating video frame (Normal mode)"
+    "message": "Rounded floating video frame"
   },
   "toastAmbientOn": {
     "message": "Ambient Light: On"

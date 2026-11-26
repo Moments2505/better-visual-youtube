@@ -1,5 +1,12 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.8.3 — 2026-11-26
+
+### Fixes & Polish / Sửa lỗi & Hoàn thiện
+- **Eliminated Normal ↔ Theater switch glitch & lag** (`src/content/player-motion.js`, `vendor/ambient/content-main.js`, `src/ambient/ambient-vendor-bridge.js`, `src/content/navigation.js`, `src/content/dom-adapter.js`, `src/ambient/ambient-controller.js`, `src/content/experience-controls.js`): Replaced the non-uniform 460ms player FLIP scale & sidebar `position: fixed` hijack with lightweight post-toggle `syncGeometry()` / `refreshPlayer()` sync, updated `playerContainersObserver` to run `updateSizes()` immediately on container move so `.ambientlight__video-shadow` stays aligned with the video rect, skipped redundant `reconcile()` storage IPC on `normal` ↔ `theater`, and filtered `"player-state"` mutations away from full-DOM `dom-adapter` rescans (`p95` `56.8ms` → `8.3ms`, `0` long tasks in headless Edge).
+- **Synced Theater mode rounded video corners** (`src/styles/youtube.css`, `src/popup/popup.html`, `_locales/*/messages.json`): Applied `12px` default rounded corners in Theater mode across Theater player/video containers and `18px` in both Normal and Theater modes when `floatingPlayerFrame` is enabled (never rounding Fullscreen).
+- **Sửa lỗi lệch khung & giật lag khi chuyển Normal ↔ Theater + đồng bộ bo góc Theater mode**: Bỏ FLIP transform gây lệch `.ambientlight__video-shadow` và bỏ ép layout `#secondary` trong `player-motion.js`, đồng bộ `updateSizes()`/`syncGeometry()` tức thì không đọc/ghi storage thừa và không quét lại DOM toàn trang, đồng thời bo góc Theater mode `12px` mặc định (`18px` khi bật khung kính nổi) giống hệt Normal mode.
+
 ## 0.8.2 — 2026-11-24
 
 ### Fixes / Sửa lỗi

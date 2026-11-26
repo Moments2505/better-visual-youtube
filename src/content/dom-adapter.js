@@ -216,7 +216,8 @@
       // NAV owns a different generation counter. Capture OUR activation, not
       // its notification generation or the mutable startGen of a later init.
       var activeGeneration = generation;
-      unsubNav = NAV.onNavigation(function () {
+      unsubNav = NAV.onNavigation(function (info) {
+        if (info && info.reason === "player-state") return;
         if (!started || generation !== activeGeneration) return;
         if (navApplyTimer !== null) return;
         // after SPA nav: re-run the pass (chips/cards/popovers are new nodes)

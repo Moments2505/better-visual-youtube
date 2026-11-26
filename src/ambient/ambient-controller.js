@@ -1111,8 +1111,8 @@
     started = true;
     var NAV = root.YLG_NAV;
     if (NAV && NAV.onNavigation) {
-      unsubNav = NAV.onNavigation(function () {
-        scheduleSync(250);
+      unsubNav = NAV.onNavigation(function (info) {
+        scheduleSync(info && info.reason === "player-state" ? 16 : 250);
       });
     }
     var vendor = root.YLG_AMBIENT_VENDOR;

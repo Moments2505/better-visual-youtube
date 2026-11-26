@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Free and open source, made for desktop Microsoft Edge and Google Chrome.
 
-**Latest release: [0.8.2](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.2).** Removes an unintended Top bar (`ytd-masthead`) hover-zoom regression from 0.8.1 and locks non-panel chrome surfaces to `transform: none`, building on 0.8.1's Watch-page hover stutter fixes and 0.8.0's Aurora sky, Thumbnail Hover Halo, unified glass sync, and background-tab suspension. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.2.md)
+**Latest release: [0.8.3](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.3).** Eliminates Normal ↔ Theater mode-switch shadow glitches and frame-time stalls while adding Normal-matched rounded video corners (`12px` default, `18px` with Floating Video Frame) to Theater mode, building on 0.8.2's Top bar hover fix and 0.8.1/0.8.0 visual upgrades. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.3.md)
 
 ## A little more depth
 

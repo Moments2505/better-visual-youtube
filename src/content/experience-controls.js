@@ -171,7 +171,7 @@
       return;
     }
 
-    if (reason === "schedule" && !urlChanged) {
+    if ((reason === "schedule" || reason === "player-state") && !urlChanged) {
       if (newlyBound && idleTimer === null && !isCinemaIdleNow()) {
         var v = boundVideo;
         if (v && !v.paused && !v.ended) {

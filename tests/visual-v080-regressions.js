@@ -61,7 +61,9 @@ queue("settings, defaults, popup, locales, V3 tokens, and CWS hotkeys stay align
 
   const ytCss = read("src/styles/youtube.css");
   assert.doesNotMatch(ytCss, /--ylg-surface-panel|--ylg-border-panel|--ylg-blur-panel/, "must use real glass-tokens.css tokens");
-  assert.match(ytCss, /html\[data-ylg-enabled="true"\]\[data-ylg-player-frame="true"\]\s+ytd-watch-flexy:not\(\[theater\]\):not\(\[fullscreen\]\)\s+:is\(#ytd-player,\s*#player-container-inner,\s*#movie_player\)/);
+  assert.match(ytCss, /html\[data-ylg-enabled="true"\]:not\(\[data-ylg-fullscreen="1"\]\)\s+ytd-watch-flexy\[theater\]:not\(\[fullscreen\]\)\s+:is\(#full-bleed-container,\s*#player-full-bleed-container,\s*#ytd-player,\s*#movie_player\)/);
+  assert.match(ytCss, /html\[data-ylg-enabled="true"\]:not\(\[data-ylg-fullscreen="1"\]\)\s+ytd-watch-flexy\[theater\]:not\(\[fullscreen\]\)\s+:is\(\.html5-video-container,\s*video\.html5-main-video\)/);
+  assert.match(ytCss, /html\[data-ylg-enabled="true"\]\[data-ylg-player-frame="true"\]:not\(\[data-ylg-fullscreen="1"\]\)\s+ytd-watch-flexy:not\(\[fullscreen\]\)\s+:is\(#ytd-player,\s*#player-container-inner,\s*#movie_player\)/);
   assert.match(ytCss, /\.ytProgressBarLineProgressBarPlayed/);
   assert.match(ytCss, /\.ytProgressBarPlayheadProgressBarPlayheadDot/);
 

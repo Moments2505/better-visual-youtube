@@ -308,11 +308,32 @@
     engine = instance;
     return latest ? reconcile(latest) : Promise.resolve(false);
   }
+  function syncGeometry() {
+    var activeEngine = engine;
+    if (!activeEngine || state !== "upstream" || bgSuspended || isPageHidden()) return false;
+    try {
+      activeEngine.sizesChanged = true;
+      if (typeof activeEngine.updateSizes === "function") {
+        var res = activeEngine.updateSizes();
+        if (res && typeof res.catch === "function") res.catch(function () {});
+      }
+      return true;
+    } catch (error) { return false; }
+  }
   function refreshMode(nextMode) {
     nextMode = nextMode || "normal";
     if (nextMode === mode) return;
+    var prevMode = mode;
     mode = nextMode;
-    if (latest) reconcile(latest);
+    if (!latest) return;
+    var wantNext = wanted(latest, nextMode);
+    if (engine && (state === "upstream" || state === "off") &&
+        wanted(latest, prevMode) === wantNext &&
+        wantNext === (state === "upstream")) {
+      if (wantNext) syncGeometry();
+      return;
+    }
+    reconcile(latest);
   }
   function waitUntilEnabled() {
     return new Promise(function (resolve) {
@@ -373,7 +394,7 @@
   }
   root.YLG_AMBIENT_VENDOR = {
     push: reconcile, reconcile: reconcile, attach: attach,
-    waitUntilEnabled: waitUntilEnabled, refreshMode: refreshMode,
+    waitUntilEnabled: waitUntilEnabled, refreshMode: refreshMode, syncGeometry: syncGeometry,
     setBackgroundSuspended: setBackgroundSuspended,
     onStateChanged: onStateChanged, upstreamActive: function () { return Promise.resolve(state === "upstream"); },
     // Pending/error reserve the engine slot too: the unconditional legacy loader

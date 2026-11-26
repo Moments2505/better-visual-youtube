@@ -7955,7 +7955,8 @@ Video ready state: ${readyStateToString(videoElem === null || videoElem === void
         });
       }
       const playerContainersObserver = new MutationObserver(wrapErrorHandler(async function playerContainerMutation() {
-        await this.updateView();
+        this.sizesChanged = true;
+        await this.updateSizes();
         await this.optionalFrame();
       }.bind(this), true));
       const playerContainersObserverOptions = {

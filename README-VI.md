@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Tiện ích miễn phí, mã nguồn mở, dành cho Microsoft Edge và Google Chrome trên máy tính.
 
-**Bản chính thức mới nhất: [0.8.2](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.2).** Xóa bỏ hoàn toàn lỗi thanh Top bar bị phóng to khi rê chuột phát sinh ở bản 0.8.1 và khóa cố định `transform: none` cho toàn bộ bề mặt thanh đầu trang, kế thừa trọn vẹn bản vá mượt hover trang Xem của 0.8.1 cùng nền trời Cực quang & Sao băng, quầng sáng thumbnail, đồng bộ kính toàn diện và tắt hiệu ứng khi chạy nền của 0.8.0. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.2.md)
+**Bản chính thức mới nhất: [0.8.3](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.3).** Khắc phục triệt để lỗi lệch khung xám và giật lag khi chuyển Normal ↔ Theater mode, đồng thời bổ sung bo góc khung video cho Theater mode (`12px` mặc định, `18px` khi bật khung kính nổi) đồng bộ với Normal mode, kế thừa bản sửa Top bar của 0.8.2 và các tính năng 0.8.0/0.8.1. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.3.md)
 
 ## Thêm chiều sâu cho giao diện
 

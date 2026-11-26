@@ -45,12 +45,19 @@
     }
   }
 
-  function scheduleApply(delayMs) {
-    if (!started || applyTimer !== null) return;
+  var pendingReason = null;
+
+  function scheduleApply(delayMs, reason) {
+    if (!started) return;
+    var nextReason = reason || "schedule";
+    if (!pendingReason || nextReason !== "player-state") pendingReason = nextReason;
+    if (applyTimer !== null) return;
     applyTimer = setTimeout(function () {
       applyTimer = null;
+      var r = pendingReason || "schedule";
+      pendingReason = null;
       if (generation !== startGeneration) return;
-      notify("schedule");
+      notify(r);
     }, delayMs || 0);
   }
   var startGeneration = 0;
@@ -241,7 +248,7 @@
       try {
         var observerGeneration = generation;
         playerObserver = new MutationObserver(function () {
-          if (started && generation === observerGeneration) scheduleApply(0);
+          if (started && generation === observerGeneration) scheduleApply(0, "player-state");
         });
       } catch (e) { playerTargets = []; return; }
     }
@@ -291,6 +298,7 @@
     playerTargets = [];
     if (reconcileTimer !== null) { clearInterval(reconcileTimer); reconcileTimer = null; }
     if (applyTimer !== null) { clearTimeout(applyTimer); applyTimer = null; }
+    pendingReason = null;
   }
 
   root.YLG_NAV = {

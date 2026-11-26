@@ -96,6 +96,7 @@ function renderer(h) {
     updateKeywordsToPreventTheaterScaling() { calls.push(["keywords"]); },
     async start() { calls.push(["start"]); this.isHidden = false; },
     async hide() { calls.push(["hide"]); this.isHidden = true; },
+    async updateSizes() { calls.push(["updateSizes"]); },
     async optionalFrame(force) { calls.push(["frame", force]); }
   };
   return { engine, calls };
@@ -300,6 +301,17 @@ test("per-tab layout gates hide live renderer without persisting master=false", 
     assert.equal(r.engine.settings.enabled, on, mode);
     assert.equal(h.bridge.stats().state, on ? "upstream" : "off", mode);
   }
+  const writesBeforeToggle = h.writes().length;
+  const statesSeen = [];
+  const unsub = h.bridge.onStateChanged(st => statesSeen.push(st));
+  const callsBeforeToggle = r.calls.length;
+  h.bridge.refreshMode("normal"); await settle();
+  h.bridge.refreshMode("theater"); await settle();
+  unsub();
+  assert.equal(h.writes().length, writesBeforeToggle, "normal <-> theater must perform zero storage writes");
+  assert.equal(statesSeen.includes("pending"), false, "normal <-> theater must not flip state to pending");
+  assert.equal(h.bridge.stats().state, "upstream");
+  assert.ok(r.calls.slice(callsBeforeToggle).some(([kind]) => kind === "updateSizes"), "normal <-> theater must trigger updateSizes");
   await h.bridge.push(settings({ modes: { normal: false, theater: false, fullscreen: true } }));
   assert.equal(r.engine.settings.enabled, false, "theater preference enforced");
   h.bridge.refreshMode("fullscreen"); await settle(); assert.equal(r.engine.settings.enabled, true);
