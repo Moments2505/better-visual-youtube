@@ -1,5 +1,11 @@
 # Changelog / Lịch sử thay đổi
 
+## 0.8.6 — 2026-11-29
+
+### Fixes / Sửa lỗi
+- **Unified Watch player chapter button (`.ytp-chapter-title`) with Liquid Glass capsules and removed the `32×32` inner hover ring** (`src/styles/player-surface.css`, `src/styles/liquid-components.css`, `src/styles/interaction-performance.css`, `tests/chrome-surface-regressions.js`): Suppressed `.ytp-chapter-title::before` (`32×32px` circular `#ylg-lens-hover`) and native `ytp-delhi-modern` `.ytp-chapter-title::after` wash so no circle appears centered over `"Trong video này"` / chapter titles, and included `.ytp-chapter-title` (nested inside `.ytp-chapter-container`) in the shared Liquid Glass capsule fill, specular rim, chromatic fringe, blur, hover/focus tint lift, crisp white / Pale `#111827` text legibility, Clear mode, Low-FX, autohide/transition, and a11y fallbacks without altering hidden chapter containers.
+- **Đồng bộ nút chương video trên trình phát (`.ytp-chapter-title`) với kính lỏng Liquid Glass và xóa vòng tròn hover `32×32` ở giữa chữ** (`src/styles/player-surface.css`, `src/styles/liquid-components.css`, `src/styles/interaction-performance.css`, `tests/chrome-surface-regressions.js`): Tắt lớp `::before` tròn `32×32px` và `::after` mặc định của YouTube trên `.ytp-chapter-title` để hết vòng tròn đè giữa chữ `"Trong video này"`, đồng thời áp dụng đầy đủ vật liệu capsule kính lỏng thống nhất, viền phản sáng, sáng đều khi rê chuột, chữ trắng/mực tối Pale `#111827`, chế độ Clear `0%`, Low-FX và quy tắc a11y mà vẫn giữ ẩn container chương khi video không có chương.
+
 ## 0.8.5 — 2026-11-26
 
 ### Features & Visual Polish / Tính năng & Giao diện

@@ -8,7 +8,7 @@ A fresh look for YouTube, with transparent glass surfaces, colour that follows y
 
 Free and open source, made for desktop Microsoft Edge and Google Chrome.
 
-**Latest release: [0.8.5](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.5).** Introduces the dark **Deep Space** Home & Browse background as the default scene (removing the bright screen wash and lunar glare), building on 0.8.4's borderless rounded Watch player and 0.8.0–0.8.3 upgrades. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.5.md)
+**Latest release: [0.8.6](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.6).** Restyles the Watch player's chapter pill button (`In this video` / `Trong video này`) with the unified Liquid Glass capsule material and removes the `32×32` inner hover ring, building on 0.8.5's Deep Space background and 0.8.0–0.8.4 upgrades. [Release notes](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.6.md)
 
 ## A little more depth
 

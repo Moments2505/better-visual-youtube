@@ -8,7 +8,7 @@ Thêm một diện mạo mới cho YouTube với lớp kính trong, ánh sáng t
 
 Tiện ích miễn phí, mã nguồn mở, dành cho Microsoft Edge và Google Chrome trên máy tính.
 
-**Bản chính thức mới nhất: [0.8.5](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.5).** Thay cảnh nền mặc định Trang chủ & Trang duyệt sang **Đêm vũ trụ trầm (`Deep Space`)** tối dịu (bỏ vầng trăng sáng và lớp phủ `screen` gây chói), kế thừa bản sửa bo góc không viền 0.8.4 và các nâng cấp 0.8.0–0.8.3. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.5.md)
+**Bản chính thức mới nhất: [0.8.6](https://github.com/Moments2505/better-visual-youtube/releases/tag/v0.8.6).** Đồng bộ nút chương video trên trình phát (`Trong video này` / tên chương) sang chất liệu kính lỏng Liquid Glass thống nhất và xóa vòng hover tròn `32×32` ở giữa chữ, kế thừa nền Đêm vũ trụ 0.8.5 và các nâng cấp 0.8.0–0.8.4. [Chi tiết phiên bản](https://github.com/Moments2505/better-visual-youtube/blob/main/docs/releases/v0.8.6.md)
 
 ## Thêm chiều sâu cho giao diện
 

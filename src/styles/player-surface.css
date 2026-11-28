@@ -25,6 +25,7 @@ html[data-ylg-enabled="true"]:not([data-ylg-lens-hover="1"]) .ytp-chrome-bottom 
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-chapter-title,
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
   background-color: rgba(var(--ylg-surface-tint-light), calc(var(--ylg-opacity) * 0.65));
   background-image: linear-gradient(155deg, rgba(255, 255, 255, calc(var(--ylg-highlight) * 0.12)), transparent 42%);
@@ -46,6 +47,19 @@ html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display::before {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
   will-change: auto !important;
+}
+/* Chapter pills vary dynamically in width: never punch a 32px circular lens or
+   YouTube's inset::after wash across text; light the whole capsule cleanly. */
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-chapter-title::before,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-chapter-title::after {
+  content: none !important;
+  display: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  will-change: auto !important;
+}
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-chapter-title:is(:hover, :focus-visible) {
+  background-color: rgba(var(--ylg-surface-tint-light), min(0.9, calc(var(--ylg-opacity) * 0.75 + 0.05)));
 }
 html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display :is(.ytp-time-wrapper, .ytp-time-contents) {
   background: transparent !important;
@@ -127,7 +141,8 @@ html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-chrome-bottom .ytp-right-c
 }
 html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-time-display,
 html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-volume-area,
-html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button {
+html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-lens-split="1"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
+html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-chrome-bottom .ytp-chapter-title {
   -webkit-backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1);
   backdrop-filter: blur(var(--ylg-blur-s)) saturate(1.1);
 }
@@ -156,12 +171,14 @@ html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-svg-shadow {
   stroke-width: 2px !important;
   stroke-opacity: 0.58 !important;
 }
-html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display :is(.ytp-time-current, .ytp-time-separator, .ytp-time-duration, .ytp-time-clip-icon) {
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display :is(.ytp-time-current, .ytp-time-separator, .ytp-time-duration, .ytp-time-clip-icon),
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-chapter-title,
+html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-chapter-title :is(.ytp-chapter-title-prefix, .ytp-chapter-title-content, .ytp-chapter-title-chevron) {
   color: #ffffff !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65) !important;
 }
 
-html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area),
+html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-chapter-title, .ytp-volume-area),
 html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
@@ -180,6 +197,7 @@ html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-lef
     html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-right-controls,
     html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
     html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-time-display,
+    html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-chapter-title,
     html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
       background: Canvas !important;
       -webkit-backdrop-filter: none !important;
@@ -192,6 +210,7 @@ html[data-ylg-enabled="true"][data-ylg-lowfx="true"] .ytp-chrome-bottom .ytp-lef
     html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom .ytp-right-controls,
     html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom .ytp-left-controls > .ytp-button,
     html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom .ytp-time-display,
+    html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom .ytp-chapter-title,
     html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom .ytp-volume-area {
       background: Canvas !important;
       -webkit-backdrop-filter: none !important;

@@ -88,4 +88,15 @@ for (const [, selectorHeader] of opticsZoomRules) {
 }
 assert.match(opticsCss, /ytd-masthead\.ylg-glass:hover[\s\S]*?#masthead-container\s+\.ylg-glass:focus-within\s*\{\s*transform:\s*none\s*!important/, "glass-optics.css must lock masthead and Top bar glass surfaces against transform on hover/focus");
 assert.match(css, /:is\(#frosted-glass,\s*ytd-masthead,\s*#masthead\):is\(:hover,\s*:focus-within\)[\s\S]*?transform:\s*none\s*!important/, "chrome-surface.css must keep Top bar surfaces untransformed on hover/focus");
-console.log('Chrome surface regressions: 62/62 assertions passed (source contracts only; browser rendering requires separate verification).');
+
+const playerSurfaceCss = fs.readFileSync(path.join(root,'src/styles/player-surface.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+assert.match(playerSurfaceCss, /\.ytp-chrome-bottom\s+\.ytp-chapter-title::before,[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-chapter-title::after\s*\{[^}]*content:\s*none\s*!important;[^}]*display:\s*none\s*!important;[^}]*backdrop-filter:\s*none\s*!important/, "player-surface.css must suppress 32x32 hover ring ::before and native ::after wash on .ytp-chapter-title");
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\.ytSearchboxComponentInputBox,[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-chapter-title,[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-volume-area\s*\{[\s\S]*?backdrop-filter:\s*blur\(var\(--ylg-blur-s\)\)\s*saturate\(1\.1\)\s*!important/, "chapter pill must share the unified Liquid Glass capsule material");
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-chapter-title:is\(:hover,\s*:focus-visible\)[\s\S]*?background-color:\s*rgba\(var\(--ylg-surface-tint-light\)/, "chapter pill hover/focus must lift whole capsule tint");
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-chapter-title::before,[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-chapter-title::after\s*\{[^}]*content:\s*none\s*!important;[^}]*backdrop-filter:\s*none\s*!important/, "liquid-components.css must guard .ytp-chapter-title::before/::after suppression");
+assert.match(liquidCss, /@layer ylg-components\s*\{[\s\S]*?\[data-ylg-optics-aberration="1"\][^{]*\.ytp-chrome-bottom\s+\.ytp-chapter-title[\s\S]*?var\(--ylg-lens-ab/, "chapter pill must share chromatic aberration edge fringe");
+assert.match(liquidCss, /@layer ylg-states\s*\{[\s\S]*?data-ylg-opacity-pale="true"[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-chapter-title,[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-volume-area\s*\{[\s\S]*?var\(--ylg-search-scrim\)/, "chapter pill must share Pale mode capsule fill");
+assert.match(liquidCss, /@layer ylg-states\s*\{[\s\S]*?data-ylg-opacity-pale="true"[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-chapter-title[\s\S]*?color:\s*#111827\s*!important/, "chapter pill must switch text/chevron to #111827 in Pale mode");
+assert.match(liquidCss, /@layer ylg-states\s*\{[\s\S]*?data-ylg-fill="none"[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-chapter-title,[\s\S]*?\.ytp-chrome-bottom\s+\.ytp-volume-area\s*\{[\s\S]*?background:\s*transparent\s*!important/, "chapter pill must become crystal-clear in Clear mode");
+
+console.log('Chrome surface regressions: 70/70 assertions passed (source contracts only; browser rendering requires separate verification).');

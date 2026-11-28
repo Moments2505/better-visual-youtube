@@ -108,7 +108,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
-  html[data-ylg-enabled="true"] .html5-video-player.ytp-autohide .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
+  html[data-ylg-enabled="true"] .html5-video-player.ytp-autohide .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-chapter-title, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
@@ -125,7 +125,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
   /* During the player FLIP, keep the same tint/rim but avoid repeatedly sampling
      live video through nested SVG filters at changing scale. The final-sized
      optical maps are rebuilt before this marker is removed. */
-  html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
+  html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-chapter-title, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
     -webkit-backdrop-filter: blur(min(var(--ylg-blur, 0px), 2px)) saturate(1) !important;
     backdrop-filter: blur(min(var(--ylg-blur, 0px), 2px)) saturate(1) !important;
   }
@@ -135,7 +135,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
-  html[data-ylg-enabled="true"][data-ylg-player-transition="1"][data-ylg-lowfx="true"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
+  html[data-ylg-enabled="true"][data-ylg-player-transition="1"][data-ylg-lowfx="true"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-chapter-title, .ytp-volume-area, .ytp-left-controls > .ytp-button) {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
@@ -229,7 +229,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
 
 @layer ylg-a11y {
   @media (forced-colors: active) {
-    html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button),
+    html[data-ylg-enabled="true"][data-ylg-player-transition="1"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-chapter-title, .ytp-volume-area, .ytp-left-controls > .ytp-button),
     html[data-ylg-enabled="true"][data-ylg-lens="1"] .ytp-progress-bar-container:is(:hover, :focus-within, [data-ylg-dragging="1"]) .ytp-scrubber-button::after,
     html[data-ylg-enabled="true"] .ytp-chrome-bottom .ytp-volume-area {
       -webkit-backdrop-filter: none !important;
@@ -237,7 +237,7 @@ html[data-ylg-enabled="true"][data-ylg-motion="off"] .html5-video-player .ytp-ch
     }
   }
   @media (prefers-reduced-transparency: reduce) and (forced-colors: none) {
-    html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"])[data-ylg-player-transition="1"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-volume-area, .ytp-left-controls > .ytp-button),
+    html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"])[data-ylg-player-transition="1"] .ytp-chrome-bottom :is(.ytp-right-controls, .ytp-time-display, .ytp-chapter-title, .ytp-volume-area, .ytp-left-controls > .ytp-button),
     html[data-ylg-enabled="true"][data-ylg-lens="1"]:not([data-ylg-transparency="glass"]) .ytp-progress-bar-container:is(:hover, :focus-within, [data-ylg-dragging="1"]) .ytp-scrubber-button::after,
     html[data-ylg-enabled="true"]:not([data-ylg-transparency="glass"]) .ytp-chrome-bottom .ytp-volume-area {
       -webkit-backdrop-filter: none !important;
